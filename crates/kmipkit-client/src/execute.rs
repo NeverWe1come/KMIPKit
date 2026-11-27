@@ -5969,14 +5969,10 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message =
             build_and_validate_request_message(batch, &options, maximum_response_size)?;
-        let profile_request = if profiles.is_some() {
-            Some(
-                clone_request_message(&request_message, limits)
-                    .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?,
-            )
-        } else {
-            None
-        };
+        let profile_request = profiles
+            .map(|_| clone_request_message(&request_message, limits))
+            .transpose()
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         if let Some(profiles) = profiles {
             profiles
                 .validate_request_with_context(&request_message, profile_context)
@@ -5987,52 +5983,18 @@ impl Client {
         if let Some(mutation_policy) = mutation_policy {
             mutation_policy?;
         }
-        let (mut response_message, wire_response, response_delivery_state) =
+        let (response_message, wire_response, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
-        let mut normalized_message_level_error = false;
-        if response_message.header().protocol_version() == options.protocol_version
-            && let Some(first_request) = request_identities.first()
-        {
-            let is_single_request = request_identities.len() == 1;
-            let normalize_operation = {
-                let mut response_items = response_message.batch_items();
-                matches!(
-                    (response_items.next(), response_items.next()),
-                    (Some(item), None)
-                        if item.operation().is_none()
-                            && (is_single_request || item.with_unique_batch_item_id(|_| ()).is_none())
-                            && item.result_status()
-                                == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
-                            && item.result_reason().is_some()
-                )
-            };
-            if normalize_operation {
-                normalized_message_level_error = !is_single_request;
-                response_message = response_message
-                    .with_single_failed_operation(
-                        first_request.operation,
-                        first_request.unique_batch_item_id.as_deref(),
-                    )
-                    .map_err(|error| {
-                        ClientError::protocol(
-                            ProtocolError::new(
-                                ProtocolErrorKind::MalformedMessage,
-                                ProtocolCauseCategory::InvalidValue,
-                                error,
-                            ),
-                            response_delivery_state,
-                        )
-                    })?;
-            }
-        }
-        let profile_response = if profiles.is_some() {
-            Some(
-                clone_response_message(&response_message)
-                    .map_err(|error| protocol_failure_at(error, response_delivery_state))?,
-            )
-        } else {
-            None
-        };
+        let (response_message, normalized_message_level_error) = normalize_failed_operation(
+            response_message,
+            options.protocol_version,
+            &request_identities,
+            response_delivery_state,
+        )?;
+        let profile_response = profiles
+            .map(|_| clone_response_message(&response_message))
+            .transpose()
+            .map_err(|error| protocol_failure_at(error, response_delivery_state))?;
 
         let validated_response = validate_response(
             &request_identities,
@@ -8924,6 +8886,53 @@ fn clone_request_message(
             error,
         )
     })
+}
+
+fn normalize_failed_operation(
+    response: ResponseMessage,
+    version: ProtocolVersion,
+    request_identities: &[BatchIdentity],
+    delivery: RequestDeliveryState,
+) -> Result<(ResponseMessage, bool), ClientError> {
+    let Some(first_request) = request_identities.first() else {
+        return Ok((response, false));
+    };
+    if response.header().protocol_version() != version {
+        return Ok((response, false));
+    }
+
+    let is_single_request = request_identities.len() == 1;
+    let normalize = {
+        let mut items = response.batch_items();
+        matches!(
+            (items.next(), items.next()),
+            (Some(item), None)
+                if item.operation().is_none()
+                    && (is_single_request || item.with_unique_batch_item_id(|_| ()).is_none())
+                    && item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
+                    && item.result_reason().is_some()
+        )
+    };
+    if !normalize {
+        return Ok((response, false));
+    }
+
+    let response = response
+        .with_single_failed_operation(
+            first_request.operation,
+            first_request.unique_batch_item_id.as_deref(),
+        )
+        .map_err(|error| {
+            ClientError::protocol(
+                ProtocolError::new(
+                    ProtocolErrorKind::MalformedMessage,
+                    ProtocolCauseCategory::InvalidValue,
+                    error,
+                ),
+                delivery,
+            )
+        })?;
+    Ok((response, !is_single_request))
 }
 
 fn clone_response_message(response: &ResponseMessage) -> Result<ResponseMessage, ProtocolError> {
