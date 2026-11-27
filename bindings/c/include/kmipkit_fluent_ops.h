@@ -152,8 +152,9 @@ static inline int32_t kmipkit_fluent_execute_item(
     }
 
     kmipkit_client_batch_response_t *resp = NULL;
-    rc = kmipkit_client_execute_with_options_and_error_ttlv_v1(
-        client, &batch, eff_limits, options_or_null, &resp, NULL);
+    rc = options_or_null == NULL
+        ? kmipkit_client_execute(client, &batch, eff_limits, &resp)
+        : kmipkit_client_execute_with_options_v1(client, &batch, eff_limits, options_or_null, &resp);
     if (batch != NULL) kmipkit_client_batch_release(batch);
     if (owned_limits != NULL) kmipkit_codec_limits_release(owned_limits);
     if (rc != 0) {

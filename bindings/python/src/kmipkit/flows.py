@@ -4,6 +4,7 @@ pending operations, Locate pagination, and closure-based S2C handler builder.
 
 from __future__ import annotations
 
+from contextlib import closing
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -82,39 +83,50 @@ class WorkflowsClient:
     def create_active_symmetric_key(
         self, spec: KeySpec, usage_mask: int, name: str | None = None
     ) -> str:
-        builder = fluent.Request(self._client).create_symmetric_key().with_key_spec(spec).usage_mask(usage_mask)
-        if name is not None:
-            builder.name(name)
-        resp = builder.execute()
-        item = resp.item_at(0)
-        uid = item.unique_identifier
-        if uid is None or uid.text is None:
-            raise ValueError("Create response omitted text UniqueIdentifier")
-        fluent.Request(self._client).activate().unique_identifier(uid).execute()
-        return uid.text
+        request = fluent.Request(self._client)
+        with request.create_symmetric_key() as builder:
+            builder.with_key_spec(spec).usage_mask(usage_mask)
+            if name is not None:
+                builder.name(name)
+            with builder.execute() as created:
+                uid = created.unique_identifier
+                if uid is None or uid.text is None:
+                    raise ValueError("Create response omitted text UniqueIdentifier")
+        with request.activate(uid) as builder, builder.execute():
+            return uid.text
 
     def revoke_and_destroy(self, unique_identifier: str, reason: extensions.RevocationReason) -> None:
+        request = fluent.Request(self._client)
         uid = extensions.UniqueIdentifier.text_string(unique_identifier)
-        fluent.Request(self._client).revoke(reason).unique_identifier(uid).execute()
-        fluent.Request(self._client).destroy(uid).execute()
+        with request.revoke(uid, reason) as builder, builder.execute():
+            pass
+        with request.destroy(uid).execute():
+            pass
 
 
 class _StreamBase:
-    __slots__ = ("_client", "_started", "_correlation")
+    __slots__ = ("_client", "_closed", "_correlation")
 
     def __init__(self, kmip_client: Any) -> None:
         self._client = kmip_client
-        self._started = False
+        self._closed = False
         self._correlation: bytes | None = None
 
     def _apply_indicators(self, builder: Any, *, final: bool = False) -> None:
+        if self._closed:
+            raise ValueError("The multipart stream is closed")
         if final:
             builder.final_indicator(True)
-        if not self._started:
-            builder.initial_indicator(True)
-            self._started = True
-        elif self._correlation is not None:
+        if self._correlation is None:
+            builder.init_indicator(True)
+        else:
             builder.correlation_value(self._correlation)
+
+    def _record_correlation(self, correlation: bytes | None) -> None:
+        if correlation:
+            self._correlation = correlation
+        if self._correlation is None:
+            raise ValueError("The initial multipart response omitted Correlation Value")
 
 
 class HashStream(_StreamBase):
@@ -125,45 +137,82 @@ class HashStream(_StreamBase):
         self._alg = algorithm
 
     def update(self, chunk: bytes) -> None:
-        b = fluent.Request(self._client).hash().with_hash_algorithm(self._alg).data(chunk)
-        self._apply_indicators(b)
-        resp = b.execute()
-        corr = resp.item_at(0).correlation_value
-        if corr is not None:
-            self._correlation = corr
+        with fluent.Request(self._client).hash() as builder:
+            builder.with_hash_algorithm(self._alg).data(chunk)
+            self._apply_indicators(builder)
+            self._closed = True
+            with builder.execute() as item:
+                response = item.hash_response
+                if response is None:
+                    raise ValueError("Hash response omitted its payload")
+                with response.response_ttlv:
+                    self._record_correlation(response.correlation_value)
+            self._closed = False
 
     def finish(self) -> bytes:
-        b = fluent.Request(self._client).hash().with_hash_algorithm(self._alg)
-        self._apply_indicators(b, final=True)
-        resp = b.execute()
-        data = resp.item_at(0).data
-        if data is None:
-            raise ValueError("Hash final response omitted Data")
-        return data
+        with fluent.Request(self._client).hash() as builder:
+            builder.with_hash_algorithm(self._alg)
+            self._apply_indicators(builder, final=True)
+            self._closed = True
+            self._correlation = None
+            with builder.execute() as item:
+                response = item.hash_response
+                if response is None:
+                    raise ValueError("Hash final response omitted its payload")
+                with response.response_ttlv:
+                    data = response.data
+                    if data is None:
+                        raise ValueError("Hash final response omitted Data")
+                    return data
 
 
 class EncryptStream(_StreamBase):
-    __slots__ = ("_uid", "_spec")
+    __slots__ = ("_uid", "_spec", "_iv_counter_nonce", "_authenticated_encryption_tag")
 
     def __init__(self, kmip_client: Any, unique_identifier: str, spec: CipherSpec) -> None:
         super().__init__(kmip_client)
         self._uid = extensions.UniqueIdentifier.text_string(unique_identifier)
         self._spec = spec
+        self._iv_counter_nonce: bytes | None = None
+        self._authenticated_encryption_tag: bytes | None = None
+
+    @property
+    def iv_counter_nonce(self) -> bytes | None:
+        return self._iv_counter_nonce
+
+    @property
+    def authenticated_encryption_tag(self) -> bytes | None:
+        return self._authenticated_encryption_tag
+
+    def _exchange(self, chunk: bytes | None, *, final: bool) -> bytes:
+        with fluent.Request(self._client).encrypt() as builder:
+            builder.unique_identifier(self._uid).with_cipher_spec(self._spec)
+            if chunk is not None:
+                builder.data(chunk)
+            self._apply_indicators(builder, final=final)
+            self._closed = True
+            with builder.execute() as item:
+                response = item.encrypt_response
+                if response is None:
+                    raise ValueError("Encrypt response omitted its payload")
+                with closing(response):
+                    if not final:
+                        self._record_correlation(response.correlation_value)
+                    if response.iv_counter_nonce is not None:
+                        self._iv_counter_nonce = response.iv_counter_nonce
+                    if response.authenticated_encryption_tag is not None:
+                        self._authenticated_encryption_tag = response.authenticated_encryption_tag
+                    data = response.data or b""
+            self._closed = final
+            if final:
+                self._correlation = None
+            return data
 
     def update(self, chunk: bytes) -> bytes:
-        b = fluent.Request(self._client).encrypt().unique_identifier(self._uid).with_cipher_spec(self._spec).data(chunk)
-        self._apply_indicators(b)
-        resp = b.execute()
-        item = resp.item_at(0)
-        if item.correlation_value is not None:
-            self._correlation = item.correlation_value
-        return item.data or b""
+        return self._exchange(chunk, final=False)
 
     def finish(self) -> bytes:
-        b = fluent.Request(self._client).encrypt().unique_identifier(self._uid).with_cipher_spec(self._spec)
-        self._apply_indicators(b, final=True)
-        resp = b.execute()
-        return resp.item_at(0).data or b""
+        return self._exchange(None, final=True)
 
 
 class StreamsClient:
@@ -212,17 +261,19 @@ class LocatePaginator:
     def next_page(self) -> list[extensions.UniqueIdentifier] | None:
         if self._exhausted:
             return None
-        resp = (
-            fluent.Request(self._client)
-            .locate(self._attributes)
-            .maximum_items(self._page_size)
-            .offset_items(self._offset)
-            .execute()
-        )
-        ids = list(resp.item_at(0).located_unique_identifiers)
+        with fluent.Request(self._client).locate(self._attributes) as builder:
+            builder.maximum_items(self._page_size).offset_items(self._offset)
+            with builder.execute() as item:
+                response = item.locate_response()
+                if response is None:
+                    raise ValueError("Locate response omitted its payload")
+                ids = list(response.unique_identifiers)
+                total = response.located_items
         self._offset += len(ids)
-        if len(ids) < self._page_size:
-            self._exhausted = True
+        if total is not None:
+            self._exhausted = not ids or self._offset >= total
+        else:
+            self._exhausted = len(ids) < self._page_size
         return ids or None
 
 

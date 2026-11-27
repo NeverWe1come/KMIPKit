@@ -1,5 +1,6 @@
 """Fase 4: batch builder, workflows, multipart streams, pending op, locate_iter, S2C."""
 
+from contextlib import nullcontext
 import types
 import unittest
 from unittest.mock import patch
@@ -20,24 +21,21 @@ from kmipkit import (
 )
 
 
-class _FakeItem:
-    def __init__(self, uid: str = "k-1", corr: bytes = b"c1", data: bytes = b"out", located=()):
-        self.unique_identifier = types.SimpleNamespace(text=uid)
-        self.correlation_value = corr
-        self.data = data
-        self.located_unique_identifiers = list(located)
-
-
-class _FakeResp:
-    def __init__(self, item: _FakeItem):
-        self._item = item
-
-    def item_at(self, _idx: int) -> _FakeItem:
-        return self._item
+def _item(uid: str = "k-1", corr: bytes | None = b"c1", data: bytes = b"out",
+          located=(), total=None) -> client.BatchItemResult:
+    return client.BatchItemResult(
+        client.BatchOutcome(1), 0, None, None, None,
+        unique_identifier=extensions.UniqueIdentifier.text_string(uid),
+        hash_response=types.SimpleNamespace(
+            correlation_value=corr, data=data, response_ttlv=nullcontext(),
+        ),
+        encrypt_response=client.EncryptResponse(uid, data, b"iv", corr, b"tag"),
+        _locate_response=client.LocateResponse(total, tuple(located)),
+    )
 
 
 class _FakeBuilder:
-    def __init__(self, item: _FakeItem):
+    def __init__(self, item: client.BatchItemResult):
         self._item = item
         self.calls: list[tuple[str, object]] = []
 
@@ -66,8 +64,8 @@ class _FakeBuilder:
     def data(self, v):
         return self._rec("data", v)
 
-    def initial_indicator(self, v):
-        return self._rec("initial_indicator", v)
+    def init_indicator(self, v):
+        return self._rec("init_indicator", v)
 
     def final_indicator(self, v):
         return self._rec("final_indicator", v)
@@ -81,13 +79,19 @@ class _FakeBuilder:
     def offset_items(self, v):
         return self._rec("offset_items", v)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        pass
+
     def execute(self):
-        return _FakeResp(self._item)
+        return self._item
 
 
 class _FakeRequestFactory:
-    def __init__(self, item: _FakeItem | None = None):
-        self.item = item or _FakeItem()
+    def __init__(self, item: client.BatchItemResult | None = None):
+        self.item = item or _item()
         self.builders: list[_FakeBuilder] = []
 
     def _new(self):
@@ -98,10 +102,10 @@ class _FakeRequestFactory:
     def create_symmetric_key(self):
         return self._new()
 
-    def activate(self):
+    def activate(self, _uid):
         return self._new()
 
-    def revoke(self, _reason):
+    def revoke(self, _uid, _reason):
         return self._new()
 
     def destroy(self, _uid):
@@ -175,7 +179,7 @@ class HighLevelPhase4Test(unittest.TestCase):
         self.assertIsNotNone(handlers["query"])
 
     def test_workflows_streams_and_locate_paginator(self) -> None:
-        factory = _FakeRequestFactory(_FakeItem(uid="sym-1", corr=b"corr-1", data=b"digest"))
+        factory = _FakeRequestFactory(_item(uid="sym-1", corr=b"corr-1", data=b"digest"))
         with patch("kmipkit.flows.fluent.Request", return_value=factory):
             wf = WorkflowsClient(None)
             uid = wf.create_active_symmetric_key(KeySpec.AES_256, 0x0C, name="k1")
@@ -187,17 +191,36 @@ class HighLevelPhase4Test(unittest.TestCase):
             hs.update(b"abc")
             hs.update(b"def")
             self.assertEqual(hs.finish(), b"digest")
+            self.assertIn(("init_indicator", True), factory.builders[-3].calls)
+            self.assertIn(("correlation_value", b"corr-1"), factory.builders[-2].calls)
+            self.assertIn(("final_indicator", True), factory.builders[-1].calls)
+            with self.assertRaisesRegex(ValueError, "stream is closed"):
+                hs.finish()
 
             es = streams.encrypt("sym-1", CipherSpec.AES_GCM)
             self.assertEqual(es.update(b"plain"), b"digest")
-            self.assertEqual(es.finish(), b"digest")
+            factory.item = _item(data=b"final")
+            self.assertEqual(es.finish(), b"final")
+            self.assertEqual(es.iv_counter_nonce, b"iv")
+            self.assertEqual(es.authenticated_encryption_tag, b"tag")
 
-            factory.item = _FakeItem(located=["id-1", "id-2"])
+            ids = [extensions.UniqueIdentifier.text_string(value) for value in ("id-1", "id-2")]
+            factory.item = _item(located=ids[:1], total=2)
             pager = LocatePaginator(None, object(), page_size=2)
-            self.assertEqual(pager.next_page(), ["id-1", "id-2"])
-            factory.item = _FakeItem(located=[])
+            self.assertEqual(pager.next_page(), ids[:1])
+            factory.item = _item(located=ids[1:], total=2)
+            self.assertEqual(pager.next_page(), ids[1:])
+            self.assertIn(("offset_items", 1), factory.builders[-1].calls)
             self.assertIsNone(pager.next_page())
-            self.assertIsNone(pager.next_page())
+
+    def test_stream_rejects_initial_response_without_correlation(self) -> None:
+        factory = _FakeRequestFactory(_item(corr=None))
+        with patch("kmipkit.flows.fluent.Request", return_value=factory):
+            stream = StreamsClient(None).hash(HashAlgorithm.SHA256)
+            with self.assertRaisesRegex(ValueError, "omitted Correlation Value"):
+                stream.update(b"first")
+            with self.assertRaisesRegex(ValueError, "stream is closed"):
+                stream.update(b"second")
 
     def test_client_phase4_methods_exist(self) -> None:
         for name in ("batch", "workflows", "streams"):
