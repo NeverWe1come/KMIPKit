@@ -63,7 +63,9 @@ target_include_directories(kmipkit_named_values_consumer PRIVATE include)
 
 add_executable(kmipkit_fluent_parity64_consumer tests/fluent_parity64.c)
 target_compile_features(kmipkit_fluent_parity64_consumer PRIVATE c_std_11)
-target_compile_options(kmipkit_fluent_parity64_consumer PRIVATE -Wall -Wextra -Werror)
+if(NOT MSVC)
+    target_compile_options(kmipkit_fluent_parity64_consumer PRIVATE -Wall -Wextra -Werror)
+endif()
 target_include_directories(kmipkit_fluent_parity64_consumer PRIVATE include)
 target_link_libraries(kmipkit_fluent_parity64_consumer PRIVATE "${KMIPKIT_FFI_LIBRARY}")
 set_target_properties(kmipkit_fluent_parity64_consumer PROPERTIES
