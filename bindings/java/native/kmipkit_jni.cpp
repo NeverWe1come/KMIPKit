@@ -380,6 +380,8 @@ int32_t kmipkit_client_async_operation_outcome_extension_ttlv_at(
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(
         kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_protocol_version_v1_t*, uint64_t, uint64_t*);
+int32_t kmipkit_client_batch_item_discover_versions_with_versions(
+        const kmipkit_protocol_version_v1_t*, uint64_t, kmipkit_client_batch_item_t**);
 int32_t kmipkit_last_error_get(int32_t*, uint32_t*, uint32_t*, uint32_t*);
 int32_t kmipkit_last_error_clear(void);
 }
@@ -3007,6 +3009,39 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDiscoverVersionsWithVersions(
+        JNIEnv* env, jclass, jintArray majors_array, jintArray minors_array) {
+    return guarded<jlong>(env, 0, [&] {
+        if (majors_array == nullptr || minors_array == nullptr) {
+            return return_handle<kmipkit_client_batch_item_t>(env, [](auto output) {
+                return kmipkit_client_batch_item_discover_versions(output);
+            });
+        }
+        const jsize count = env->GetArrayLength(majors_array);
+        if (count != env->GetArrayLength(minors_array)) {
+            throw_status(env, 4);
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_protocol_version_v1_t> versions;
+        versions.reserve(static_cast<size_t>(count));
+        if (count > 0) {
+            std::vector<jint> majors(static_cast<size_t>(count));
+            std::vector<jint> minors(static_cast<size_t>(count));
+            env->GetIntArrayRegion(majors_array, 0, count, majors.data());
+            env->GetIntArrayRegion(minors_array, 0, count, minors.data());
+            for (jsize i = 0; i < count; ++i) {
+                versions.push_back(kmipkit_protocol_version_v1_t{majors[i], minors[i]});
+            }
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_discover_versions_with_versions(
+                    versions.empty() ? nullptr : versions.data(),
+                    static_cast<uint64_t>(versions.size()),
+                    output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemOperation(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jlong>(env, 0, [&] {
@@ -3088,6 +3123,16 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuil
         check_status(env, [&] { return kmipkit_symmetric_key_builder_set_name(
                 from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder),
                 name.data(), static_cast<uint64_t>(name.size())); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderSetProtocolVersion(
+        JNIEnv* env, jclass, jlong raw_builder, jint major, jint minor) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_symmetric_key_builder_set_protocol_version(
+                from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder),
+                static_cast<int32_t>(major), static_cast<int32_t>(minor)); });
         return 0;
     });
 }
@@ -3681,6 +3726,16 @@ JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPai
 JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPairBuilderSetPublicName(
         JNIEnv* env, jclass, jlong raw_builder, jstring name) {
     set_key_pair_name(env, raw_builder, name, kmipkit_create_key_pair_builder_set_public_name);
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPairBuilderSetProtocolVersion(
+        JNIEnv* env, jclass, jlong raw_builder, jint major, jint minor) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_create_key_pair_builder_set_protocol_version(
+                from_java_handle<kmipkit_create_key_pair_builder_t>(raw_builder),
+                static_cast<int32_t>(major), static_cast<int32_t>(minor)); });
+        return 0;
+    });
 }
 
 JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPairBuilderAddCommonAttributeItem(
@@ -7493,6 +7548,19 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigura
             return kmipkit_client_configuration_with_protocol_version(
                     from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
                     static_cast<int32_t>(major), static_cast<int32_t>(minor), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithCodecLimits(
+        JNIEnv* env, jclass, jlong raw_configuration, jlongArray raw_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_client_configuration_t>(env, [&](auto output) {
+            return kmipkit_client_configuration_with_codec_limits_v1(
+                    from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
+                    limits.get(), output);
         });
     });
 }

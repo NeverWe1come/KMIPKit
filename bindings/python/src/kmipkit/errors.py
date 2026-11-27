@@ -222,6 +222,54 @@ class ClientExecutionError(KmipKitError):
         )
 
 
+class ServerResultError(KmipKitError):
+    """Raised by high-level ``execute()`` when the KMIP server rejects or returns Pending."""
+
+    category = "server_result"
+
+    def __init__(
+        self,
+        result_status: int,
+        result_reason: int | None = None,
+        result_message: str | None = None,
+        asynchronous_correlation_value: bytes | None = None,
+    ) -> None:
+        self.result_status = int(result_status)
+        self.result_reason = None if result_reason is None else int(result_reason)
+        self.result_message = result_message
+        self.asynchronous_correlation_value = (
+            None if asynchronous_correlation_value is None else bytes(asynchronous_correlation_value)
+        )
+        Exception.__init__(
+            self,
+            (
+                "KMIP operation returned Pending"
+                if self.is_pending
+                else f"KMIP server rejected operation (status={self.result_status}, reason={self.result_reason})"
+            ),
+        )
+
+    @property
+    def is_pending(self) -> bool:
+        """Return ``True`` when the server returned Result Status Pending (2)."""
+        return self.result_status == 2
+
+    @property
+    def is_server_rejected(self) -> bool:
+        """Return ``True`` when the server returned a failure status."""
+        return self.result_status not in (0, 2)
+
+    @classmethod
+    def from_item_result(cls, item: object) -> ServerResultError:
+        """Build a redacted error from a single ``BatchItemResult``."""
+        return cls(
+            result_status=getattr(item, "result_status", 1),
+            result_reason=getattr(item, "result_reason", None),
+            result_message=getattr(item, "result_message", None),
+            asynchronous_correlation_value=getattr(item, "pending_correlation_value", None),
+        )
+
+
 _SHARED_OWNER_STATUS = 11
 
 _ERROR_TYPES: dict[int, type[KmipKitError]] = {

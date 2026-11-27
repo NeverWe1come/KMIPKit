@@ -15,8 +15,15 @@ final class TypedRequestFactory {
     }
 
     static ClientBatchItem create(String operation, boolean withBatchId) {
+        return create(operation, withBatchId, null);
+    }
+
+    static ClientBatchItem create(
+            String operation, boolean withBatchId, org.kmipkit.extensions.ProtocolVersion protocolVersion) {
         ClientBatchItem request = switch (operation) {
-            case "Discover Versions" -> ClientBatchItem.discoverVersions();
+            case "Discover Versions" -> protocolVersion != null
+                    ? ClientBatchItem.discoverVersions(java.util.List.of(protocolVersion))
+                    : ClientBatchItem.discoverVersions();
             case "Ping" -> ClientBatchItem.ping();
             case "Query" -> ClientBatchItem.query(new int[] {1}, null);
             case "Log" -> ClientBatchItem.log(LOG_MESSAGE.getBytes(StandardCharsets.UTF_8));

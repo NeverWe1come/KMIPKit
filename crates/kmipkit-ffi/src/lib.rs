@@ -288,6 +288,14 @@ pub struct kmipkit_ping_builder_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_query_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_discover_versions_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_create_builder_t {
     _private: [u8; 0],
 }

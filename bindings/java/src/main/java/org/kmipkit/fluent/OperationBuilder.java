@@ -3,6 +3,7 @@ package org.kmipkit.fluent;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.UniqueIdentifier;
@@ -48,6 +49,23 @@ public final class OperationBuilder {
     public ClientBatchItem toBatchItem() { return build(); }
     /** Validates this operation locally without sending it. */
     public void validate() { try (ClientBatchItem ignored = build()) { } }
+    /** Executes one typed exchange with configured limits and throws on server error or Pending. */
+    public ClientBatchItemResult execute() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeResult(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes one typed exchange with configured limits, returning raw outcomes. */
+    public ClientBatchItemResult executeOutcome() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeOutcome(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes one typed exchange with explicit limits, returning raw outcomes. */
+    public ClientBatchItemResult executeOutcome(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
+        if (limits == null) throw new InvalidInputException("codec limits are invalid");
+        return BatchExecution.executeOutcome(client, build(), limits, options, asynchronousIndicator);
+    }
+
     public ClientBatchResponse execute(CodecLimits limits) throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
         return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);

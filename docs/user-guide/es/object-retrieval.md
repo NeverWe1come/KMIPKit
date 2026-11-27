@@ -68,7 +68,7 @@ fn locate_objects(
         .locate(AttributeSet::new())
         .maximum_items(25)
         .offset_items(0)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     let outcome = item.outcome();
     assert_eq!(outcome.operation(), ClientOperation::Locate);
     if let Some(response) = outcome.locate_response() {

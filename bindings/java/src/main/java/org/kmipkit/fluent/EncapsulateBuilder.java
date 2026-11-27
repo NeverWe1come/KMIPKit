@@ -19,5 +19,12 @@ public final class EncapsulateBuilder extends Kmip30BuilderBase<EncapsulateBuild
     public EncapsulateBuilder cryptographicParameters(CryptographicParameters value) {
         operation.setCryptographicParameters(value); return this;
     }
+    /** Configures KEM parameters from a curated KMIP 3.0 {@link KemSpec}. */
+    public EncapsulateBuilder withKemSpec(KemSpec spec) {
+        if (spec == null) throw new org.kmipkit.InvalidInputException("KemSpec is required");
+        try (CryptographicParameters params = spec.toCryptographicParameters()) {
+            return cryptographicParameters(params);
+        }
+    }
     @Override protected EncapsulateBuilder self() { return this; }
 }

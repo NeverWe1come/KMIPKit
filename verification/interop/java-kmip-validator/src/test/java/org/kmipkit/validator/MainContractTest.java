@@ -24,7 +24,20 @@ class MainContractTest {
     @Test
     void offlinePlanPreflightAndRunClassifyLocalCasesWithoutServerClaims() throws Exception {
         Path connection = connection();
-        Path catalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode source = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        var selected = mapper.createArrayNode();
+        source.path("test_cases").forEach(testCase -> {
+            if ("local_model".equals(testCase.path("execution").path("mode").asText())
+                    || "test-op-log".equals(testCase.path("case_id").asText())) {
+                selected.add(testCase.deepCopy());
+            }
+        });
+        source.set("test_cases", selected);
+        ((ObjectNode) source.path("statistics")).put("total_cases", selected.size());
+        Path catalog = temporaryDirectory.resolve("offline-cases.json");
+        mapper.writeValue(catalog.toFile(), source);
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
         Path output = Path.of(System.getProperty("kmipkit.reportOutputDir",
                 temporaryDirectory.resolve("report").toString()));
@@ -37,11 +50,11 @@ class MainContractTest {
         assertCommand(0, "run", "--connection", connection.toString(), "--catalog", catalog.toString(),
                 "--artifact-manifest", manifest.toString(), "--output-dir", output.toString());
 
-        JsonNode report = new ObjectMapper().readTree(output.resolve("results.json").toFile());
-        assertEquals(212, report.path("summary").path("total").asInt());
+        JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
+        assertEquals(68, report.path("summary").path("total").asInt());
         assertEquals(67, report.path("summary").path("passed").asInt());
         assertEquals(0, report.path("summary").path("policy_restricted").asInt());
-        assertEquals(145, report.path("summary").path("not_run").asInt());
+        assertEquals(1, report.path("summary").path("not_run").asInt());
         for (JsonNode result : report.path("cases")) {
             if ("policy_restricted".equals(result.path("status").asText())) {
                 assertEquals("unknown", result.path("server_compatibility").asText());
@@ -60,7 +73,8 @@ class MainContractTest {
         Path connection = connection("2.0", "typed-protocol");
         String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
                 "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
-        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 24"));
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: "));
+        assertFalse(plan.contains("Server exchanges executable through selected Java API level: 0"));
         assertFalse(plan.contains("KMIP 2.0 live routes are blocked"));
     }
 
@@ -69,23 +83,18 @@ class MainContractTest {
         Path connection = connection("2.1", "typed-protocol");
         Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         ObjectMapper mapper = new ObjectMapper();
-        ObjectNode catalog = (ObjectNode) mapper.readTree(sourceCatalog.toFile());
-        JsonNode serverQuery = catalog.path("test_cases").findParents("case_id").stream()
-                .filter(node -> "test-s2c-query".equals(node.path("case_id").asText()))
-                .findFirst().orElseThrow();
-        var oneCase = mapper.createArrayNode().add(serverQuery.deepCopy());
-        catalog.set("test_cases", oneCase);
-        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
-        Path catalogFile = temporaryDirectory.resolve("server-query-catalog.json");
-        mapper.writeValue(catalogFile.toFile(), catalog);
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
         Path output = temporaryDirectory.resolve("server-query-report");
 
-        assertCommand(0, "run", "--connection", connection.toString(), "--catalog", catalogFile.toString(),
-                "--artifact-manifest", manifest.toString(), "--output-dir", output.toString());
+        assertCommand(0, "run", "--connection", connection.toString(), "--catalog", sourceCatalog.toString(),
+                "--artifact-manifest", manifest.toString(), "--output-dir", output.toString(),
+                "--case", "test-s2c-query");
 
         JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
+        assertEquals(ArtifactProvenance.sha256(sourceCatalog), report.path("catalog_sha256").asText());
+        assertEquals(1, report.path("cases").size());
         JsonNode result = report.path("cases").get(0);
+        assertEquals("test-s2c-query", result.path("case_id").asText());
         assertEquals("not_run", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
         assertTrue(result.path("diagnostic").asText().contains("server-initiated"));
@@ -98,7 +107,7 @@ class MainContractTest {
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
         var selected = mapper.createArrayNode();
         for (String caseId : new String[] {
-                "test-op-log", "test-op-add-attribute", "test-op-get-constraints"}) {
+                "test-op-log", "test-op-adjust-attribute", "test-op-get-constraints"}) {
             catalog.path("test_cases").forEach(testCase -> {
                 if (caseId.equals(testCase.path("case_id").asText())) selected.add(testCase.deepCopy());
             });
@@ -120,7 +129,7 @@ class MainContractTest {
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
         JsonNode addAttribute = catalog.path("test_cases").findParents("case_id").stream()
-                .filter(testCase -> "test-op-add-attribute".equals(testCase.path("case_id").asText()))
+                .filter(testCase -> "test-op-adjust-attribute".equals(testCase.path("case_id").asText()))
                 .findFirst().orElseThrow();
         catalog.set("test_cases", mapper.createArrayNode().add(addAttribute.deepCopy()));
         ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);

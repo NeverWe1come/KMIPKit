@@ -139,6 +139,7 @@ bool json_document_load(const char *path, json_document_t *out_document) {
     fclose(file);
     if (read != (size_t)length) { json_document_release(out_document); return false; }
     out_document->source[read] = '\0';
+    out_document->source_length = read;
     size_t position = 0;
     bool valid = parse_value(out_document, read, &position, -1);
     skip_space(out_document->source, read, &position);

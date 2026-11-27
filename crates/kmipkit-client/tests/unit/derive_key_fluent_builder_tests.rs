@@ -158,7 +158,7 @@ fn fluent_derive_key_forwards_exchange_options() {
 
     configured_builder(&mut client)
         .with_options(options)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the typed Derive Key route accepts exchange-local options");
 
     assert_eq!(&*observed_options.borrow(), &[options]);
@@ -184,7 +184,7 @@ fn fluent_derive_key_executes_once_and_preserves_server_result_and_secrets() {
 
     let result = configured_builder(&mut client)
         .unique_identifier(UniqueIdentifier::from("second-source"))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing typed Derive Key route returns its server result");
 
     assert_eq!(result.outcome().operation(), ClientOperation::DeriveKey);
@@ -226,7 +226,7 @@ fn fluent_derive_key_pending_keeps_correlation_without_follow_up() {
     });
     let response = configured_builder(&mut client)
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the caller explicitly permits Pending");
     let outcome = response.outcome();
     let ClientBatchOutcome::Pending(pending) = outcome else {

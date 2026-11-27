@@ -168,6 +168,8 @@ pub(crate) struct Catalog {
 pub(crate) struct Case {
     pub case_id: String,
     pub operation: String,
+    #[serde(default)]
+    pub category: String,
     pub execution: Execution,
     pub normative_refs: Vec<Reference>,
     #[serde(default)]
@@ -194,7 +196,13 @@ pub(crate) struct CaseResult {
     pub parity: &'static str,
     pub duration_ms: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub actual_api_level: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub result_status: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub result_status_code: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub result_reason_code: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub result_reason: Option<String>,
     pub diagnostic: String,
@@ -212,8 +220,11 @@ impl CaseResult {
             },
             parity: "not_compared",
             duration_ms: 0.0,
+            actual_api_level: None,
             result_status: None,
+            result_status_code: None,
             result_reason: None,
+            result_reason_code: None,
             diagnostic,
         }
     }

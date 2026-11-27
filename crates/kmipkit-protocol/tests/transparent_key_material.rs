@@ -148,8 +148,8 @@ fn transparent_rsa_private_supports_only_source_defined_alternatives() {
             .collect::<Vec<_>>(),
         [
             0x0042_0052,
-            0x0042_006C,
             0x0042_0063,
+            0x0042_006C,
             0x0042_005E,
             0x0042_0071,
             0x0042_0060,

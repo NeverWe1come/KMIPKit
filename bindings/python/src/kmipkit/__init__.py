@@ -15,7 +15,9 @@ from . import (
     cryptographic_parameters,
     errors,
     extensions,
+    flows,
     fluent,
+    high_level,
     messages,
     managed_objects,
     metadata,
@@ -32,6 +34,29 @@ from .extensions import with_extension
 from .credentials import CredentialType, CredentialValue
 from .errors import ProfileValidationDetails, ProfileValidationError
 from .typed_attributes import StandardAttribute, TypedAttribute
+from .high_level import (
+    CipherSpec,
+    HashAlgorithm,
+    KdfSpec,
+    KemSpec,
+    KeyRef,
+    KeySpec,
+    MacSpec,
+    SignatureSpec,
+    install_client_namespaces as _install_client_namespaces,
+)
+from .flows import (
+    FluentBatchBuilder,
+    LocatePaginator,
+    PendingOperation,
+    ServerHandlerBuilder,
+    StreamsClient,
+    WorkflowsClient,
+    install_phase4_flows as _install_phase4_flows,
+)
+
+_install_client_namespaces(client.Client)
+_install_phase4_flows(client.Client)
 
 __all__ = [
     "client",
@@ -46,6 +71,7 @@ __all__ = [
     "errors",
     "extensions",
     "fluent",
+    "high_level",
     "messages",
     "managed_objects",
     "metadata",
@@ -57,6 +83,14 @@ __all__ = [
     "ttlv",
     "typed_attributes",
     "validation",
+    "CipherSpec",
+    "HashAlgorithm",
+    "KdfSpec",
+    "KemSpec",
+    "KeyRef",
+    "KeySpec",
+    "MacSpec",
+    "SignatureSpec",
     "StandardAttribute",
     "TypedAttribute",
     "with_extension",

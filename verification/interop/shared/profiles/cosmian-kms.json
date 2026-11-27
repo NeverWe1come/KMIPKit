@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
   "server": {
-    "id": "cosmian-kms-5.28",
+    "id": "cosmian-kms-5-28",
     "vendor": "Cosmian",
     "product": "Cosmian KMS",
     "version": "5.28.0",
-    "kmip_versions": ["2.1"]
+    "kmip_versions": ["2.0", "2.1"]
   },
   "transports": {
     "raw_tls": {

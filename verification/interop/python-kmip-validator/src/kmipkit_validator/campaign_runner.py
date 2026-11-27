@@ -147,6 +147,12 @@ def query_evidence(lines, connection):
 def main():
     if sys.argv[1:] in (["--inspect-oasis-ttlv"], ["--construct-oasis-ttlv"]):
         return inspect_ttlv(construct=sys.argv[1] == "--construct-oasis-ttlv")
+    if sys.argv[1:] in (["--inspect-table-key-material"], ["--inspect-table-managed-objects"]):
+        return inspect_typed_structure(managed=sys.argv[1] == "--inspect-table-managed-objects")
+    if sys.argv[1:] == ["--inspect-table-typed-attributes"]:
+        return inspect_typed_attributes()
+    if sys.argv[1:] == ["--inspect-table-version"]:
+        return inspect_version()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--matrix-sha256", required=True)
@@ -213,8 +219,95 @@ def main():
         return 2
 
 
+def inspect_typed_structure(*, managed=False):
+    from contextlib import ExitStack
+
+    from kmipkit import errors, ttlv
+    from kmipkit.managed_objects import KeyMaterial, ManagedObject
+    from .generic import _encode
+
+    if not _is_installed_package():
+        raise ValueError("An installed KMIPKit wheel is required")
+    artifact = validate_artifact()
+    print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
+
+    model = ManagedObject if managed else KeyMaterial
+
+    def verify(make, type_code, expected):
+        try:
+            material = make()
+        except errors.KmipKitError:
+            return "rejected"
+        with material, ttlv.ttlv_item_view_from_item(material) as view:
+            actual = material.object_type if managed else material.format_raw
+            return "passed" if actual == type_code and _encode(view) == expected else "failed"
+
+    for line in sys.stdin:
+        raw_format, material_hex, *fields_hex = line.split()
+        format_code = int(raw_format)
+        expected = bytes.fromhex(material_hex)
+        with ExitStack() as stack:
+            fields = [stack.enter_context(ttlv.ttlv_decode(bytes.fromhex(wire))) for wire in fields_hex]
+            item = stack.enter_context(ttlv.ttlv_decode(expected))
+            print(json.dumps({
+                "construct": verify(lambda: model.from_fields(format_code, fields), format_code, expected),
+                "read": verify(lambda: model.from_item(format_code, item), format_code, expected),
+            }))
+    return 0
+
+
+def inspect_typed_attributes():
+    from kmipkit import errors, ttlv
+    from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
+    from .generic import _encode
+
+    if not _is_installed_package():
+        raise ValueError("An installed KMIPKit wheel is required")
+    artifact = validate_artifact()
+    print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
+    attributes = {attribute.tag: attribute for attribute in StandardAttribute}
+
+    def verify(make, expected):
+        try:
+            typed = make()
+        except errors.InvalidInputError:
+            return "rejected"
+        with typed, typed.view() as view:
+            return "passed" if _encode(view) == expected else "failed"
+
+    for line in sys.stdin:
+        raw_tag, input_hex, expected_hex = line.split()
+        attribute = attributes[int(raw_tag)]
+        expected = bytes.fromhex(expected_hex)
+        with ttlv.ttlv_decode(bytes.fromhex(input_hex)) as item, item.value_copy() as value:
+            print(json.dumps({
+                "construct": verify(lambda: TypedAttribute.create(attribute, value), expected),
+                "read": verify(lambda: TypedAttribute.from_item(attribute, item), expected),
+            }))
+    return 0
+
+
+def inspect_version():
+    from kmipkit.protocol import VersionGate
+    from kmipkit.protocol_values import KeyFormatType, ObjectType
+
+    if not _is_installed_package():
+        raise ValueError("An installed KMIPKit wheel is required")
+    artifact = validate_artifact()
+    print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
+    lookup = {"key-format": KeyFormatType.name, "object-type": ObjectType.name}
+    for line in sys.stdin:
+        kind, raw = line.split()
+        code = int(raw)
+        for minor in (0, 1):
+            assigned = VersionGate.validate_tag(2, minor, code) if kind == "tag" else lookup[kind](code) is not None
+            print(json.dumps(assigned))
+    return 0
+
+
 def inspect_ttlv(*, construct=False):
     from kmipkit import errors, ttlv
+    from .generic import _encode
 
     if not _is_installed_package():
         raise ValueError("An installed KMIPKit wheel is required")
@@ -226,6 +319,8 @@ def inspect_ttlv(*, construct=False):
             with ttlv.codec_limits_defaults() as limits:
                 item = build_ttlv_item(wire, limits) if construct else ttlv.ttlv_decode(wire)
                 with item, ttlv.ttlv_item_view_from_item(item) as view:
+                    if construct and _encode(view) != wire:
+                        raise ValueError("constructed fixture changed on re-encoding")
                     nodes = []
                     append_ttlv_node(view, nodes)
         except (errors.KmipKitError, ValueError):
@@ -293,14 +388,28 @@ def append_ttlv_node(view, nodes):
     with ttlv.ttlv_item_view_tag(view) as tag:
         raw = ttlv.tag_value(tag)
     kind = ttlv.ttlv_item_view_type(view)
-    if kind != ttlv.ItemType.Structure:
-        nodes.append((raw, kind, 0))
-        return
-    with ttlv.ttlv_item_view_value(view) as value, ttlv.ttlv_value_view_structure(value) as structure:
-        count = ttlv.ttlv_structure_view_item_count(structure)
-        nodes.append((raw, kind, count))
-        for index in range(count):
-            with ttlv.ttlv_structure_view_item_at(structure, index) as child:
-                append_ttlv_node(child, nodes)
+    with ttlv.ttlv_item_view_value(view) as value:
+        if kind != ttlv.ItemType.Structure:
+            scalar_readers = {
+                ttlv.ItemType.Integer: ttlv.ttlv_value_view_integer,
+                ttlv.ItemType.LongInteger: ttlv.ttlv_value_view_long_integer,
+                ttlv.ItemType.Enumeration: ttlv.ttlv_value_view_enumeration,
+                ttlv.ItemType.Boolean: ttlv.ttlv_value_view_boolean,
+                ttlv.ItemType.DateTime: ttlv.ttlv_value_view_date_time,
+                ttlv.ItemType.Interval: ttlv.ttlv_value_view_interval,
+                ttlv.ItemType.DateTimeExtended: ttlv.ttlv_value_view_date_time_extended,
+            }
+            reader = scalar_readers.get(kind)
+            scalar = reader(value) if reader else ttlv.ttlv_value_view_bytes(value).hex()
+            nodes.append((raw, kind, 0, scalar))
+            return
+        with ttlv.ttlv_value_view_structure(value) as structure:
+            count = ttlv.ttlv_structure_view_item_count(structure)
+            nodes.append((raw, kind, count))
+            for index in range(count):
+                with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                    append_ttlv_node(child, nodes)
+
+
 if __name__ == "__main__":
     raise SystemExit(main())

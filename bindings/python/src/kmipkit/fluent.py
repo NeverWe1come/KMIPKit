@@ -9,6 +9,7 @@ from . import attribute_operations, errors, extensions, ttlv
 from ._client_ffi import ffi, lib
 from ._ffi import ffi as _base_ffi
 from ._handles import NativeHandle, _wrap_owned_handle
+from ._protocol_version import ProtocolVersion
 from .client import (
     _NATIVE_CALL_LOCK,
     Batch,
@@ -204,17 +205,35 @@ def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimit
     return _batch_result(output[0], limits)
 
 
-def _execute_single_item(
+def _resolve_limits(
+    client: Client | None, limits: ttlv.CodecLimits | None
+) -> ttlv.CodecLimits:
+    if not isinstance(client, Client):
+        errors.raise_for_status(4)
+    if limits is not None:
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        return limits
+    return client.codec_limits
+
+
+def _check_result_or_raise(item: BatchItemResult) -> BatchItemResult:
+    if item.result_status != 0:
+        err = errors.ServerResultError.from_item_result(item)
+        item.close()
+        raise err
+    return item
+
+
+def _execute_single_batch(
     client: Client,
     build: Callable[[], extensions.ClientBatchItem],
-    limits: ttlv.CodecLimits,
+    limits: ttlv.CodecLimits | None,
     configured_options: RequestOptions | None,
     asynchronous_indicator: int | None,
     options: RequestOptions | None = None,
 ) -> BatchResult:
-    """Execute one typed item, preferring call-specific options over configured ones."""
-    if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
-        errors.raise_for_status(4)
+    resolved_limits = _resolve_limits(client, limits)
     if options is not None and not isinstance(options, RequestOptions):
         errors.raise_for_status(4)
     with Batch.create() as batch:
@@ -223,9 +242,45 @@ def _execute_single_item(
         if asynchronous_indicator is not None:
             batch.set_asynchronous_indicator(asynchronous_indicator)
         selected_options = options if options is not None else configured_options
-        if selected_options is not None:
-            return client.execute_with_options(batch, limits, selected_options)
-        return client.execute(batch, limits)
+        return (
+            client.execute_with_options(batch, resolved_limits, selected_options)
+            if selected_options is not None
+            else client.execute(batch, resolved_limits)
+        )
+
+
+def _execute_single_item(
+    client: Client,
+    build: Callable[[], extensions.ClientBatchItem],
+    limits: ttlv.CodecLimits | None,
+    configured_options: RequestOptions | None,
+    asynchronous_indicator: int | None,
+    options: RequestOptions | None = None,
+) -> Any:
+    """Execute one typed item, returning ``BatchResult`` when ``limits`` is passed or ``BatchItemResult`` otherwise."""
+    batch_result = _execute_single_batch(
+        client, build, limits, configured_options, asynchronous_indicator, options
+    )
+    if limits is not None:
+        return batch_result
+    with batch_result:
+        return _check_result_or_raise(batch_result._take_single_item())
+
+
+def _execute_single_outcome(
+    client: Client,
+    build: Callable[[], extensions.ClientBatchItem],
+    limits: ttlv.CodecLimits | None,
+    configured_options: RequestOptions | None,
+    asynchronous_indicator: int | None,
+    options: RequestOptions | None = None,
+) -> BatchItemResult:
+    """Execute one typed item and return its single ``BatchItemResult`` without raising on server rejection/Pending."""
+    batch_result = _execute_single_batch(
+        client, build, limits, configured_options, asynchronous_indicator, options
+    )
+    with batch_result:
+        return batch_result._take_single_item()
 
 
 def _build_fluent_batch_item(
@@ -245,31 +300,67 @@ def _build_fluent_batch_item(
 
 def _execute_fluent_builder(
     builder: Any,
-    limits: ttlv.CodecLimits,
+    limits: ttlv.CodecLimits | None,
     client: Client | None,
-) -> BatchResult:
+) -> Any:
     builder._ensure_open()
     target = client or builder._client
-    if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
+    if not isinstance(target, Client):
         errors.raise_for_status(4)
+    resolved_limits = _resolve_limits(target, limits)
     batch = Batch.create()
     try:
         batch.add_item(builder.build())
         if builder._asynchronous_indicator is not None:
             batch.set_asynchronous_indicator(builder._asynchronous_indicator)
-        if builder._options is None:
-            return target.execute(batch, limits)
-        return target.execute_with_options(batch, limits, builder._options)
+        batch_result = (
+            target.execute(batch, resolved_limits)
+            if builder._options is None
+            else target.execute_with_options(batch, resolved_limits, builder._options)
+        )
     finally:
         batch.close()
+    if limits is not None:
+        return batch_result
+    with batch_result:
+        return _check_result_or_raise(batch_result._take_single_item())
+
+
+def _execute_fluent_builder_outcome(
+    builder: Any,
+    limits: ttlv.CodecLimits | None,
+    client: Client | None,
+) -> BatchItemResult:
+    builder._ensure_open()
+    target = client or builder._client
+    if not isinstance(target, Client):
+        errors.raise_for_status(4)
+    resolved_limits = _resolve_limits(target, limits)
+    batch = Batch.create()
+    try:
+        batch.add_item(builder.build())
+        if builder._asynchronous_indicator is not None:
+            batch.set_asynchronous_indicator(builder._asynchronous_indicator)
+        batch_result = (
+            target.execute(batch, resolved_limits)
+            if builder._options is None
+            else target.execute_with_options(batch, resolved_limits, builder._options)
+        )
+    finally:
+        batch.close()
+    with batch_result:
+        return batch_result._take_single_item()
 
 
 def _normalize_identifier(
     value: extensions.UniqueIdentifier | str | None,
+    protocol_version: ProtocolVersion | None = None,
 ) -> extensions.UniqueIdentifier | None:
     if value is None:
         return None
     if isinstance(value, str):
+        if protocol_version is not None and protocol_version.major >= 3:
+            return extensions.UniqueIdentifier.identifier(value)
         return extensions.UniqueIdentifier.text_string(value)
     if isinstance(value, extensions.UniqueIdentifier):
         return value
@@ -419,14 +510,14 @@ class Request:
             return RevokeBuilder(self._client, first.raw_code, first.message)
         return RevokeBuilder(self._client, first, second)
 
-    def get(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+    def get(self, unique_identifier: extensions.UniqueIdentifier | str) -> Operation:
         return Operation(self._client, "get", unique_identifier)
 
     def get_request(self) -> GetBuilder:
         """Start a Get request with all selectors initially unset."""
         return GetBuilder(self._client)
 
-    def destroy(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+    def destroy(self, unique_identifier: extensions.UniqueIdentifier | str) -> Operation:
         return Operation(self._client, "destroy", unique_identifier)
 
     def encrypt(self) -> EncryptBuilder:
@@ -464,6 +555,138 @@ class Request:
         unique_identifier: extensions.UniqueIdentifier | None = None,
     ) -> GetAttributeListBuilder:
         return GetAttributeListBuilder(self._client, unique_identifier)
+
+    def query(self) -> QueryBuilder:
+        return QueryBuilder(self._client)
+
+    def discover_versions(self) -> DiscoverVersionsBuilder:
+        return DiscoverVersionsBuilder(self._client)
+
+    def check(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> CheckBuilder:
+        return CheckBuilder(self._client, unique_identifier)
+
+    def export(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> ExportBuilder:
+        return ExportBuilder(self._client, unique_identifier)
+
+    def import_object(self) -> ImportBuilder:
+        return ImportBuilder(self._client)
+
+    def rng_retrieve(self, data_length: int | None = None) -> RngRetrieveBuilder:
+        return RngRetrieveBuilder(self._client, data_length)
+
+    def rng_seed(self, data: bytes | bytearray | memoryview | None = None) -> RngSeedBuilder:
+        return RngSeedBuilder(self._client, data)
+
+    def certify(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> CertifyBuilder:
+        return CertifyBuilder(self._client, unique_identifier)
+
+    def derive_key(self) -> DeriveKeyBuilder:
+        return DeriveKeyBuilder(self._client)
+
+    def validate(self) -> ValidateBuilder:
+        return ValidateBuilder(self._client)
+
+    def join_split_key(self) -> JoinSplitKeyBuilder:
+        return JoinSplitKeyBuilder(self._client)
+
+    def obtain_lease(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> ObtainLeaseBuilder:
+        return ObtainLeaseBuilder(self._client, unique_identifier)
+
+    def get_usage_allocation(
+        self,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+        usage_limits_count: int | None = None,
+    ) -> GetUsageAllocationBuilder:
+        return GetUsageAllocationBuilder(self._client, unique_identifier, usage_limits_count)
+
+    def modify_attribute(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> ModifyAttributeBuilder:
+        return ModifyAttributeBuilder(self._client, unique_identifier)
+
+    def adjust_attribute(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> AdjustAttributeBuilder:
+        return AdjustAttributeBuilder(self._client, unique_identifier)
+
+    def get_constraints(self) -> GetConstraintsBuilder:
+        return GetConstraintsBuilder(self._client)
+
+    def cancel(
+        self, correlation_value: bytes | bytearray | memoryview | None = None
+    ) -> CancelBuilder:
+        return CancelBuilder(self._client, correlation_value)
+
+    def poll(
+        self, correlation_value: bytes | bytearray | memoryview | None = None
+    ) -> PollBuilder:
+        return PollBuilder(self._client, correlation_value)
+
+    def process(
+        self, correlation_value: bytes | bytearray | memoryview | None = None
+    ) -> ProcessBuilder:
+        return ProcessBuilder(self._client, correlation_value)
+
+    def query_async_requests(self) -> QueryAsyncRequestsBuilder:
+        return QueryAsyncRequestsBuilder(self._client)
+
+    def login(self) -> LoginBuilder:
+        return LoginBuilder(self._client)
+
+    def logout(self, ticket: ttlv.Structure | None = None) -> LogoutBuilder:
+        return LogoutBuilder(self._client, ticket)
+
+    def delegated_login(
+        self, rights: ttlv.Structure | None = None
+    ) -> DelegatedLoginBuilder:
+        return DelegatedLoginBuilder(self._client, rights)
+
+    def set_endpoint_role(
+        self, endpoint_role: int | None = None, vendor_identification: str | None = None
+    ) -> SetEndpointRoleBuilder:
+        builder = SetEndpointRoleBuilder(self._client, endpoint_role)
+        if vendor_identification is not None:
+            builder.vendor_identification(vendor_identification)
+        return builder
+
+    def pkcs11(self, function: ttlv.Structure | None = None) -> Pkcs11Builder:
+        return Pkcs11Builder(self._client, function)
+
+    def interop(
+        self,
+        interop_function: int | None = None,
+        interop_identifier: str | bytes | bytearray | memoryview | None = None,
+    ) -> InteropBuilder:
+        return InteropBuilder(self._client, interop_function, interop_identifier)
+
+    def reprovision(self) -> ReProvisionBuilder:
+        return ReProvisionBuilder(self._client)
+
+    def set_defaults(
+        self, defaults_information: ttlv.Structure | None = None
+    ) -> SetDefaultsBuilder:
+        builder = SetDefaultsBuilder(self._client)
+        if defaults_information is not None:
+            builder.defaults_information(defaults_information)
+        return builder
+
+    def set_constraints(
+        self, constraints: ttlv.Structure | None = None
+    ) -> SetConstraintsBuilder:
+        return SetConstraintsBuilder(self._client, constraints)
+
+    def log(
+        self, log_message: str | bytes | bytearray | memoryview | None = None
+    ) -> LogBuilder:
+        return LogBuilder(self._client, log_message)
 
 
 class LocateBuilder:
@@ -515,6 +738,16 @@ class LocateBuilder:
         self._asynchronous_indicator = _unsigned(value, 32)
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         with self.build():
             pass
@@ -535,10 +768,24 @@ class LocateBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        return _execute_single_outcome(
             self._client,
             self.build,
             limits,
@@ -626,6 +873,16 @@ class RevokeBuilder:
         self._asynchronous_indicator = _unsigned(value, 32)
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         with self.build():
             pass
@@ -652,10 +909,24 @@ class RevokeBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        return _execute_single_outcome(
             self._client,
             self.build,
             limits,
@@ -690,6 +961,16 @@ class PingBuilder:
         self._asynchronous_indicator = _unsigned(value, 32)
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         with self.build():
             pass
@@ -702,13 +983,30 @@ class PingBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         *,
         client: Client | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         target = client or self._client
         return _execute_single_item(
+            target,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        *,
+        client: Client | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        target = client or self._client
+        return _execute_single_outcome(
             target,
             self.build,
             limits,
@@ -786,6 +1084,16 @@ class CreateBuilder:
         self._asynchronous_indicator = indicator
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         self._ensure_open()
         if self._object_type is None:
@@ -803,16 +1111,20 @@ class CreateBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
 
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
+
     def execute_one(
-        self, limits: ttlv.CodecLimits, client: Client | None = None
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
     ) -> BatchItemResult:
         """Execute Create and return the owned result, including rejection or Pending."""
-        with self.execute(limits, client) as batch:
-            return batch._take_single_item()
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -874,6 +1186,16 @@ class _Kmip30OperationBuilder:
             _raise_client_status(status)
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         self._ensure_open()
         with _NATIVE_CALL_LOCK:
@@ -894,11 +1216,16 @@ class _Kmip30OperationBuilder:
 
     to_batch_item = build
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
         self._ensure_open()
-        if not isinstance(limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
         return _execute_single_item(
+            self._client, self.build, limits, self._options,
+            self._asynchronous_indicator,
+        )
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        self._ensure_open()
+        return _execute_single_outcome(
             self._client, self.build, limits, self._options,
             self._asynchronous_indicator,
         )
@@ -1361,6 +1688,16 @@ class SetAttributeBuilder:
             ))
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         self._ensure_open()
         with _NATIVE_CALL_LOCK:
@@ -1397,9 +1734,14 @@ class SetAttributeBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None,
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -1507,6 +1849,16 @@ class AddAttributeBuilder:
             ))
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         self._ensure_open()
         with _NATIVE_CALL_LOCK:
@@ -1543,9 +1895,14 @@ class AddAttributeBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None,
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -1675,6 +2032,16 @@ class DeleteAttributeBuilder:
             ))
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         self._ensure_open()
         with _NATIVE_CALL_LOCK:
@@ -1710,9 +2077,14 @@ class DeleteAttributeBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None,
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -1769,6 +2141,16 @@ class _AttributeReadBuilder:
         self._asynchronous_indicator = _unsigned(value, 32)
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         with self.build():
             pass
@@ -1776,21 +2158,37 @@ class _AttributeReadBuilder:
     def to_batch_item(self) -> extensions.ClientBatchItem:
         return self.build()
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        if not isinstance(self._client, Client) or not isinstance(
-            limits, ttlv.CodecLimits
-        ):
-            errors.raise_for_status(4)
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
+        resolved_limits = _resolve_limits(self._client, limits)
         with Batch.create() as batch:
             with self.build() as item:
                 batch.add_item(item)
             if self._asynchronous_indicator is not None:
                 batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is not None:
-                return self._client.execute_with_options(
-                    batch, limits, self._options
-                )
-            return self._client.execute(batch, limits)
+            batch_result = (
+                self._client.execute_with_options(batch, resolved_limits, self._options)
+                if self._options is not None
+                else self._client.execute(batch, resolved_limits)
+            )
+        if limits is not None:
+            return batch_result
+        with batch_result:
+            return _check_result_or_raise(batch_result._take_single_item())
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        resolved_limits = _resolve_limits(self._client, limits)
+        with Batch.create() as batch:
+            with self.build() as item:
+                batch.add_item(item)
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            batch_result = (
+                self._client.execute_with_options(batch, resolved_limits, self._options)
+                if self._options is not None
+                else self._client.execute(batch, resolved_limits)
+            )
+        with batch_result:
+            return batch_result._take_single_item()
 
 
 class GetAttributesBuilder(_AttributeReadBuilder):
@@ -1832,9 +2230,13 @@ class GetAttributeListBuilder(_AttributeReadBuilder):
 
 class Operation:
     def __init__(self, client: Client, operation: str,
-                 unique_identifier: extensions.UniqueIdentifier) -> None:
-        _identifier(unique_identifier)
-        self._client, self._operation, self._identifier = client, operation, unique_identifier
+                 unique_identifier: extensions.UniqueIdentifier | str) -> None:
+        normalized = _normalize_identifier(
+            unique_identifier,
+            client.protocol_version if isinstance(client, Client) else None,
+        )
+        _identifier(normalized)
+        self._client, self._operation, self._identifier = client, operation, normalized
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
 
@@ -1868,18 +2270,37 @@ class Operation:
         """Alias for :meth:`build` for consistency with the Rust builder."""
         return self.build()
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         """Validate locally without sending a request."""
         self.build().close()
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        with Batch.create() as batch:
-            batch.add_item(self.build())
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is not None:
-                return self._client.execute_with_options(batch, limits, self._options)
-            return self._client.execute(batch, limits)
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
+        return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+        )
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        return _execute_single_outcome(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+        )
 
 
 class SymmetricKeyBuilder:
@@ -1898,6 +2319,21 @@ class SymmetricKeyBuilder:
         self._name: str | None = None
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
+        if isinstance(client, Client):
+            self.with_protocol_version(client.protocol_version)
+
+    def with_protocol_version(self, version: ProtocolVersion) -> SymmetricKeyBuilder:
+        """Select KMIP version used to emit name attributes (`Name` vs `AlternativeName`)."""
+        self._ensure_open()
+        if not isinstance(version, ProtocolVersion):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_symmetric_key_builder_set_protocol_version(
+                    self._handle, version.major, version.minor
+                )
+            )
+        return self
 
     def _set(self, native_function: Any, value: int) -> SymmetricKeyBuilder:
         self._ensure_open()
@@ -2019,15 +2455,19 @@ class SymmetricKeyBuilder:
 
     to_batch_item = build
 
-    def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
+    def execute(self, limits: ttlv.CodecLimits | None = None, client: Client | None = None) -> Any:
         return _execute_fluent_builder(self, limits, client)
 
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
+
     def execute_one(
-        self, limits: ttlv.CodecLimits, client: Client | None = None
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
     ) -> BatchItemResult:
         """Execute Create and return the owned result, including rejection or Pending."""
-        with self.execute(limits, client) as batch:
-            return batch._take_single_item()
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -2065,6 +2505,21 @@ class CreateKeyPairBuilder:
         self._client = client
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
+        if isinstance(client, Client):
+            self.with_protocol_version(client.protocol_version)
+
+    def with_protocol_version(self, version: ProtocolVersion) -> CreateKeyPairBuilder:
+        """Select KMIP version used to emit name attributes (`Name` vs `AlternativeName`)."""
+        self._ensure_open()
+        if not isinstance(version, ProtocolVersion):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_create_key_pair_builder_set_protocol_version(
+                    self._handle, version.major, version.minor
+                )
+            )
+        return self
 
     def _set(self, native_function: Any, value: int) -> CreateKeyPairBuilder:
         self._ensure_open()
@@ -2227,6 +2682,16 @@ class CreateKeyPairBuilder:
         self._asynchronous_indicator = _unsigned(value, 32)
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         self._ensure_open()
         with _NATIVE_CALL_LOCK:
@@ -2240,8 +2705,13 @@ class CreateKeyPairBuilder:
 
     to_batch_item = build
 
-    def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
+    def execute(self, limits: ttlv.CodecLimits | None = None, client: Client | None = None) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -2420,21 +2890,28 @@ class _CryptoOperationBuilder:
 
     to_batch_item = build
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         """Validate the typed request locally without sending it."""
         item = self.build()
         item.close()
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        self._ensure_open()
-        if not isinstance(self._client, Client) or not isinstance(limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
+    def _execute_raw(self, resolved_limits: ttlv.CodecLimits) -> BatchResult:
         output = ffi.new("kmipkit_client_batch_response_t **")
         client_pointer = _client_abi_pointer(
             "kmipkit_client_t *", self._client._pointer()
         )
         limits_pointer = _client_abi_pointer(
-            "kmipkit_codec_limits_t *", limits._pointer()
+            "kmipkit_codec_limits_t *", resolved_limits._pointer()
         )
         with _NATIVE_CALL_LOCK:
             if self._options is None:
@@ -2453,7 +2930,22 @@ class _CryptoOperationBuilder:
             _raise_client_status(status)
         if output[0] == ffi.NULL:
             errors.raise_for_status(7)
-        return _batch_result(output[0], limits)
+        return _batch_result(output[0], resolved_limits)
+
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
+        self._ensure_open()
+        resolved_limits = _resolve_limits(self._client, limits)
+        batch_result = self._execute_raw(resolved_limits)
+        if limits is not None:
+            return batch_result
+        with batch_result:
+            return _check_result_or_raise(batch_result._take_single_item())
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        self._ensure_open()
+        resolved_limits = _resolve_limits(self._client, limits)
+        with self._execute_raw(resolved_limits) as batch_result:
+            return batch_result._take_single_item()
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -2625,6 +3117,16 @@ class _TypedOperationBuilder:
         self._asynchronous_indicator = _unsigned(value, 32)
         return self
 
+    def _validated(self, item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                item.close()
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+
     def validate(self) -> None:
         with self.build():
             pass
@@ -2637,9 +3139,9 @@ class _TypedOperationBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         self._ensure_open()
         if self._client is None:
             errors.raise_for_status(4)
@@ -2652,11 +3154,28 @@ class _TypedOperationBuilder:
             options,
         )
 
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        self._ensure_open()
+        if self._client is None:
+            errors.raise_for_status(4)
+        return _execute_single_outcome(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
     def execute_with_options(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None,
         options: RequestOptions,
-    ) -> BatchResult:
+    ) -> Any:
         return self.execute(limits, options)
 
     def close(self) -> None:
@@ -2745,7 +3264,7 @@ class _AttributeCollectionBuilder(_TypedOperationBuilder):
     def _validate_attribute(self, value: ttlv.TtlvItem) -> None:
         if not isinstance(value, ttlv.TtlvItem):
             errors.raise_for_status(4)
-        with ttlv.Structure.create() as empty:
+        with ttlv.ttlv_structure_create() as empty:
             with attribute_operations.AttributeSet.try_new(empty) as s:
                 s.try_push(value)
 
@@ -2773,9 +3292,9 @@ class _AttributeCollectionBuilder(_TypedOperationBuilder):
         copies: list[ttlv.TtlvItem] = []
         try:
             with values.as_items() as items:
-                with items.view() as view:
-                    for idx in range(view.item_count()):
-                        with view.item_at(idx) as item:
+                with ttlv.ttlv_structure_view(items) as view:
+                    for idx in range(ttlv.ttlv_structure_view_item_count(view)):
+                        with ttlv.ttlv_structure_view_item_at(view, idx) as item:
                             copies.append(item.copy())
         except BaseException:
             for item in copies:
@@ -3081,9 +3600,7 @@ class RegisterBuilder(_AttributeCollectionBuilder):
         from .managed_objects import ManagedObject
 
         if isinstance(value, ManagedObject):
-            with value.view() as view:
-                with view.copy() as item:
-                    return self.object_item(value.object_type(), item)
+            return self.object_item(value.object_type, value)
         if isinstance(value, ttlv.TtlvItem) and self._object_type is not None:
             return self.object_item(self._object_type, value)
         errors.raise_for_status(4)
@@ -3380,10 +3897,1126 @@ class RecertifyBuilder(_TypedOperationBuilder):
         )
 
 
+class QueryBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Query request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._functions: list[int] = []
+        self._object_groups: list[str] | None = None
+
+    def function(self, value: int) -> Self:
+        self._ensure_open()
+        self._functions.append(_unsigned(value, 32))
+        return self
+
+    def functions(self, values: Sequence[int]) -> Self:
+        self._ensure_open()
+        for value in values:
+            self._functions.append(_unsigned(value, 32))
+        return self
+
+    def object_groups(self, groups: Sequence[str] | None) -> Self:
+        self._ensure_open()
+        self._object_groups = None if groups is None else list(groups)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        fns = self._functions if self._functions else [1]
+        return self._validated(
+            extensions.client_batch_item_query(fns, self._object_groups)
+        )
+
+
+class DiscoverVersionsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Discover Versions request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._versions: list[Any] = []
+
+    def protocol_version(self, version: Any) -> Self:
+        self._ensure_open()
+        self._versions.append(version)
+        return self
+
+    def protocol_versions(self, versions: Sequence[Any]) -> Self:
+        self._ensure_open()
+        self._versions.extend(versions)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_discover_versions(
+                self._versions if self._versions else None
+            )
+        )
+
+
+class CheckBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Check request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+        self._usage_limits_count: int | None = None
+        self._cryptographic_usage_mask: int | None = None
+        self._lease_time: int | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def usage_limits_count(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._usage_limits_count = value
+        return self
+
+    def cryptographic_usage_mask(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._cryptographic_usage_mask = value
+        return self
+
+    def lease_time(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time = None if value is None else _unsigned(value, 32)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_check(
+                self._unique_identifier,
+                usage_limits_count=self._usage_limits_count,
+                cryptographic_usage_mask=self._cryptographic_usage_mask,
+                lease_time=self._lease_time,
+            )
+        )
+
+
+class ExportBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Export request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+        self._key_format_type: int | None = None
+        self._key_wrap_type: int | None = None
+        self._key_compression_type: int | None = None
+        self._key_wrapping_specification: ttlv.Structure | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def key_format_type(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._key_format_type = None if value is None else _unsigned(value, 32)
+        return self
+
+    def key_wrap_type(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._key_wrap_type = None if value is None else _unsigned(value, 32)
+        return self
+
+    def key_compression_type(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._key_compression_type = None if value is None else _unsigned(value, 32)
+        return self
+
+    def key_wrapping_specification(self, value: ttlv.Structure | None) -> Self:
+        self._key_wrapping_specification = self._replace_structure(
+            self._key_wrapping_specification, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_export(
+                self._unique_identifier,
+                key_format_type=self._key_format_type,
+                key_wrap_type=self._key_wrap_type,
+                key_compression_type=self._key_compression_type,
+                key_wrapping_specification=self._key_wrapping_specification,
+            )
+        )
+
+
+class ImportBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Import request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        self._object_type: int | None = None
+        self._replace_existing: bool | None = None
+        self._key_wrap_type: int | None = None
+        self._attributes: ttlv.Structure | None = None
+        self._object: ttlv.Structure | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def object_type(self, value: int) -> Self:
+        self._ensure_open()
+        self._object_type = _unsigned(value, 32)
+        return self
+
+    def replace_existing(self, value: bool | None) -> Self:
+        self._ensure_open()
+        self._replace_existing = value
+        return self
+
+    def key_wrap_type(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._key_wrap_type = None if value is None else _unsigned(value, 32)
+        return self
+
+    def attributes(self, value: ttlv.Structure) -> Self:
+        self._attributes = self._replace_structure(self._attributes, value)
+        return self
+
+    def object(self, value: ttlv.Structure) -> Self:
+        self._object = self._replace_structure(self._object, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if (
+            self._unique_identifier is None
+            or self._object_type is None
+            or self._attributes is None
+            or self._object is None
+        ):
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_import(
+                self._unique_identifier,
+                self._object_type,
+                self._attributes,
+                self._object,
+                replace_existing=self._replace_existing,
+                key_wrap_type=self._key_wrap_type,
+            )
+        )
+
+
+class RngRetrieveBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP RNG Retrieve request."""
+
+    def __init__(
+        self, client: Client | None = None, data_length: int | None = None
+    ) -> None:
+        super().__init__(client)
+        self._data_length = data_length
+
+    def data_length(self, value: int) -> Self:
+        self._ensure_open()
+        self._data_length = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._data_length is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_rng_retrieve(self._data_length)
+        )
+
+
+class RngSeedBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP RNG Seed request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        data: bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._data = None if data is None else bytearray(data)
+
+    def data(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._data = bytearray(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._data is None:
+            errors.raise_for_status(4)
+        return self._validated(extensions.client_batch_item_rng_seed(bytes(self._data)))
+
+
+class CertifyBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Certify request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+        self._certificate_request_type: int | None = None
+        self._certificate_request_value: bytearray | None = None
+        self._attributes: ttlv.Structure | None = None
+        self._protection_storage_masks: ttlv.Structure | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def certificate_request_type(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._certificate_request_type = None if value is None else _unsigned(value, 32)
+        return self
+
+    def certificate_request_value(
+        self, value: bytes | bytearray | memoryview | None
+    ) -> Self:
+        self._ensure_open()
+        self._certificate_request_value = None if value is None else bytearray(value)
+        return self
+
+    def attributes(self, value: ttlv.Structure | None) -> Self:
+        self._attributes = self._replace_structure(self._attributes, value)
+        return self
+
+    def protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._protection_storage_masks = self._replace_structure(
+            self._protection_storage_masks, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_certify(
+                self._unique_identifier,
+                certificate_request_type=self._certificate_request_type,
+                certificate_request_value=(
+                    None
+                    if self._certificate_request_value is None
+                    else bytes(self._certificate_request_value)
+                ),
+                attributes=self._attributes,
+                protection_storage_masks=self._protection_storage_masks,
+            )
+        )
+
+
+class DeriveKeyBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Derive Key request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._object_type: int | None = None
+        self._unique_identifiers: list[extensions.UniqueIdentifier] = []
+        self._derivation_method: int | None = None
+        self._derivation_parameters: ttlv.Structure | None = None
+        self._attributes: ttlv.Structure | None = None
+
+    def object_type(self, value: int) -> Self:
+        self._ensure_open()
+        self._object_type = _unsigned(value, 32)
+        return self
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str) -> Self:
+        self._ensure_open()
+        self._unique_identifiers.append(_normalize_identifier(value))
+        return self
+
+    def unique_identifiers(
+        self, values: Sequence[extensions.UniqueIdentifier | str]
+    ) -> Self:
+        self._ensure_open()
+        for value in values:
+            self._unique_identifiers.append(_normalize_identifier(value))
+        return self
+
+    def derivation_method(self, value: int) -> Self:
+        self._ensure_open()
+        self._derivation_method = _unsigned(value, 32)
+        return self
+
+    def derivation_parameters(self, value: ttlv.Structure) -> Self:
+        self._derivation_parameters = self._replace_structure(
+            self._derivation_parameters, value
+        )
+        return self
+
+    def attributes(self, value: ttlv.Structure) -> Self:
+        self._attributes = self._replace_structure(self._attributes, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if (
+            self._object_type is None
+            or self._derivation_method is None
+            or self._derivation_parameters is None
+            or self._attributes is None
+        ):
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_derive_key(
+                self._object_type,
+                self._unique_identifiers,
+                self._derivation_method,
+                self._derivation_parameters,
+                self._attributes,
+            )
+        )
+
+
+class ValidateBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Validate request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._certificates: list[ttlv.Structure] = []
+        self._identifiers: list[extensions.UniqueIdentifier] = []
+        self._validity_date: int | None = None
+
+    def certificate(self, cert: ttlv.Structure) -> Self:
+        self._ensure_open()
+        self._certificates.append(self._own(ttlv.ttlv_structure_copy(cert)))
+        return self
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str) -> Self:
+        self._ensure_open()
+        self._identifiers.append(_normalize_identifier(value))
+        return self
+
+    def validity_date(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._validity_date = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_validate(
+                self._certificates,
+                self._identifiers,
+                validity_date=self._validity_date,
+            )
+        )
+
+
+class JoinSplitKeyBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Join Split Key request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._object_type: int | None = None
+        self._references: list[Any] = []
+        self._secret_data_type: int | None = None
+        self._attributes: ttlv.Structure | None = None
+        self._protection_storage_masks: ttlv.Structure | None = None
+
+    def object_type(self, value: int) -> Self:
+        self._ensure_open()
+        self._object_type = _unsigned(value, 32)
+        return self
+
+    def reference(self, ref: Any) -> Self:
+        self._ensure_open()
+        self._references.append(ref)
+        return self
+
+    def references(self, refs: Sequence[Any]) -> Self:
+        self._ensure_open()
+        self._references.extend(refs)
+        return self
+
+    def secret_data_type(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._secret_data_type = None if value is None else _unsigned(value, 32)
+        return self
+
+    def attributes(self, value: ttlv.Structure | None) -> Self:
+        self._attributes = self._replace_structure(self._attributes, value)
+        return self
+
+    def protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._protection_storage_masks = self._replace_structure(
+            self._protection_storage_masks, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._object_type is None or not self._references:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_join_split_key(
+                self._object_type,
+                self._references,
+                secret_data_type=self._secret_data_type,
+                attributes=self._attributes,
+                protection_storage_masks=self._protection_storage_masks,
+            )
+        )
+
+
+class ObtainLeaseBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Obtain Lease request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_obtain_lease(self._unique_identifier)
+        )
+
+
+class GetUsageAllocationBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Get Usage Allocation request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+        usage_limits_count: int | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+        self._usage_limits_count = usage_limits_count
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def usage_limits_count(self, value: int) -> Self:
+        self._ensure_open()
+        self._usage_limits_count = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._usage_limits_count is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_get_usage_allocation(
+                self._unique_identifier, self._usage_limits_count
+            )
+        )
+
+
+class ModifyAttributeBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Modify Attribute request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+        self._current_attribute: ttlv.Item | None = None
+        self._new_attribute: ttlv.Item | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def current_attribute(self, value: ttlv.Item | None) -> Self:
+        self._ensure_open()
+        self._current_attribute = value
+        return self
+
+    def new_attribute(self, value: ttlv.Item) -> Self:
+        self._ensure_open()
+        self._new_attribute = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._new_attribute is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_modify_attribute(
+                self._unique_identifier, self._current_attribute, self._new_attribute
+            )
+        )
+
+
+class AdjustAttributeBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Adjust Attribute request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+        self._attribute_reference: extensions.AttributeReference | None = None
+        self._adjustment_type: int | None = None
+        self._adjustment_value: ttlv.Value | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def attribute_reference(self, value: extensions.AttributeReference) -> Self:
+        self._ensure_open()
+        self._attribute_reference = value
+        return self
+
+    def adjustment_type(self, value: int) -> Self:
+        self._ensure_open()
+        self._adjustment_type = _unsigned(value, 32)
+        return self
+
+    def adjustment_value(self, value: ttlv.Value | None) -> Self:
+        self._ensure_open()
+        self._adjustment_value = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._attribute_reference is None or self._adjustment_type is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_adjust_attribute(
+                self._unique_identifier,
+                self._attribute_reference,
+                self._adjustment_type,
+                self._adjustment_value,
+            )
+        )
+
+
+class GetConstraintsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Get Constraints request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(extensions.client_batch_item_get_constraints())
+
+
+class CancelBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Cancel request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        correlation_value: bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._correlation_value: bytes | None = (
+            None if correlation_value is None else bytes(correlation_value)
+        )
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._correlation_value = bytes(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._correlation_value is None:
+            errors.raise_for_status(4)
+        with extensions.CancelRequest.create(self._correlation_value) as req:
+            return self._validated(extensions.client_batch_item_cancel_from_request(req))
+
+
+class PollBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Poll request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        correlation_value: bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._correlation_value: bytes | None = (
+            None if correlation_value is None else bytes(correlation_value)
+        )
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._correlation_value = bytes(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._correlation_value is None:
+            errors.raise_for_status(4)
+        with extensions.PollRequest.create(self._correlation_value) as req:
+            return self._validated(extensions.client_batch_item_poll_from_request(req))
+
+
+class ProcessBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Process request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        correlation_value: bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._correlation_value: bytes | None = (
+            None if correlation_value is None else bytes(correlation_value)
+        )
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._correlation_value = bytes(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._correlation_value is None:
+            errors.raise_for_status(4)
+        with extensions.ProcessRequest.create(self._correlation_value) as req:
+            return self._validated(extensions.client_batch_item_process_from_request(req))
+
+
+class QueryAsyncRequestsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Query Asynchronous Requests request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._correlation_values: list[bytes] | None = None
+        self._operations: list[int] | None = None
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        if self._correlation_values is None:
+            self._correlation_values = []
+        self._correlation_values.append(bytes(value))
+        return self
+
+    def correlation_values(self, values: Sequence[bytes | bytearray | memoryview]) -> Self:
+        self._ensure_open()
+        self._correlation_values = [bytes(v) for v in values]
+        return self
+
+    def operation(self, operation: int) -> Self:
+        self._ensure_open()
+        if self._operations is None:
+            self._operations = []
+        self._operations.append(_unsigned(operation, 32))
+        return self
+
+    def operations(self, operations: Sequence[int]) -> Self:
+        self._ensure_open()
+        self._operations = [_unsigned(op, 32) for op in operations]
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        req = extensions.QueryAsyncRequestsRequest.create()
+        try:
+            if self._correlation_values is not None:
+                next_req = req.with_correlation_values(self._correlation_values)
+                req.close()
+                req = next_req
+            if self._operations is not None:
+                next_req = req.with_operations(self._operations)
+                req.close()
+                req = next_req
+            return self._validated(
+                extensions.client_batch_item_query_async_requests_from_request(req)
+            )
+        finally:
+            req.close()
+
+
+class LoginBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Login request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._lease_time_interval: int | None = None
+        self._lease_time_date_time: int | None = None
+        self._request_count: int | None = None
+        self._usage_limits: ttlv.Structure | None = None
+
+    def lease_time_interval(self, seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_interval = None if seconds is None else _unsigned(seconds, 32)
+        self._lease_time_date_time = None
+        return self
+
+    def lease_time_date_time(self, unix_seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_date_time = unix_seconds
+        self._lease_time_interval = None
+        return self
+
+    def request_count(self, count: int | None) -> Self:
+        self._ensure_open()
+        self._request_count = count
+        return self
+
+    def usage_limits(self, value: ttlv.Structure | None) -> Self:
+        self._usage_limits = self._replace_structure(self._usage_limits, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_login(
+                lease_time_interval=self._lease_time_interval,
+                lease_time_date_time=self._lease_time_date_time,
+                request_count=self._request_count,
+                usage_limits=self._usage_limits,
+            )
+        )
+
+
+class LogoutBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Logout request."""
+
+    def __init__(
+        self, client: Client | None = None, ticket: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._ticket: ttlv.Structure | None = None
+        if ticket is not None:
+            self.ticket(ticket)
+
+    def ticket(self, value: ttlv.Structure) -> Self:
+        self._ticket = self._replace_structure(self._ticket, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._ticket is None:
+            errors.raise_for_status(4)
+        return self._validated(extensions.client_batch_item_logout(self._ticket))
+
+
+class DelegatedLoginBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Delegated Login request."""
+
+    def __init__(
+        self, client: Client | None = None, rights: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._rights: ttlv.Structure | None = None
+        if rights is not None:
+            self.rights(rights)
+        self._lease_time_interval: int | None = None
+        self._lease_time_date_time: int | None = None
+        self._request_count: int | None = None
+        self._usage_limits: ttlv.Structure | None = None
+
+    def rights(self, value: ttlv.Structure) -> Self:
+        self._rights = self._replace_structure(self._rights, value)
+        return self
+
+    def lease_time_interval(self, seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_interval = None if seconds is None else _unsigned(seconds, 32)
+        self._lease_time_date_time = None
+        return self
+
+    def lease_time_date_time(self, unix_seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_date_time = unix_seconds
+        self._lease_time_interval = None
+        return self
+
+    def request_count(self, count: int | None) -> Self:
+        self._ensure_open()
+        self._request_count = count
+        return self
+
+    def usage_limits(self, value: ttlv.Structure | None) -> Self:
+        self._usage_limits = self._replace_structure(self._usage_limits, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._rights is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_delegated_login(
+                self._rights,
+                lease_time_interval=self._lease_time_interval,
+                lease_time_date_time=self._lease_time_date_time,
+                request_count=self._request_count,
+                usage_limits=self._usage_limits,
+            )
+        )
+
+
+class SetEndpointRoleBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Set Endpoint Role request."""
+
+    def __init__(
+        self, client: Client | None = None, endpoint_role: int | None = None
+    ) -> None:
+        super().__init__(client)
+        self._endpoint_role: int | None = (
+            None if endpoint_role is None else _unsigned(endpoint_role, 32)
+        )
+        self._vendor_identification: str | bytes | bytearray | memoryview | None = None
+
+    def endpoint_role(self, value: int) -> Self:
+        self._ensure_open()
+        self._endpoint_role = _unsigned(value, 32)
+        return self
+
+    def vendor_identification(
+        self, value: str | bytes | bytearray | memoryview | None
+    ) -> Self:
+        self._ensure_open()
+        self._vendor_identification = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._endpoint_role is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_set_endpoint_role(
+                self._endpoint_role, self._vendor_identification
+            )
+        )
+
+
+class Pkcs11Builder(_TypedOperationBuilder):
+    """Fluent typed KMIP PKCS#11 request."""
+
+    def __init__(
+        self, client: Client | None = None, function: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._function: ttlv.Structure | None = None
+        if function is not None:
+            self.function(function)
+        self._interface: ttlv.Structure | None = None
+        self._correlation_value: bytes | None = None
+        self._input_parameters: ttlv.Structure | None = None
+        self._extensions: list[ttlv.TtlvItem] = []
+
+    def function(self, value: ttlv.Structure) -> Self:
+        self._function = self._replace_structure(self._function, value)
+        return self
+
+    def interface(self, value: ttlv.Structure | None) -> Self:
+        self._interface = self._replace_structure(self._interface, value)
+        return self
+
+    def correlation_value(self, value: bytes | bytearray | memoryview | None) -> Self:
+        self._ensure_open()
+        self._correlation_value = None if value is None else bytes(value)
+        return self
+
+    def input_parameters(self, value: ttlv.Structure | None) -> Self:
+        self._input_parameters = self._replace_structure(self._input_parameters, value)
+        return self
+
+    def extension(self, item: ttlv.TtlvItem) -> Self:
+        self._ensure_open()
+        self._extensions.append(item)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._function is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_pkcs11(
+                self._function,
+                self._interface,
+                self._correlation_value,
+                self._input_parameters,
+                payload_extensions=self._extensions,
+            )
+        )
+
+
+class InteropBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Interop request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        interop_function: int | None = None,
+        interop_identifier: str | bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._interop_function: int | None = (
+            None if interop_function is None else _unsigned(interop_function, 32)
+        )
+        self._interop_identifier = interop_identifier
+
+    def interop_function(self, value: int) -> Self:
+        self._ensure_open()
+        self._interop_function = _unsigned(value, 32)
+        return self
+
+    def interop_identifier(self, value: str | bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._interop_identifier = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._interop_function is None or self._interop_identifier is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_interop(
+                self._interop_function, self._interop_identifier
+            )
+        )
+
+
+class ReProvisionBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Re-Provision request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._certificate_request: ttlv.Structure | None = None
+        self._certificate: ttlv.Structure | None = None
+
+    def certificate_request(self, value: ttlv.Structure | None) -> Self:
+        self._certificate_request = self._replace_structure(self._certificate_request, value)
+        return self
+
+    def certificate(self, value: ttlv.Structure | None) -> Self:
+        self._certificate = self._replace_structure(self._certificate, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_reprovision(
+                self._certificate_request, self._certificate
+            )
+        )
+
+
+class SetDefaultsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Set Defaults request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._defaults_information: ttlv.Structure | None = None
+
+    def defaults_information(self, value: ttlv.Structure | None) -> Self:
+        self._defaults_information = self._replace_structure(
+            self._defaults_information, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_set_defaults(self._defaults_information)
+        )
+
+
+class SetConstraintsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Set Constraints request."""
+
+    def __init__(
+        self, client: Client | None = None, constraints: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._constraints: ttlv.Structure | None = None
+        if constraints is not None:
+            self.constraints(constraints)
+
+    def constraints(self, value: ttlv.Structure) -> Self:
+        self._constraints = self._replace_structure(self._constraints, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._constraints is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_set_constraints(self._constraints)
+        )
+
+
+class LogBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Log request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        log_message: str | bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._log_message = log_message
+
+    def log_message(self, value: str | bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._log_message = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._log_message is None:
+            errors.raise_for_status(4)
+        return self._validated(extensions.client_batch_item_log(self._log_message))
+
+
 __all__ = [
     "ActivateBuilder",
     "AddAttributeBuilder",
+    "AdjustAttributeBuilder",
     "ArchiveBuilder",
+    "CancelBuilder",
+    "CertifyBuilder",
+    "CheckBuilder",
     "CreateBuilder",
     "CreateCredentialBuilder",
     "CreateCredentialObject",
@@ -3393,20 +5026,40 @@ __all__ = [
     "CreateUserBuilder",
     "DeactivateBuilder",
     "DecapsulateBuilder",
-    "DeleteAttributeBuilder",
     "DecryptBuilder",
+    "DelegatedLoginBuilder",
+    "DeleteAttributeBuilder",
+    "DeriveKeyBuilder",
+    "DiscoverVersionsBuilder",
     "EncapsulateBuilder",
     "EncryptBuilder",
+    "ExportBuilder",
     "GetAttributeListBuilder",
     "GetAttributesBuilder",
     "GetBuilder",
+    "GetConstraintsBuilder",
+    "GetUsageAllocationBuilder",
     "HashBuilder",
+    "ImportBuilder",
+    "InteropBuilder",
+    "JoinSplitKeyBuilder",
     "LocateBuilder",
+    "LogBuilder",
+    "LoginBuilder",
+    "LogoutBuilder",
     "MacBuilder",
     "MacVerifyBuilder",
+    "ModifyAttributeBuilder",
     "ObliterateBuilder",
+    "ObtainLeaseBuilder",
     "Operation",
     "PingBuilder",
+    "Pkcs11Builder",
+    "PollBuilder",
+    "ProcessBuilder",
+    "QueryAsyncRequestsBuilder",
+    "QueryBuilder",
+    "ReProvisionBuilder",
     "RecertifyBuilder",
     "RecoverBuilder",
     "RegisterBuilder",
@@ -3414,8 +5067,14 @@ __all__ = [
     "RekeyKeyPairBuilder",
     "Request",
     "RevokeBuilder",
+    "RngRetrieveBuilder",
+    "RngSeedBuilder",
     "SetAttributeBuilder",
+    "SetConstraintsBuilder",
+    "SetDefaultsBuilder",
+    "SetEndpointRoleBuilder",
     "SignBuilder",
     "SignatureVerifyBuilder",
     "SymmetricKeyBuilder",
+    "ValidateBuilder",
 ]

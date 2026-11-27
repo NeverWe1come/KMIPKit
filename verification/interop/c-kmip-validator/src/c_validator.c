@@ -1,7 +1,41 @@
 #include "c_validator.h"
 #include "json.h"
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <bcrypt.h>
+#else
+#include <openssl/evp.h>
+#endif
+
+static bool catalog_sha256(const json_document_t *document, char hex[65]) {
+    unsigned char digest[32];
+#ifdef _WIN32
+    BCRYPT_ALG_HANDLE provider = NULL;
+    if (document->source_length > UINT32_MAX ||
+        BCryptOpenAlgorithmProvider(&provider, BCRYPT_SHA256_ALGORITHM, NULL, 0) < 0)
+        return false;
+    NTSTATUS status = BCryptHash(provider, NULL, 0, (PUCHAR)document->source,
+                                 (ULONG)document->source_length, digest, sizeof(digest));
+    (void)BCryptCloseAlgorithmProvider(provider, 0);
+    if (status < 0) return false;
+#else
+    size_t length = 0;
+    if (EVP_Q_digest(NULL, "SHA256", NULL, document->source, document->source_length,
+                     digest, &length) != 1 || length != sizeof(digest))
+        return false;
+#endif
+    static const char digits[] = "0123456789abcdef";
+    for (size_t index = 0; index < sizeof(digest); ++index) {
+        hex[2 * index] = digits[digest[index] >> 4];
+        hex[2 * index + 1] = digits[digest[index] & 0x0f];
+    }
+    hex[64] = '\0';
+    return true;
+}
 
 static bool string_in_list(const char *target, const char list[KMIP_MAX_CAPABILITIES][KMIP_MAX_NAME_LEN], size_t count) {
     if (!target || target[0] == '\0') return true;
@@ -152,8 +186,14 @@ bool kmip_load_connection(const char *json_path, kmip_connection_config_t *out_c
         valid = https >= 0 && copy_member(&document, https, "url", out_connection->https_url,
                                           sizeof(out_connection->https_url), true);
     }
+    out_connection->read_timeout_seconds = 30;
     if (valid && tls >= 0) {
-        valid = copy_member(&document, tls, "ca_cert_path", out_connection->ca_cert_path,
+        int timeout_token = json_object_get(&document, tls, "read_timeout_seconds");
+        long timeout = 30;
+        valid = timeout_token < 0 || (json_integer(&document, timeout_token, &timeout) &&
+                                      timeout > 0 && timeout <= INT_MAX / 1000);
+        if (valid) out_connection->read_timeout_seconds = (uint32_t)timeout;
+        valid = valid && copy_member(&document, tls, "ca_cert_path", out_connection->ca_cert_path,
                             sizeof(out_connection->ca_cert_path), false) &&
             copy_member(&document, tls, "client_cert_path", out_connection->client_cert_path,
                         sizeof(out_connection->client_cert_path), false) &&
@@ -180,6 +220,11 @@ static bool load_optional_requires(const json_document_t *document, int requires
 }
 
 bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_t *out_count) {
+    return kmip_load_catalog_with_digest(json_path, out_cases, out_count, NULL);
+}
+
+bool kmip_load_catalog_with_digest(const char *json_path, kmip_test_case_t *out_cases,
+                                  size_t *out_count, char digest[65]) {
     if (!json_path || !out_cases || !out_count) return false;
     *out_count = 0;
     json_document_t document;
@@ -237,9 +282,23 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
             load_optional_requires(&document, requires, "attribute_response_fields",
                                    test_case->attribute_response_fields,
                                    sizeof(test_case->attribute_response_fields)) &&
+            load_optional_requires(&document, requires, "rotate_attribute_ttlv",
+                                   test_case->rotate_attribute_ttlv, sizeof(test_case->rotate_attribute_ttlv)) &&
+            load_optional_requires(&document, requires, "query_function",
+                                   test_case->query_function, sizeof(test_case->query_function)) &&
+            load_optional_requires(&document, requires, "query_result_tag",
+                                   test_case->query_result_tag, sizeof(test_case->query_result_tag)) &&
             load_optional_requires(&document, requires, "certificate_object_path",
                                    test_case->certificate_object_path,
                                    sizeof(test_case->certificate_object_path)) &&
+            load_optional_requires(&document, requires, "register_object_ttlv",
+                                   test_case->register_object_ttlv, sizeof(test_case->register_object_ttlv)) &&
+            load_optional_requires(&document, requires, "register_attributes_ttlv",
+                                   test_case->register_attributes_ttlv, sizeof(test_case->register_attributes_ttlv)) &&
+            load_optional_requires(&document, requires, "register_object_type",
+                                   test_case->register_object_type, sizeof(test_case->register_object_type)) &&
+            load_optional_requires(&document, requires, "register_attribute_value",
+                                   test_case->register_attribute_value, sizeof(test_case->register_attribute_value)) &&
             load_optional_requires(&document, requires, "register_object_path",
                                    test_case->register_object_path,
                                    sizeof(test_case->register_object_path)) &&
@@ -310,6 +369,7 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
             valid = false;
         }
     }
+    if (valid && digest) valid = catalog_sha256(&document, digest);
     json_document_release(&document);
     if (!valid) return false;
     *out_count = count;
@@ -412,6 +472,7 @@ void kmip_run_suite(
             strncpy(res->detail, outcome.result_reason, sizeof(res->detail) - 1);
             out_summary->failed++;
         }
+        res->used_high_level = outcome.used_high_level;
         res->has_result_status_code = outcome.has_result_status_code;
         res->has_result_reason_code = outcome.has_result_reason_code;
         res->result_status_code = outcome.result_status_code;
@@ -619,6 +680,8 @@ bool kmip_render_json(const kmip_validation_summary_t *summary, const char *file
         fputs(",\n      \"server_compatibility\": ", f);
         json_write_string(f, server_compatibility_name(r));
         fputs(",\n      \"parity\": \"not_compared\"", f);
+        if (r->used_high_level)
+            fprintf(f, ",\n      \"actual_api_level\": \"high-level\"");
         if (r->has_result_status_code)
             fprintf(f, ",\n      \"result_status_code\": %u", r->result_status_code);
         if (r->has_result_reason_code)

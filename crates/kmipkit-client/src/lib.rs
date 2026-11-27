@@ -468,12 +468,15 @@ mod transport_contract_tests;
 #[path = "../tests/unit/profile_preflight_tests.rs"]
 mod profile_preflight_tests;
 
-pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory, ClientErrorResponseTtlv};
+pub use error::{
+    ClientCauseCategory, ClientError, ClientErrorCategory, ClientErrorResponseTtlv,
+    RedactedCorrelation,
+};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
-    ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
-    ClientRequest, ClientResponseView, Kmip30OperationResponse, PendingOutcome,
-    ResponseEncodingError,
+    ClientBatchResponse, ClientBuilder, ClientMessageExtension, ClientOperation,
+    ClientOperationOutcome, ClientRequest, ClientResponseView, Kmip30OperationResponse,
+    PendingOutcome, ResponseEncodingError,
 };
 pub use fluent::{
     ActivateBuilder, AddAttributeBuilder, AdjustAttributeBuilder, ArchiveBuilder,
@@ -532,6 +535,22 @@ mod server_to_client_tests;
 #[cfg(test)]
 #[path = "../tests/unit/set_endpoint_role_execution_tests.rs"]
 mod set_endpoint_role_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_phase1_tests.rs"]
+mod fluent_phase1_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_parity64_tests.rs"]
+mod fluent_parity64_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_phase3_tests.rs"]
+mod fluent_phase3_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_phase4_tests.rs"]
+mod fluent_phase4_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/test_support_tests.rs"]

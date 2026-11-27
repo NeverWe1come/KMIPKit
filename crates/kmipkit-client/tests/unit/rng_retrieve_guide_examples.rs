@@ -24,7 +24,7 @@ fn request_rng_output(
         .request()
         .rng_retrieve()
         .data_length(data_length)
-        .execute(limits)
+        .execute_outcome_with_limits(limits)
 }
 
 #[allow(dead_code)]

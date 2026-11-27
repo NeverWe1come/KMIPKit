@@ -218,9 +218,6 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
         line_number = cleaned.count("\n", 0, match.start()) + 1
         if not any(row["exportName"] == name and row["kind"] == "type" for row in records):
             records.append(_record(package, name, "type", str(line_number)))
-    for match in re.finditer(r"\b(kmipkit_[A-Za-z_]\w*)\s*\([^;{}]*\)\s*;", cleaned, re.S):
-        line_number = cleaned.count("\n", 0, match.start()) + 1
-        records.append(_record(package, match.group(1), "c-symbol", str(line_number)))
     for match in re.finditer(
         r"\bstatic\s+inline\s+[A-Za-z_][\w\s*]*?\b([A-Za-z_]\w*)\s*\([^{}]*\)\s*\{",
         cleaned,
@@ -228,6 +225,23 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
     ):
         line_number = cleaned.count("\n", 0, match.start()) + 1
         records.append(_record(package, match.group(1), "function", str(line_number)))
+    # Strip static inline function bodies so internal calls are not mistaken for top-level prototypes.
+    proto_source = list(cleaned)
+    for match in re.finditer(r"\bstatic\s+inline\s+[^{;]*\{", cleaned, re.S):
+        depth = 0
+        for idx in range(match.end() - 1, len(cleaned)):
+            ch = cleaned[idx]
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+            if ch != "\n":
+                proto_source[idx] = " "
+            if depth == 0:
+                break
+    for match in re.finditer(r"\b(kmipkit_[A-Za-z_]\w*)\s*\([^;{}]*\)\s*;", "".join(proto_source), re.S):
+        line_number = cleaned.count("\n", 0, match.start()) + 1
+        records.append(_record(package, match.group(1), "c-symbol", str(line_number)))
     return _report(records, issues)
 
 
@@ -1284,6 +1298,18 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
         "kmipkit_delete_attribute_",
         "kmipkit_modify_attribute_",
         "kmipkit_set_attribute_",
+        "kmipkit_fluent_",
+        "kmipkit_client_batch_build_request_message",
+        "kmipkit_client_batch_item_discover_versions_with_versions",
+        "kmipkit_client_configuration_codec_limits_v1",
+        "kmipkit_client_configuration_with_codec_limits_v1",
+        "kmipkit_client_discover_versions_v1",
+        "kmipkit_client_execute_item_v1",
+        "kmipkit_client_obtain_lease_by_id_v1",
+        "kmipkit_client_query_v1",
+        "kmipkit_client_query_with_authentication_v1",
+        "kmipkit_client_rng_retrieve_v1",
+        "kmipkit_client_rng_seed_v1",
     )
     c["declarations"] = [
         row

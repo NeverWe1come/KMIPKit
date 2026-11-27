@@ -60,6 +60,24 @@ fn run_cannot_report_success_without_establishing_a_real_connection() {
 }
 
 #[test]
+fn unknown_case_is_rejected_before_tls_validation() {
+    let output = cli(&[
+        "run",
+        "--connection",
+        "../shared/profiles/connection.example.json",
+        "--capabilities",
+        "../shared/profiles/generic-kmip-2.1.json",
+        "--case",
+        "unknown-test-case",
+    ]);
+    assert!(!output.status.success());
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .contains("no unique case for the selected protocol version")
+    );
+}
+
+#[test]
 fn draft_campaign_records_only_the_executed_local_constructor() {
     use std::io::Write;
 

@@ -52,6 +52,39 @@ jobs:
       - name: Run C unit tests
         run: ctest --test-dir verification/interop/c-kmip-validator/build --output-on-failure
 
+      - name: Verify KMIP 2.x tag construction and controlled exchanges
+        env:
+          KMIPKIT_REQUIRED_INTEROP_VALIDATOR: c
+          KMIPKIT_TABLE_EVIDENCE_DIR: ${{ runner.temp }}/kmip2x-table-evidence
+        run: |
+          python3 -B -m unittest discover -s verification/interop/shared/tests -p test_incoming_validators.py -v
+          mkdir -p "$KMIPKIT_TABLE_EVIDENCE_DIR"
+          python3 verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
+            --construct --require-complete --runner c verification/interop/c-kmip-validator/build/kmip30_c_constructors \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/oasis-construction.jsonl"
+          python3 verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
+            --require-complete --runner c verification/interop/c-kmip-validator/build/kmip30_c_constructors \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/oasis-decode.jsonl"
+          python3 verification/interop/shared/tools/table_ttlv.py \
+            --runner c verification/interop/c-kmip-validator/build/kmip30_c_constructors \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-ttlv.json"
+          python3 verification/interop/shared/tools/table_key_material.py \
+            --runner c verification/interop/c-kmip-validator/build/kmip30_c_constructors \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-key-material.json"
+          python3 verification/interop/shared/tools/table_typed_attributes.py \
+            --runner c verification/interop/c-kmip-validator/build/kmip30_c_constructors \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-typed-attributes.json"
+          python3 verification/interop/shared/tools/table_managed_objects.py \
+            --runner c verification/interop/c-kmip-validator/build/kmip30_c_constructors \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-managed-objects.json"
+
+      - name: Upload KMIP 2.x table evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: c-kmip2x-table-evidence
+          path: ${{ runner.temp }}/kmip2x-table-evidence
+
       - name: Verify shared draft campaign evidence
         run: |
           python3 -m pip install --only-binary ':all:' 'jsonschema==4.23.0'

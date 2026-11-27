@@ -6,7 +6,10 @@ from functools import lru_cache
 
 import pytest
 
-from kmipkit import errors, extensions, ttlv
+from kmipkit import attribute_operations, errors, extensions, fluent, ttlv
+from kmipkit.managed_objects import ManagedObject
+from kmipkit.protocol_values import ObjectType, Operation
+from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
 
 
 _OBJECT_TYPE_OPAQUE = 8
@@ -80,6 +83,24 @@ def test_register_consumer_accepts_generic_opaque_object_without_crypto_attribut
 
     with extensions.client_batch_item_register(request) as item:
         assert isinstance(item, extensions.ClientBatchItem)
+
+
+def test_fluent_register_copies_managed_object_and_attribute_set() -> None:
+    with fluent.RegisterBuilder() as builder:
+        with _opaque_object() as wire, ManagedObject.from_item(ObjectType.OPAQUE_OBJECT, wire) as managed:
+            builder.object(managed).opaque_object_context(extensions.OpaqueObjectContext.GENERIC)
+        with (
+            ttlv.ttlv_value_text_string(b"register description", _limits()) as text,
+            TypedAttribute.create(StandardAttribute.DESCRIPTION, text) as description,
+            ttlv.ttlv_structure_create() as empty,
+            attribute_operations.AttributeSet.try_new(empty) as attributes,
+        ):
+            builder.attribute(description)
+            with description.as_item() as item:
+                attributes.try_push(item)
+            builder.attributes(attributes)
+        with builder.build() as request:
+            assert request.operation == Operation.REGISTER
 
 
 def test_register_consumer_accepts_managed_context_with_required_attributes() -> None:

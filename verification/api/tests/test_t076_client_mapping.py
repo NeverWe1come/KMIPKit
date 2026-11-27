@@ -1468,10 +1468,30 @@ class T076ClientMappingTests(unittest.TestCase):
         fluent_exports = {
             name
             for name in observed
-            if name.startswith("kmipkit.fluent.")
+            if name.startswith(
+                (
+                    "kmipkit.fluent.",
+                    "kmipkit.high_level.",
+                    "kmipkit.flows.",
+                    "kmipkit.KeyRef.",
+                    "kmipkit.client.ClientBuilder",
+                    "kmipkit.errors.ServerResultError",
+                )
+            )
             or name
             in {
                 "kmipkit.fluent",
+                "kmipkit.high_level",
+                "kmipkit.flows",
+                "kmipkit.CipherSpec",
+                "kmipkit.HashAlgorithm",
+                "kmipkit.KdfSpec",
+                "kmipkit.KemSpec",
+                "kmipkit.KeyRef",
+                "kmipkit.KeySpec",
+                "kmipkit.MacSpec",
+                "kmipkit.SignatureSpec",
+                "kmipkit.client.Batch.build_request_message",
                 "kmipkit.client.BatchItemResult.encapsulate_data",
                 "kmipkit.client.BatchItemResult.kmip30_identifier",
                 "kmipkit.client.BatchItemResult.__enter__",
@@ -1480,9 +1500,31 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit.client.BatchItemResult.raw_response_bytes",
                 "kmipkit.client.Client.activate_by_id",
                 "kmipkit.client.Client.archive_by_id",
+                "kmipkit.client.Client.builder",
+                "kmipkit.client.Client.check_by_id",
+                "kmipkit.client.Client.codec_limits",
+                "kmipkit.client.Client.connect_https",
+                "kmipkit.client.Client.connect_mtls",
+                "kmipkit.client.Client.discover_versions",
+                "kmipkit.client.Client.execute_item",
+                "kmipkit.client.Client.export_by_id",
                 "kmipkit.client.Client.locate",
+                "kmipkit.client.Client.obtain_lease_by_id",
+                "kmipkit.client.Client.ping",
+                "kmipkit.client.Client.protocol_version",
+                "kmipkit.client.Client.query",
                 "kmipkit.client.Client.recover_by_id",
                 "kmipkit.client.Client.revoke_by_id",
+                "kmipkit.client.Client.rng_retrieve",
+                "kmipkit.client.Client.rng_seed",
+                "kmipkit.extensions.ClientConfiguration.codec_limits",
+                "kmipkit.extensions.ClientConfiguration.defaults",
+                "kmipkit.extensions.ClientConfiguration.with_codec_limits",
+                "kmipkit.extensions.UniqueIdentifier.batch_reference",
+                "kmipkit.extensions.UniqueIdentifier.id_placeholder",
+                "kmipkit.extensions.vendor_attribute_index",
+                "kmipkit.extensions.vendor_critical",
+                "kmipkit.extensions.vendor_object_group_member",
                 "kmipkit.key_usage",
                 "kmipkit.key_usage.KeyUsage",
                 *(

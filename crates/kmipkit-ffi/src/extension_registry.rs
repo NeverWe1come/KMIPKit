@@ -88,23 +88,23 @@ use crate::{
     kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
     kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_result_t,
     kmipkit_profile_validation_selection_v1_t, kmipkit_query_async_requests_request_t,
-    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
-    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
-    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
-    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
-    kmipkit_revoke_builder_t, kmipkit_revoke_request_t, kmipkit_role_reversed_session_t,
-    kmipkit_secret_bytes_t, kmipkit_secret_text_t, kmipkit_server_request_dispatcher_t,
-    kmipkit_server_request_handler_v1_t, kmipkit_server_request_item_view_v1_t,
-    kmipkit_set_attribute_builder_t, kmipkit_set_attribute_request_t,
-    kmipkit_split_key_reference_t, kmipkit_symmetric_key_builder_t,
-    kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
-    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
-    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
-    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
-    kmipkit_validated_extension_value_t, kmipkit_validation_issue_view_v1_t,
-    kmipkit_validation_report_t,
+    kmipkit_query_builder_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
+    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
+    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_builder_t, kmipkit_revoke_request_t,
+    kmipkit_role_reversed_session_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
+    kmipkit_server_request_dispatcher_t, kmipkit_server_request_handler_v1_t,
+    kmipkit_server_request_item_view_v1_t, kmipkit_set_attribute_builder_t,
+    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
+    kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
+    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
+    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
 };
 use kmipkit_client::LeaseContext;
 use kmipkit_client::UsageAllocationContext;
@@ -601,6 +601,8 @@ enum Kind {
     RevokeBuilder,
     CryptoOperationBuilder,
     PingBuilder,
+    QueryBuilder,
+    DiscoverVersionsBuilder,
     CreateBuilder,
     Kmip30OperationBuilder,
     CreateCredentialObject,
@@ -768,6 +770,8 @@ enum HandleValue {
     RevokeBuilder(Mutex<RevokeBuilderState>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     PingBuilder(Mutex<PingBuilderState>),
+    QueryBuilder(Mutex<Vec<kmipkit_protocol::QueryFunction>>),
+    DiscoverVersionsBuilder(Mutex<Vec<kmipkit_protocol::ProtocolVersion>>),
     CreateBuilder(Mutex<CreateBuilderState>),
     Kmip30OperationBuilder(Mutex<client_abi::fluent_kmip30::Kmip30OperationBuilder>),
     CreateCredentialObject(Item),
@@ -4302,7 +4306,8 @@ pub extern "C" fn kmipkit_client_configuration_with_wire_encoding(
             configuration.shared_extension_registry(),
         )
         .with_wire_encoding(encoding)
-        .with_protocol_version(configuration.protocol_version());
+        .with_protocol_version(configuration.protocol_version())
+        .with_codec_limits(*configuration.codec_limits());
         *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configured)
@@ -4328,10 +4333,57 @@ pub extern "C" fn kmipkit_client_configuration_with_protocol_version(
             configuration.shared_extension_registry(),
         )
         .with_wire_encoding(configuration.wire_encoding())
-        .with_protocol_version(kmipkit_protocol::ProtocolVersion::from_raw(major, minor));
+        .with_protocol_version(kmipkit_protocol::ProtocolVersion::from_raw(major, minor))
+        .with_codec_limits(*configuration.codec_limits());
         *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_with_codec_limits_v1(
+    configuration: *mut kmipkit_client_configuration_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_configuration: *mut *mut kmipkit_client_configuration_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_configuration);
+        let limits = try_ffi!(codec_limits_from_handle(limits));
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let configured = client_extension::ClientConfiguration::from_shared_registry(
+            configuration.shared_extension_registry(),
+        )
+        .with_wire_encoding(configuration.wire_encoding())
+        .with_protocol_version(configuration.protocol_version())
+        .with_codec_limits(*limits);
+        *out = try_ffi!(try_make_handle(
+            Kind::Configuration,
+            HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_codec_limits_v1(
+    configuration: *mut kmipkit_client_configuration_t,
+    out_limits: *mut *mut kmipkit_codec_limits_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_limits);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::CodecLimits,
+            HandleValue::CodecLimits(Arc::new(*configuration.codec_limits())),
         ));
         SUCCESS
     })
@@ -4675,6 +4727,55 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
         *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a Discover Versions request batch item offering the caller-specified
+/// ordered protocol versions. If `version_count == 0`, behaves identically to
+/// `kmipkit_client_batch_item_discover_versions`.
+///
+/// # Safety
+///
+/// If the count is nonzero and `versions` is non-null, it must address
+/// that many initialized, aligned versions for the duration of the call.
+/// A non-null `out_item` must address a writable handle slot.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
+    versions: *const crate::kmipkit_protocol_version_v1_t,
+    version_count: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let item = if version_count == 0 {
+            ClientBatchItem::discover_versions()
+        } else {
+            if versions.is_null() {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            let count = try_ffi!(usize::try_from(version_count).map_err(|_| ERROR_INVALID_INPUT));
+            if count > 1024 {
+                return record_ffi_error(ERROR_RESOURCE_LIMIT);
+            }
+            // SAFETY: caller guarantees `versions` points to `count` initialized entries.
+            let slice = unsafe { std::slice::from_raw_parts(versions, count) };
+            let mut offered = Vec::with_capacity(count);
+            for v in slice {
+                offered.push(kmipkit_protocol::ProtocolVersion::from_raw(
+                    v.major, v.minor,
+                ));
+            }
+            let request = try_ffi!(
+                kmipkit_protocol::DiscoverVersionsRequest::with_versions(offered)
+                    .map_err(|_| ERROR_INVALID_INPUT)
+            );
+            ClientBatchItem::new(ClientRequest::DiscoverVersions(request))
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(item)),
         ));
         SUCCESS
     })

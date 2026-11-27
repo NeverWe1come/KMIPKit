@@ -4,7 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
+import org.kmipkit.protocol.KmipValues;
+import org.kmipkit.protocol.VersionGate;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.InvalidInputException;
+import org.kmipkit.ttlv.KeyMaterial;
+import org.kmipkit.ttlv.ManagedObject;
+import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvCodec;
 import org.kmipkit.ttlv.TtlvItem;
@@ -20,6 +27,8 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
@@ -81,11 +90,133 @@ final class DraftCampaign {
                 ArrayNode nodes = JSON.createArrayNode();
                 try (var item = construct ? buildFixture(wire) : TtlvCodec.decode(wire);
                         var view = item.view()) {
+                    if (construct && !java.util.Arrays.equals(wire, GenericExchange.encode(view))) {
+                        throw new IllegalArgumentException("Constructed fixture changed on re-encoding");
+                    }
                     appendItem(view, nodes);
                 } catch (org.kmipkit.KmipException | IllegalArgumentException rejected) {
                     nodes = null;
                 }
                 System.out.println(JSON.writeValueAsString(nodes));
+            }
+        }
+        return System.out.checkError() ? 1 : 0;
+    }
+
+    static int inspectTypedStructure(Path manifest, boolean managed) throws IOException {
+        var artifact = verifyLoadedArtifact(manifest);
+        System.out.println(JSON.writeValueAsString(Map.of(
+                "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
+        var hex = HexFormat.of();
+        try (var input = new BufferedReader(new InputStreamReader(System.in, java.nio.charset.StandardCharsets.US_ASCII))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                String[] parts = line.split(" ");
+                long format = Long.parseUnsignedLong(parts[0]);
+                byte[] expected = hex.parseHex(parts[1]);
+                var fields = new ArrayList<TtlvItem>();
+                try (var item = TtlvCodec.decode(expected)) {
+                    for (int index = 2; index < parts.length; index++) {
+                        fields.add(TtlvCodec.decode(hex.parseHex(parts[index])));
+                    }
+                    String constructed = managed
+                            ? managedObjectVerdict(() -> ManagedObject.fromFields(format, fields), format, expected)
+                            : keyMaterialVerdict(() -> KeyMaterial.fromFields(format, fields), format, expected);
+                    String read = managed
+                            ? managedObjectVerdict(() -> ManagedObject.fromItem(format, item), format, expected)
+                            : keyMaterialVerdict(() -> KeyMaterial.fromItem(format, item), format, expected);
+                    System.out.println(JSON.writeValueAsString(Map.of("construct", constructed, "read", read)));
+                } finally {
+                    fields.forEach(TtlvItem::close);
+                }
+            }
+        }
+        return System.out.checkError() ? 1 : 0;
+    }
+
+    private static String keyMaterialVerdict(java.util.function.Supplier<KeyMaterial> api, long format, byte[] expected) {
+        KeyMaterial result;
+        try {
+            result = api.get();
+        } catch (org.kmipkit.KmipException rejected) {
+            return "rejected";
+        }
+        try (result) {
+            long actualFormat = result.formatRaw();
+            try (var item = result.intoItem(); var view = item.view()) {
+                return actualFormat == format && Arrays.equals(expected, GenericExchange.encode(view)) ? "passed" : "failed";
+            }
+        }
+    }
+
+    private static String managedObjectVerdict(java.util.function.Supplier<ManagedObject> api, long type, byte[] expected) {
+        ManagedObject result;
+        try {
+            result = api.get();
+        } catch (org.kmipkit.KmipException rejected) {
+            return "rejected";
+        }
+        try (result; var view = result.view()) {
+            return result.objectType() == type && Arrays.equals(expected, GenericExchange.encode(view))
+                    ? "passed" : "failed";
+        }
+    }
+
+    static int inspectTypedAttributes(Path manifest) throws IOException {
+        var artifact = verifyLoadedArtifact(manifest);
+        System.out.println(JSON.writeValueAsString(Map.of(
+                "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
+        var attributes = new java.util.HashMap<Integer, StandardAttribute>();
+        for (var attribute : StandardAttribute.values()) {
+            attributes.put(attribute.tag(), attribute);
+        }
+        var hex = HexFormat.of();
+        try (var input = new BufferedReader(new InputStreamReader(System.in, java.nio.charset.StandardCharsets.US_ASCII))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                String[] parts = line.split(" ");
+                var attribute = java.util.Objects.requireNonNull(attributes.get(Integer.parseInt(parts[0])));
+                byte[] expected = hex.parseHex(parts[2]);
+                try (var item = TtlvCodec.decode(hex.parseHex(parts[1])); var value = item.valueCopy()) {
+                    String constructed = typedAttributeVerdict(() -> TypedAttribute.create(attribute, value), expected);
+                    String read = typedAttributeVerdict(() -> TypedAttribute.fromItem(attribute, item), expected);
+                    System.out.println(JSON.writeValueAsString(Map.of("construct", constructed, "read", read)));
+                }
+            }
+        }
+        return System.out.checkError() ? 1 : 0;
+    }
+
+    private static String typedAttributeVerdict(java.util.function.Supplier<TypedAttribute> api, byte[] expected) {
+        TypedAttribute result;
+        try {
+            result = api.get();
+        } catch (InvalidInputException rejected) {
+            return "rejected";
+        }
+        try (result; var view = result.view()) {
+            return Arrays.equals(expected, GenericExchange.encode(view)) ? "passed" : "failed";
+        }
+    }
+
+    static int inspectVersion(Path manifest) throws IOException {
+        var artifact = verifyLoadedArtifact(manifest);
+        System.out.println(JSON.writeValueAsString(Map.of(
+                "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
+        try (var input = new BufferedReader(new InputStreamReader(System.in, java.nio.charset.StandardCharsets.US_ASCII))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                String[] parts = line.split(" ", 2);
+                long code = Integer.toUnsignedLong(Integer.parseUnsignedInt(parts[1]));
+                for (int minor = 0; minor <= 1; minor++) {
+                    boolean assigned = switch (parts[0]) {
+                        case "tag" -> VersionGate.validateTag(2, minor, code);
+                        case "key-format" -> KmipValues.KeyFormatType.name(code) != null;
+                        case "object-type" -> KmipValues.ObjectType.name(code) != null;
+                        default -> throw new IllegalArgumentException("Unsupported table version input");
+                    };
+                    System.out.println(assigned);
+                }
             }
         }
         return System.out.checkError() ? 1 : 0;
@@ -182,6 +313,20 @@ final class DraftCampaign {
         var row = nodes.addArray().add(raw).add(kind.code());
         if (kind != TtlvItemType.Structure) {
             row.add(0);
+            try (var value = view.value()) {
+                switch (kind) {
+                    case Integer -> row.add(value.integer());
+                    case LongInteger -> row.add(value.longInteger());
+                    case Enumeration -> row.add(value.enumeration());
+                    case Boolean -> row.add(value.booleanValue());
+                    case DateTime -> row.add(value.dateTime());
+                    case Interval -> row.add(value.interval());
+                    case DateTimeExtended -> row.add(value.dateTimeExtended());
+                    case BigInteger, ByteString, TextString, Identifier, Reference, NameReference ->
+                        row.add(HexFormat.of().formatHex(value.bytes()));
+                    case Structure -> throw new IllegalStateException("Expected a scalar TTLV type");
+                }
+            }
             return;
         }
         try (var value = view.value(); var structure = value.structure()) {

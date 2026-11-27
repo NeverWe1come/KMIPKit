@@ -5,13 +5,16 @@ use driver::Observed;
 use kmipkit::protocol::{
     ActivateRequest, ArchiveRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicParameters, CryptographicParametersBuilder, DecryptRequest, DestroyRequest,
-    EncryptRequest, HashRequest, JoinSplitKeyRequest, LoginRequest, LogoutRequest, MacRequest,
-    MacVerifyRequest, ObjectType, OperationData, RevocationReason, RevokeRequest, SecretBytes,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
+    EncryptRequest, JoinSplitKeyRequest, LoginRequest, LogoutRequest, ObjectType, OperationData,
+    RevocationReason, RevokeRequest, SecretBytes, SignRequest, SplitKeyMethod, SplitKeyReference,
+    UniqueIdentifier,
 };
 use kmipkit::{Client, ClientRequest};
 
+mod crypto;
 mod draft;
+mod key_block;
+pub(crate) use crypto::OPERATIONS as CRYPTO_OPERATIONS;
 
 pub(crate) enum Failure {
     LocalRejection(&'static str),
@@ -140,6 +143,14 @@ impl Attempt<'_> {
             Some("multipart_streaming") => return self.multipart(case),
             _ => {}
         }
+        if case.operation == "Get"
+            && let Some(format) = crate::key_block::asymmetric_format(&case.requires)
+        {
+            return self.get_asymmetric_key(format);
+        }
+        if case.operation == "Get" && case.requires["key_block_shape"].is_string() {
+            return self.get_key_block(case.requires["key_block_shape"] == "wrapped");
+        }
         if draft::supports(&case.operation) {
             return self.run_draft(case);
         }
@@ -163,7 +174,8 @@ impl Attempt<'_> {
                 return self.exchange(ClientRequest::Logout(LogoutRequest::new(ticket)));
             }
             "Join Split Key" => return self.join(),
-            "Decrypt" | "MAC Verify" | "Signature Verify" | "Sign" | "MAC" | "Encrypt" => {
+            "Hash" => return self.hash(),
+            operation if CRYPTO_OPERATIONS.contains(&operation) => {
                 return self.crypto(case);
             }
             "Login" | "Delegated Login" => {
@@ -176,6 +188,42 @@ impl Attempt<'_> {
                 return Ok(response);
             }
             _ => {}
+        }
+        if case.operation == "Query" && case.requires["query_function"].is_string() {
+            let tag = case.requires["query_result_tag"]
+                .as_str()
+                .and_then(|value| value.parse::<u32>().ok())
+                .ok_or(Failure::Assertion("invalid Query field fixture"))?;
+            let request =
+                adapters::request(case, None, &self.name, &self.connection.protocol_version)?;
+            let request = if self.connection.api_level == "fluent" {
+                crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+            } else {
+                request
+            };
+            let response = self.exchange(request)?;
+            if response.status == 0 && !response.nonempty_structure_tags.contains(&tag) {
+                return Err(Failure::Assertion(
+                    "Query did not return the requested nonempty structure",
+                ));
+            }
+            return Ok(response);
+        }
+        if case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string() {
+            let request =
+                adapters::request(case, None, &self.name, &self.connection.protocol_version)?;
+            let request = if self.connection.api_level == "fluent" {
+                crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+            } else {
+                request
+            };
+            let response = self.exchange(request)?;
+            if response.status == 0 && response.identifiers.len() > 1 {
+                return Err(Failure::Assertion(
+                    "Locate returned more identifiers than requested",
+                ));
+            }
+            return Ok(response);
         }
         let mut identifier = None;
         let needs_object = ![
@@ -271,6 +319,37 @@ impl Attempt<'_> {
         {
             self.own(&response);
         }
+        if case.requires["base_object"] == "Attribute" && response.status == 0 {
+            let identifier = response
+                .identifier
+                .as_ref()
+                .and_then(|id| id.as_str())
+                .ok_or(Failure::Assertion(
+                    "Register omitted the fixture identifier",
+                ))?;
+            let request = ClientRequest::GetAttributes(
+                kmipkit::protocol::GetAttributesRequest::try_new(
+                    Some(identifier.to_owned()),
+                    vec![kmipkit::protocol::AttributeReference::name(
+                        case.requires["attribute_vendor_identification"]
+                            .as_str()
+                            .ok_or("fixture vendor missing")?,
+                        case.requires["attribute_reference_name"]
+                            .as_str()
+                            .ok_or("fixture attribute name missing")?,
+                    )],
+                )
+                .map_err(|_| Failure::Assertion("invalid Get Attributes readback request"))?,
+            );
+            let request = if self.connection.api_level == "fluent" {
+                crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+            } else {
+                request
+            };
+            let mut readback = self.exchange(request)?;
+            readback.fixture_attribute_returned &= readback.identifier == response.identifier;
+            return Ok(readback);
+        }
         Ok(response)
     }
     fn asynchronous(&mut self, operation: &str) -> std::result::Result<Observed, Failure> {
@@ -293,17 +372,51 @@ impl Attempt<'_> {
                 "asynchronous setup returned no result",
             ))?;
         self.own(&response);
-        let correlation = response.correlation.take().ok_or(Failure::Prerequisite(
+        let mut correlation = response.correlation.take().ok_or(Failure::Prerequisite(
             "server did not return the required Pending correlation; asynchronous target not sent",
         ))?;
-        if operation != "Cancel" {
+        let mut exchange = |operation: &str, token: &[u8]| {
+            if self.connection.api_level == "generic-ttlv" {
+                crate::generic::asynchronous(self.connection, operation, token)
+                    .map_err(Failure::Assertion)
+            } else {
+                driver::asynchronous(self.client, self.connection, operation, token)
+                    .map_err(Failure::Library)
+            }
+        };
+        if operation != "Poll" {
+            if operation != "Cancel" {
+                self.pending
+                    .push(correlation.with_bytes(|v| SecretBytes::new(v.to_vec())));
+            }
+            return correlation.with_bytes(|value| exchange(operation, value));
+        }
+        for _ in 0..16 {
+            self.pending.clear();
             self.pending
                 .push(correlation.with_bytes(|v| SecretBytes::new(v.to_vec())));
+            let mut observed = correlation.with_bytes(|value| exchange("Poll", value))?;
+            if observed.status != 2 {
+                if observed.status == 0 {
+                    if observed.identifiers.len() != 1 {
+                        return Err(Failure::Assertion(
+                            "completed Poll did not return the owned Create identifier",
+                        ));
+                    }
+                    self.pending.clear();
+                    self.own(&observed);
+                }
+                return Ok(observed);
+            }
+            correlation = observed.correlation.take().ok_or(Failure::Assertion(
+                "Pending Poll response omitted its correlation value",
+            ))?;
         }
-        let result = correlation.with_bytes(|bytes| {
-            driver::asynchronous(self.client, self.connection, operation, bytes)
-        })?;
-        Ok(result)
+        self.pending.clear();
+        self.pending.push(correlation);
+        Err(Failure::Prerequisite(
+            "server remained Pending after the bounded Poll sequence",
+        ))
     }
     fn join(&mut self) -> std::result::Result<Observed, Failure> {
         let request = ClientRequest::CreateSplitKey(CreateSplitKeyRequest::new(
@@ -336,25 +449,32 @@ impl Attempt<'_> {
         Ok(result)
     }
     fn batch(&mut self, case: &Case) -> std::result::Result<Observed, Failure> {
-        let requests = if case.case_id == "test-batch-create-activate-destroy" {
+        let placeholder = UniqueIdentifier::Enumeration(1);
+        let requests = if case
+            .case_id
+            .starts_with("test-batch-create-activate-destroy")
+        {
             vec![
                 adapters::create(&self.name, &self.connection.protocol_version)?,
-                ClientRequest::Activate(ActivateRequest::new(None)),
-                ClientRequest::Revoke(RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)),
-                ClientRequest::Destroy(DestroyRequest::new(None)),
+                ClientRequest::Activate(ActivateRequest::new(Some(placeholder.clone()))),
+                ClientRequest::Revoke(
+                    RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)
+                        .with_unique_identifier(placeholder.clone()),
+                ),
+                ClientRequest::Destroy(DestroyRequest::new(Some(placeholder))),
             ]
         } else {
             vec![
                 fixtures::register("Symmetric Key", &self.connection.protocol_version)?,
-                ClientRequest::Activate(ActivateRequest::new(None)),
+                ClientRequest::Activate(ActivateRequest::new(Some(placeholder.clone()))),
                 ClientRequest::Encrypt(
-                    EncryptRequest::new(None, Some(plain()))
+                    EncryptRequest::new(Some(placeholder.clone()), Some(plain()))
                         .with_cryptographic_parameters(parameters(3)?)
                         .with_iv_counter_nonce(SecretBytes::new(vec![0; 16])),
                 ),
                 ClientRequest::Decrypt(
                     DecryptRequest::new(
-                        None,
+                        Some(placeholder.clone()),
                         Some(OperationData::ByteString(SecretBytes::new(
                             include_bytes!("../tests/fixtures/aes256-cbc.bin").to_vec(),
                         ))),
@@ -362,8 +482,11 @@ impl Attempt<'_> {
                     .with_cryptographic_parameters(parameters(3)?)
                     .with_iv_counter_nonce(SecretBytes::new(vec![0; 16])),
                 ),
-                ClientRequest::Revoke(RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)),
-                ClientRequest::Destroy(DestroyRequest::new(None)),
+                ClientRequest::Revoke(
+                    RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)
+                        .with_unique_identifier(placeholder.clone()),
+                ),
+                ClientRequest::Destroy(DestroyRequest::new(Some(placeholder))),
             ]
         };
         let results = driver::batch(self.client, self.connection, requests, false)?;
@@ -377,7 +500,10 @@ impl Attempt<'_> {
                 .nth(index)
                 .ok_or(Failure::Assertion("batch result missing"));
         }
-        if case.case_id == "test-batch-register-encrypt-decrypt-destroy" {
+        if case
+            .case_id
+            .starts_with("test-batch-register-encrypt-decrypt-destroy")
+        {
             let bytes = results
                 .get(3)
                 .and_then(|r| r.bytes.as_ref())
@@ -394,125 +520,18 @@ impl Attempt<'_> {
             .last()
             .ok_or(Failure::Assertion("batch returned no results"))
     }
-    fn crypto(&mut self, case: &Case) -> std::result::Result<Observed, Failure> {
-        let algorithm = case.requires["algorithm"].as_str().unwrap_or("AES");
-        let bits = case.requires["key_length"]
-            .as_i64()
-            .and_then(|v| i32::try_from(v).ok())
-            .unwrap_or(256);
-        let active = case.case_id != "test-neg-encrypt-preactive-key";
-        let (private, public) = self.key(algorithm, bits, active)?;
-        let raw = match algorithm {
-            "RSA" => 4,
-            "ECDSA" => 6,
-            "HMAC_SHA256" => 9,
-            _ => 3,
-        };
-        let request = match case.operation.as_str() {
-            "Encrypt" => ClientRequest::Encrypt(
-                EncryptRequest::new(Some(private), Some(plain()))
-                    .with_cryptographic_parameters(parameters(raw)?)
-                    .with_iv_counter_nonce(SecretBytes::new(vec![0; 16])),
-            ),
-            "Decrypt" => {
-                let response = self.setup(ClientRequest::Encrypt(
-                    EncryptRequest::new(Some(private.clone()), Some(plain()))
-                        .with_cryptographic_parameters(parameters(raw)?)
-                        .with_iv_counter_nonce(SecretBytes::new(vec![0; 16])),
-                ))?;
-                let data = response
-                    .bytes
-                    .ok_or(Failure::Prerequisite("Encrypt returned no ciphertext"))?;
-                ClientRequest::Decrypt(
-                    DecryptRequest::new(Some(private), Some(OperationData::ByteString(data)))
-                        .with_cryptographic_parameters(parameters(raw)?)
-                        .with_iv_counter_nonce(SecretBytes::new(vec![0; 16])),
-                )
-            }
-            "MAC" => ClientRequest::Mac(
-                MacRequest::new()
-                    .with_unique_identifier(private)
-                    .with_data(plain())
-                    .with_cryptographic_parameters(parameters(raw)?),
-            ),
-            "MAC Verify" => {
-                let response = self.setup(ClientRequest::Mac(
-                    MacRequest::new()
-                        .with_unique_identifier(private.clone())
-                        .with_data(plain())
-                        .with_cryptographic_parameters(parameters(raw)?),
-                ))?;
-                ClientRequest::MacVerify(
-                    MacVerifyRequest::new()
-                        .with_unique_identifier(private)
-                        .with_data(plain())
-                        .with_mac_data(
-                            response
-                                .bytes
-                                .ok_or(Failure::Prerequisite("MAC returned no data"))?,
-                        )
-                        .with_cryptographic_parameters(parameters(raw)?),
-                )
-            }
-            "Sign" => ClientRequest::Sign(
-                SignRequest::new()
-                    .with_unique_identifier(private)
-                    .with_data(plain())
-                    .with_cryptographic_parameters(parameters(raw)?),
-            ),
-            _ => {
-                let response = self.setup(ClientRequest::Sign(
-                    SignRequest::new()
-                        .with_unique_identifier(private)
-                        .with_data(plain())
-                        .with_cryptographic_parameters(parameters(raw)?),
-                ))?;
-                ClientRequest::SignatureVerify(
-                    SignatureVerifyRequest::new()
-                        .with_unique_identifier(public)
-                        .with_data(plain())
-                        .with_signature_data(
-                            response
-                                .bytes
-                                .ok_or(Failure::Prerequisite("Sign returned no signature"))?,
-                        )
-                        .with_cryptographic_parameters(parameters(raw)?),
-                )
-            }
-        };
-        let response = self.exchange(request)?;
-        if case.operation == "Decrypt"
-            && response.status == 0
-            && !response
-                .bytes
-                .as_ref()
-                .is_some_and(|v| v.with_bytes(|v| v == [0x41; 16]))
-        {
-            return Err(Failure::Assertion(
-                "decrypt did not recover fixture plaintext",
-            ));
-        }
-        Ok(response)
-    }
     fn multipart(&mut self, case: &Case) -> std::result::Result<Observed, Failure> {
+        if case.operation == "Hash" {
+            return self.multipart_hash();
+        }
         let algorithm = case.requires["algorithm"].as_str().unwrap_or("AES");
         let bits = case.requires["key_length"]
             .as_i64()
             .and_then(|v| i32::try_from(v).ok())
             .unwrap_or(128);
-        let id = if case.operation == "Hash" {
-            None
-        } else {
-            Some(self.key(algorithm, bits, true)?.0)
-        };
+        let id = Some(self.key(algorithm, bits, true)?.0);
         let raw = if algorithm == "RSA" { 4 } else { 3 };
         let initial = match case.operation.as_str() {
-            "Hash" => ClientRequest::Hash(
-                HashRequest::new(parameters(9)?)
-                    .with_data(plain())
-                    .with_init_indicator(true)
-                    .with_final_indicator(false),
-            ),
             "Sign" => ClientRequest::Sign(
                 SignRequest::new()
                     .with_unique_identifier(
@@ -544,13 +563,6 @@ impl Attempt<'_> {
             "server did not return a multipart correlation",
         ))?;
         let final_request = match case.operation.as_str() {
-            "Hash" => ClientRequest::Hash(
-                HashRequest::new(parameters(9)?)
-                    .with_data(plain())
-                    .with_correlation_value(correlation)
-                    .with_init_indicator(false)
-                    .with_final_indicator(true),
-            ),
             "Sign" => ClientRequest::Sign(
                 SignRequest::new()
                     .with_unique_identifier(

@@ -76,12 +76,14 @@ def find(tree, tag):
     return None
 
 
-def response(operation, minor=1, status=1, reason=5, payload=None, message=None, *, major=2):
+def response(operation, minor=1, status=1, reason=5, payload=None, message=None, *, major=2, correlation=None):
     fields = [ttlv(0x42005c, 5, operation), ttlv(0x42007f, 5, status)]
     if reason is not None:
         fields.append(ttlv(0x42007e, 5, reason))
     if message:
         fields.append(ttlv(0x42007d, 7, message))
+    if correlation is not None:
+        fields.append(ttlv(0x420006, 8, correlation))
     if payload is not None:
         fields.append(ttlv(0x42007c, 1, payload))
     header = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)]),
@@ -169,10 +171,11 @@ class TagFixtureContract(unittest.TestCase):
     def test_constructs_all_kmip2_scalar_types_without_the_decoder(self):
         tag = 0x420094
         values = [
-            (2, b"\xff" * 4), (3, b"\xff" * 8), (4, b"\x01" * 8),
-            (5, b"\x00\x00\x00\x05"), (6, b"\x00" * 7 + b"\x01"),
-            (7, "á".encode()), (8, b"abc"), (9, b"\x00" * 8),
-            (10, b"\x00\x00\x00\x01"), (11, b"\x00" * 8),
+            (2, struct.pack(">i", -(2**31))), (3, struct.pack(">q", 2**63 - 1)),
+            (4, b"\xff" * 8), (5, struct.pack(">I", 2**32 - 1)),
+            (6, b"\x00" * 7 + b"\x01"), (7, "á".encode()), (8, b"abc"),
+            (9, struct.pack(">q", -123)), (10, struct.pack(">I", 2**32 - 1)),
+            (11, struct.pack(">q", 1234567890123)),
         ]
         fields = [
             tag.to_bytes(3, "big") + bytes([kind]) + struct.pack(">I", len(value))
@@ -183,7 +186,12 @@ class TagFixtureContract(unittest.TestCase):
         malformed = root[:-1]
         invalid_boolean = ttlv(tag, 8, b"\x00" * 7 + b"\x02")
         invalid_boolean = invalid_boolean[:3] + b"\x06" + invalid_boolean[4:]
-        expected = [[0x420078, 1, len(fields)], *[[tag, kind, 0] for kind, _ in values]]
+        expected_scalars = [-(2**31), 2**63 - 1, "ff" * 8, 2**32 - 1, True,
+                            "c3a1", "616263", -123, 2**32 - 1, 1234567890123]
+        expected = [[0x420078, 1, len(fields)], *[
+            [tag, kind, 0, expected_value]
+            for (kind, _), expected_value in zip(values, expected_scalars, strict=True)
+        ]]
         runner = VALIDATOR.with_name("kmip30-campaign")
         for command in ("--construct-oasis-ttlv", "--inspect-oasis-ttlv"):
             process = subprocess.run([str(runner), command], check=True, capture_output=True, text=True,
@@ -300,6 +308,31 @@ class LiveContract(unittest.TestCase):
         self.assertEqual(report["summary"]["passed"], 67)
         self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
+    def test_normative_wire_values_and_batch_boundaries_run_offline(self):
+        from verification.interop.shared.tools.operation_catalog import build_normative_catalog
+
+        accepted_kinds = {"tag", "tag_range", "enumeration_value", "bitmask_value", "data_type"}
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                catalog, _ = build_normative_catalog(ROOT, version)
+                cases = [case for case in catalog["test_cases"]
+                         if case["execution"]["mode"] == "local_model"
+                         and (case["category"] in {"batch_workflows", "version_boundaries"}
+                              or case["requires"].get("target_kind") in accepted_kinds)]
+                self.assertEqual({case["requires"].get("target_kind") for case in cases} & accepted_kinds,
+                                 accepted_kinds)
+                process, report = self.command(self.connection(version=version), cases)
+                self.assertIsNotNone(report, process.stderr)
+                self.assertEqual({row["case_id"] for row in report["cases"]},
+                                 {case["case_id"] for case in cases})
+                failures = [row["case_id"] for row in report["cases"] if row["status"] != "passed"]
+                self.assertEqual(failures, [], process.stderr)
+                self.assertEqual(process.returncode, 0, process.stderr)
+                for row in report["cases"]:
+                    self.assertEqual(row["library_correctness"], "passed")
+                    self.assertEqual(row["server_compatibility"], "unknown")
+                    self.assertNotIn("result_status_code", row)
+
     def test_query_probes_profile_omissions_and_separates_rejections(self):
         for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
             with self.subTest(reason=reason), ControlledPeer(self.pki, lambda tree: response(0x18, reason=reason, message="secret-response-sentinel")) as peer:
@@ -308,6 +341,7 @@ class LiveContract(unittest.TestCase):
                 self.assertEqual(case["status"], status)
                 self.assertEqual(case["server_compatibility"], compatibility)
                 self.assertEqual(case["library_correctness"], "passed")
+                self.assertEqual((case["result_status_code"], case["result_reason_code"]), (1, reason))
                 self.assertEqual(peer.operations, [0x18])
                 self.assertNotIn("secret-response-sentinel", json.dumps(report))
 
@@ -371,11 +405,11 @@ class LiveContract(unittest.TestCase):
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
     def test_generic_tags_reach_the_peer_in_both_kmip_2_versions(self):
-        probes = [("2.0", 0x18), ("2.0", 0x1e), ("2.1", 0x18), ("2.1", 0x1e), ("2.1", 0x3b), ("2.0", 0x27), ("2.1", 0x27), ("2.0", 0x08), ("2.1", 0x08), ("2.0", 0x25), ("2.1", 0x25)]
+        probes = [("2.0", 0x18), ("2.0", 0x1e), ("2.1", 0x18), ("2.1", 0x1e), ("2.1", 0x3b), ("2.0", 0x27), ("2.1", 0x27), ("2.0", 0x08), ("2.1", 0x08), ("2.0", 0x25), ("2.1", 0x25), ("2.0", 0x26), ("2.1", 0x26)]
         for (version, operation), result in product(probes, ("passed", "server_unsupported", "failed")):
             with self.subTest(version=version, operation=operation, result=result):
                 minor = int(version[-1])
-                name = {0x08: "locate", 0x18: "query", 0x1e: "discover-versions", 0x25: "rng-retrieve", 0x27: "hash", 0x3b: "ping"}[operation]
+                name = {0x08: "locate", 0x18: "query", 0x1e: "discover-versions", 0x25: "rng-retrieve", 0x26: "rng-seed", 0x27: "hash", 0x3b: "ping"}[operation]
                 protocol = ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)])
                 query_function = ttlv(0x420074, 5, 1)
 
@@ -383,19 +417,21 @@ class LiveContract(unittest.TestCase):
                     expected = {
                         0x18: query_function, 0x1e: protocol, 0x3b: b"",
                         0x25: ttlv(0x4200c4, 2, 32),
-                        0x08: ttlv(0x42004f, 2, 1) + ttlv(0x4200d4, 2, 0),
+                        0x26: ttlv(0x4200c2, 8, b"A" * 32),
+                        0x08: ttlv(0x42004f, 2, 1) + ttlv(0x4200d4, 2, 0) + ttlv(0x420125, 1, []),
                         0x27: ttlv(0x42002b, 1, [ttlv(0x420038, 5, 6)]) + ttlv(0x4200c2, 8, b"abc"),
                     }[operation]
                     self.assertEqual(find(tree, 0x420079), parse(expected))
                     if result == "server_unsupported":
                         return response(operation, minor)
-                    if result == "failed" and operation not in (0x08, 0x25, 0x27):
+                    if result == "failed" and operation not in (0x08, 0x25, 0x26, 0x27):
                         return response(operation, 1 - minor)
                     payload = {
                         0x18: [ttlv(0x42005c, 5, operation), ttlv(0x42015f, 1, [])],
                         0x1e: [protocol],
                         0x3b: [],
                         0x25: [ttlv(0x4200c2, 8, bytes(31 if result == "failed" else 32))],
+                        0x26: [ttlv(0x4200c4, 2, 33 if result == "failed" else 0)],
                         0x08: [ttlv(0x4200d5, 2, 2), ttlv(0x420094, 7, "known-id")]
                               + ([ttlv(0x420094, 7, "other-id")] if result == "failed" else []),
                         0x27: [ttlv(0x4200c2, 8, hashlib.sha256(
@@ -406,8 +442,9 @@ class LiveContract(unittest.TestCase):
 
                 with ControlledPeer(self.pki, reply) as peer:
                     _, report = self.command(
-                        self.connection(peer.port, version=version, api="generic-ttlv", mutations=operation == 0x25),
+                        self.connection(peer.port, version=version, api="generic-ttlv", mutations=operation in (0x25, 0x26)),
                         self.rows({0x25: "test-crypto-rng-retrieve-rng-32",
+                                   0x26: "test-crypto-rng-seed-rng-32",
                                    0x27: "test-crypto-hash-sha_256-0"}.get(operation, f"test-op-{name}"))
                     )
                     self.assertEqual(peer.operations, [operation])
@@ -580,6 +617,52 @@ class LiveContract(unittest.TestCase):
                         observations.append((peer.request_trees[index], peer.response_trees[index]))
                     self.assertEqual(*observations)
 
+    def test_generic_attribute_mutations_verify_the_value_and_cleanup(self):
+        operations = {"add": 0x0d, "modify": 0x0e, "delete": 0x0f, "set": 0x31}
+        initial = "kmipkit-attribute-fixture"
+        changed = "kmipkit-changed-description"
+        for minor in (0, 1):
+            for name, target in operations.items():
+                for persist in (True, False):
+                    with self.subTest(minor=minor, operation=name, persist=persist):
+                        description = None if name == "add" else initial
+                        attr_tag = 0x4200fd if name == "delete" else 0x4200fc
+
+                        def reply(tree):
+                            nonlocal description
+                            operation = find(tree, 0x42005c)
+                            payload = [ttlv(0x420094, 7, "fixture-key")]
+                            if operation == 1:
+                                self.assertEqual(description, find(tree, attr_tag))
+                                payload.insert(0, ttlv(0x420057, 5, 2))
+                            elif operation == 0x0b:
+                                self.assertEqual(attr_tag, find(tree, 0x42013b))
+                                if description is not None:
+                                    payload.append(ttlv(0x420125, 1, [ttlv(attr_tag, 7, description)]))
+                            elif operation == target:
+                                current = find(tree, 0x42013c)
+                                new = find(tree, 0x42013d)
+                                self.assertEqual(initial if name == "modify" else None, find(current or [], 0x4200fc))
+                                if name == "delete":
+                                    self.assertEqual(attr_tag, find(tree, 0x42013b))
+                                    self.assertIsNone(new)
+                                else:
+                                    self.assertEqual(changed, find(new or [], 0x4200fc))
+                                if persist:
+                                    description = None if name == "delete" else changed
+                            else:
+                                self.assertEqual(0x14, operation)
+                            return response(operation, minor=minor, status=0, reason=None, payload=payload)
+
+                        case_id = f"test-op-{name}-attribute"
+                        with ControlledPeer(self.pki, reply) as peer:
+                            _, report = self.command(
+                                self.connection(peer.port, version=f"2.{minor}", api="generic-ttlv", mutations=True),
+                                self.rows(case_id),
+                            )
+                        self.assertEqual([1, 0x0b, target, 0x0b, 0x14], peer.operations)
+                        self.assertEqual("passed" if persist else "failed", report["cases"][0]["status"])
+
     def test_native_server_query_parity_across_apis_encodings_and_versions(self):
         normalized = []
         for version in ("2.0", "2.1"):
@@ -589,6 +672,8 @@ class LiveContract(unittest.TestCase):
                         _, report = self.command(self.connection(version=version, transport="https", encoding=encoding, api=api), self.rows("test-op-query"))
                         case = report["cases"][0]
                         self.assertEqual(case["status"], "passed", case)
+                        if api == "high-level":
+                            self.assertEqual(case["actual_api_level"], "high-level")
                         normalized.append((case["status"], case["result_status"], case.get("result_reason")))
         self.assertEqual(len(set(normalized)), 1)
 
@@ -662,6 +747,8 @@ class LiveContract(unittest.TestCase):
             "Modify Attribute", "Delete Attribute", "Get Usage Allocation", "RNG Retrieve",
             "Revoke", "Get", "Get Attributes", "Get Attribute List", "Locate", "Ping",
             "Get Constraints", "Activate", "Archive", "Recover", "Destroy",
+            "Check", "Obtain Lease", "RNG Seed", "Create Split Key", "Re-key", "Re-key Key Pair", "Register",
+            "Hash", "Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify",
         }
         for version in ("2.0", "2.1"):
             with self.subTest(version=version):
@@ -670,8 +757,10 @@ class LiveContract(unittest.TestCase):
                     if case["operation"] in operations
                     and version in case["execution"]["protocol_versions"]
                     and case["requires"].get("workflow_type") not in {
-                        "server_to_client", "async_poll", "batch_id_placeholder", "multipart_streaming",
+                        "server_to_client", "async_poll", "batch_id_placeholder",
                     }
+                    and (case["requires"].get("workflow_type") != "multipart_streaming"
+                         or case["operation"] == "Hash")
                     and (case["operation"] != "Create"
                          or case["requires"].get("object_type") in (None, "Symmetric Key"))
                 ]
@@ -696,7 +785,8 @@ class LiveContract(unittest.TestCase):
                     continue
                 operation = find(batch, 0x42005c)
                 name = operations[operation]
-                uid = find(batch, 0x420094) or f"owned-{sequence}"
+                raw_uid = find(batch, 0x420094)
+                uid = raw_uid if isinstance(raw_uid, str) else f"owned-{sequence}"
                 payload = [ttlv(0x420094, 7, uid)]
                 status, reason = 0, None
                 if name == "Create" and find(tree, 0x420007) == 1:
@@ -719,12 +809,30 @@ class LiveContract(unittest.TestCase):
                     if name == "Encrypt" and uid not in active and find(tree, 0x42000d) == 1:
                         status, reason, payload = 1, 7, None
                     elif find(batch, 0x4200d6) is not None:
-                        status, reason, payload = 1, 5, None
+                        if name == "Hash":
+                            self.assertEqual(find(batch, 0x4200d6), b"controlled-multipart")
+                            self.assertIsNone(find(batch, 0x4200d7))
+                            if find(batch, 0x4200d8) == 1:
+                                self.assertEqual(find(batch, 0x4200c2), b"!")
+                                payload = [ttlv(0x4200c2, 8, hashlib.sha256(b"KMIP Hash!").digest())]
+                            else:
+                                self.assertEqual(find(batch, 0x4200c2), b"Hash")
+                                self.assertIsNone(find(batch, 0x4200d8))
+                                payload = []
+                        else:
+                            status, reason, payload = 1, 5, None
                     elif find(batch, 0x4200d7) == 1:
+                        if name == "Hash":
+                            self.assertEqual(find(batch, 0x4200c2), b"KMIP ")
+                            self.assertIsNone(find(batch, 0x4200d8))
                         payload = ([] if name == "Hash" else payload) + [ttlv(0x4200d6, 8, b"controlled-multipart")]
                     else:
                         value_tag = {"MAC": 0x4200c6, "Sign": 0x4200c3}.get(name, 0x4200c2)
-                        value = cipher if name == "Encrypt" else b"A" * 16
+                        value = {
+                            "Encrypt": cipher,
+                            "Hash": hashlib.sha256(find(batch, 0x4200c2) or b"").digest(),
+                            "MAC": b"M" * 32,
+                        }.get(name, b"A" * 16)
                         payload = ([] if name == "Hash" else payload) + [ttlv(value_tag, 8, value)]
                 elif name in ("MAC Verify", "Signature Verify"):
                     payload += [ttlv(0x42009b, 5, 1)]
@@ -781,16 +889,28 @@ class LiveContract(unittest.TestCase):
             with self.subTest(version=version):
                 self.incoming_scenario(version)
 
-    def incoming_scenario(self, version):
+    def test_incoming_kmip2_uses_generic_ttlv_and_echoes_correlation(self):
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                self.incoming_scenario(version, "generic-ttlv")
+
+    def test_incoming_generic_rejects_an_invalid_put_payload(self):
+        self.incoming_scenario("2.1", "generic-ttlv", invalid_put=True)
+
+    def incoming_scenario(self, version, api="typed-protocol", invalid_put=False):
         cases = [c for c in CATALOG["test_cases"] if c["requires"].get("workflow_type") == "server_to_client"]
         major, minor = map(int, version.split("."))
         if major == 3:
             cases = [{**case, "execution": {**case["execution"], "protocol_versions": [version]}}
                      for case in cases]
-        work = self.directory / f"incoming-ready-{version}"
+        work = self.directory / f"incoming-ready-{version}-{api}-{invalid_put}"
         payloads = [[], [ttlv(0x420094, 7, "owned-fixture")], [ttlv(0x420094, 12 if major == 3 else 7, "owned-fixture"), ttlv(0x420070, 5, 1), ttlv(0x42005b, 1, [ttlv(0x420059, 5, 1), ttlv(0x42005a, 8, b"fixture")])], [ttlv(0x420074, 5, 1)], [ttlv(0x420151, 5, 1)]]
         operations = [0x1e, 0x1b, 0x1c, 0x18, 0x32]
+        if invalid_put:
+            cases = [case for case in cases if case["operation"] == "Put"]
+            payloads, operations = [[ttlv(0x420094, 7, "missing-put-function")]], [0x1c]
         errors = []
+        replies = []
         def send():
             try:
                 deadline = time.monotonic() + 10
@@ -805,22 +925,156 @@ class LiveContract(unittest.TestCase):
                     with socket.create_connection((host, int(port)), timeout=5) as raw:
                         with context.wrap_socket(raw, server_hostname="localhost") as channel:
                             fields = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)])]
+                            if api == "generic-ttlv":
+                                fields.append(ttlv(0x420105, 7, "test-correlation"))
                             if major < 3:
                                 fields.append(ttlv(0x42000d, 2, 1))
+                            batch = [ttlv(0x42005c, 5, operation)]
+                            if api == "generic-ttlv":
+                                batch.append(ttlv(0x420093, 8, b"fixture-batch"))
+                            batch.append(ttlv(0x420079, 1, payload))
                             channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, fields),
-                                ttlv(0x42000f, 1, [ttlv(0x42005c, 5, operation), ttlv(0x420079, 1, payload)])]))
-                            reply = parse(receive(channel))
-                            if (find(reply, 0x42005c), find(reply, 0x42007f), find(reply, 0x42006a),
-                                    find(reply, 0x42006b)) != (operation, 0, major, minor):
-                                raise AssertionError(f"incoming response contract mismatch: expected operation={operation}, observed operation={find(reply, 0x42005c)}, status={find(reply, 0x42007f)}")
-            except Exception as error:
+                                ttlv(0x42000f, 1, batch)]))
+                            replies.append(parse(receive(channel)))
+            except (OSError, ValueError) as error:
                 errors.append(str(error))
         thread = threading.Thread(target=send)
         thread.start()
-        _, report = self.command(self.connection(version=version), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
+        _, report = self.command(self.connection(version=version, api=api, mutations=True), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
         thread.join(timeout=10)
         self.assertFalse(errors, (errors, report))
-        self.assertEqual(report["summary"]["passed"], 5, report["cases"])
+        self.assertFalse(thread.is_alive(), "fixture did not finish reading replies")
+        self.assertEqual(len(replies), len(operations))
+        for operation, reply in zip(operations, replies):
+            self.assertEqual((find(reply, 0x42005c), find(reply, 0x42007f),
+                              find(reply, 0x42006a), find(reply, 0x42006b)),
+                             (operation, int(invalid_put), major, minor))
+            if api == "generic-ttlv":
+                self.assertEqual(find(reply, 0x420105), "test-correlation")
+                self.assertEqual(find(reply, 0x420093), b"fixture-batch")
+                self.assertEqual(find(reply, 0x42000d), 1)
+            if invalid_put:
+                self.assertEqual(find(reply, 0x42007e), 7)
+                self.assertIsNone(find(reply, 0x42007c))
+            elif operation == 0x18:
+                response_payload = find(reply, 0x42007c)
+                self.assertEqual([value for tag, _, value in response_payload if tag == 0x42005c],
+                                 [0x1e, 0x1b, 0x1c, 0x18, 0x32])
+            elif operation == 0x32:
+                self.assertEqual(find(reply, 0x420151), 1)
+        if invalid_put:
+            self.assertEqual(report["summary"]["failed"], 1, report["cases"])
+            self.assertEqual(report["cases"][0]["result_reason_code"], 7)
+        else:
+            self.assertEqual(report["summary"]["passed"], 5, report["cases"])
+
+    def test_async_targets_reuse_peer_correlation_and_clean_the_completed_object(self):
+        initial = b"peer-initial-token"
+        updated = b"peer-next-token"
+        owned = "async-owned-fixture"
+        cases = (("test-op-poll", 0x1a), ("test-op-cancel", 0x19))
+        for minor, api, (case_id, target) in product((0, 1), ("typed-protocol", "generic-ttlv"), cases):
+            with self.subTest(minor=minor, api=api, target=target):
+                operations = []
+
+                def answer(tree):
+                    op = find(tree, 0x42005c)
+                    operations.append(op)
+                    if op == 1:
+                        self.assertEqual(find(tree, 0x420007), 1)
+                        return response(op, minor, 2, None, [], correlation=initial)
+                    if op == 0x1a:
+                        submitted = find(tree, 0x420006)
+                        if submitted == initial:
+                            return response(op, minor, 2, None, correlation=updated)
+                        self.assertEqual(submitted, updated)
+                        return response(op, minor, 0, None, [ttlv(0x420057, 5, 2), ttlv(0x420094, 7, owned)])
+                    if op == 0x19:
+                        self.assertEqual(find(tree, 0x420006), initial)
+                        return response(op, minor, 0, None, [ttlv(0x420006, 8, initial), ttlv(0x420012, 5, 1)])
+                    self.assertIn(op, (0x13, 0x14))
+                    self.assertEqual(find(tree, 0x420094), owned)
+                    return response(op, minor, 0, None, [ttlv(0x420094, 7, owned)])
+
+                with ControlledPeer(self.pki, answer) as peer:
+                    _, report = self.command(
+                        self.connection(peer.port, version=f"2.{minor}", api=api, mutations=True),
+                        self.rows(case_id),
+                    )
+                self.assertEqual("passed", report["cases"][0]["status"], report["cases"][0])
+                expected = [1, 0x1a, 0x1a, 0x13, 0x14] if target == 0x1a else [1, 0x19]
+                self.assertEqual(expected, operations)
+
+    def test_generic_extended_operations_reach_peer_and_cleanup(self):
+        cases = [
+            "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
+            "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
+            "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+            "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
+            "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
+            "test-op-import", "test-op-export",
+        ]
+        sym_key = ttlv(0x42008f, 1, [ttlv(0x420040, 1, [
+            ttlv(0x420042, 5, 1), ttlv(0x420045, 1, [ttlv(0x420043, 8, bytes(16))]),
+        ])])
+        for version in ("2.0", "2.1"):
+            minor = int(version[-1])
+            for case_id in cases:
+                with self.subTest(version=version, case_id=case_id):
+                    seen_ops = []
+
+                    def answer(tree):
+                        op = find(tree, 0x42005c)
+                        payload = find(tree, 0x420079)
+                        seen_ops.append(op)
+                        req_id = find(payload, 0x420094) or "owned-key"
+                        if op == 1:
+                            fields = [ttlv(0x420057, 5, 2), ttlv(0x420094, 7, "owned-key")]
+                        elif op == 2:
+                            fields = [ttlv(0x420066, 7, "priv-key"), ttlv(0x42006f, 7, "pub-key")]
+                        elif op in (3, 0x2a):
+                            fields = [ttlv(0x420094, 7, "reg-key")]
+                        elif op == 4:
+                            fields = [ttlv(0x420094, 7, "rekey-key")]
+                        elif op == 5:
+                            fields = [ttlv(0x420094, 7, "derived-key")]
+                        elif op == 6:
+                            self.assertEqual(payload, parse(
+                                ttlv(0x420094, 7, "pub-key")
+                                + ttlv(0x420125, 1, [ttlv(0x42001d, 5, 1)])
+                            ))
+                            fields = [ttlv(0x420094, 7, "cert-id")]
+                        elif op == 7:
+                            fields = [ttlv(0x420094, 7, "recert-id")]
+                        elif op in (0x17, 0x22, 0x24):
+                            fields = [ttlv(0x42009b, 5, 1)]
+                        elif op == 0x1d:
+                            fields = [ttlv(0x420066, 7, "new-priv"), ttlv(0x42006f, 7, "new-pub")]
+                        elif op == 0x1f:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c2, 8, b"cipher")]
+                        elif op == 0x20:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c2, 8, b"0123456789abcdef")]
+                        elif op == 0x21:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c3, 8, b"sig")]
+                        elif op == 0x23:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c6, 8, b"mac")]
+                        elif op == 0x28:
+                            fields = [ttlv(0x420094, 7, "split-1"), ttlv(0x420094, 7, "split-2")]
+                        elif op == 0x29:
+                            fields = [ttlv(0x420094, 7, "joined-key")]
+                        elif op == 0x2b:
+                            fields = [ttlv(0x420057, 5, 2), ttlv(0x420094, 7, req_id), sym_key]
+                        else:
+                            fields = [ttlv(0x420094, 7, req_id)]
+                        return response(op, minor, 0, None, fields)
+
+                    with ControlledPeer(self.pki, answer) as peer:
+                        _, report = self.command(
+                            self.connection(peer.port, version=version, api="generic-ttlv", mutations=True),
+                            self.rows(case_id),
+                        )
+                    self.assertEqual("passed", report["cases"][0]["status"], report["cases"][0])
+                    self.assertTrue(seen_ops)
 
 
 if __name__ == "__main__":

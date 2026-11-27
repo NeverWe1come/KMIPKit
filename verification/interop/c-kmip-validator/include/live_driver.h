@@ -6,6 +6,8 @@
 
 typedef struct {
     kmipkit_client_t *client;
+    struct kmip_generic_listener *incoming;
+    kmipkit_client_listener_t *typed_incoming;
     const kmip_connection_config_t *configuration;
     kmipkit_codec_limits_t *limits;
     int32_t protocol_major;
@@ -26,6 +28,9 @@ bool kmip_live_client_open(
 );
 
 void kmip_live_client_close(kmip_live_client_t *client);
+
+bool kmip_live_bind_typed_listener(kmip_live_client_t *client, const char *address,
+                                   const char *certificate, const char *key, const char *ready_path);
 
 kmip_execution_outcome_t kmip_live_execute_case(
     const kmip_test_case_t *test_case,

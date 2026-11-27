@@ -37,7 +37,7 @@ class ControlledExchangeTests(unittest.TestCase):
                 and case.get("requires", {}).get("workflow_type") != "server_to_client"
                 and PythonKmipDriver.supports(case, "typed-protocol")
             ]
-            self.assertEqual(len(cases), {"2.0": 127, "2.1": 134}[protocol_version])
+            self.assertEqual(len(cases), {"2.0": 128, "2.1": 135}[protocol_version])
             for case in cases:
                 for encoding, transport in network_combinations:
                     with self.subTest(
@@ -90,6 +90,8 @@ class ControlledExchangeTests(unittest.TestCase):
                                     else b"fixture-correlation"
                                 )
                                 observed = driver._async_exchange(case["operation"], correlation)
+                            elif case["case_id"] == "test-multipart-hash-sha256":
+                                observed = driver.execute_case(case)
                             elif case["operation"] == "Logout":
                                 ticket_type = driver._item(0x0042_014A, "enumeration", 1)
                                 ticket_value = driver._item(0x0042_014B, "bytes", b"fixture-ticket")
@@ -252,12 +254,68 @@ class ControlledExchangeTests(unittest.TestCase):
                     observations.append((peer.requests[0], peer.responses[0]))
                 self.assertEqual(*observations)
 
+    def test_fluent_split_key_register_and_recertify_match_typed_requests(self):
+        from kmipkit.protocol_values import Operation
+
+        cases = {
+            "test-op-create-split-key": Operation.CREATE_SPLIT_KEY,
+            "test-obj-split-key": Operation.CREATE_SPLIT_KEY,
+            "test-op-register": Operation.REGISTER,
+            "test-obj-certificate": Operation.REGISTER,
+            "test-obj-certificate-request": Operation.REGISTER,
+            "test-obj-opaque-object": Operation.REGISTER,
+            "test-obj-pgp-key": Operation.REGISTER,
+            "test-obj-secret-data": Operation.REGISTER,
+            "test-op-re-certify": Operation.RE_CERTIFY,
+        }
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
+        for version in ("2.0", "2.1"):
+            for case_id, operation in cases.items():
+                with self.subTest(version=version, case_id=case_id):
+                    requests = []
+                    for fluent in (False, True):
+                        peer = ControlledTlsPeer(protocol_version=version, status=1, reason=5)
+                        result = self._execute_attribute_route(
+                            peer, high_level=False, case_id=case_id, encoding="TTLV",
+                            transport="raw_tls", protocol_version=version, fluent=fluent,
+                        )
+                        self.assertEqual("server_unsupported", result["status"])
+                        request, = peer.requests
+                        self.assertEqual(int(operation), int.from_bytes(
+                            find_value(parse_children(request[8:]), 0x42005C), "big",
+                        ))
+                        requests.append(request)
+                    self.assertEqual(*requests)
+
     def test_generic_tags_reach_a_kmip2_peer_through_the_normal_runner(self):
         from kmipkit_validator.cli import _plan, _run
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
-        selected = {"test-op-locate", "test-op-query", "test-op-discover-versions", "test-op-ping", "test-crypto-hash-sha_256-0", "test-crypto-rng-retrieve-rng-32"}
+        selected = {"test-op-locate", "test-op-query", "test-op-discover-versions", "test-op-ping", "test-crypto-hash-sha_256-0", "test-crypto-rng-retrieve-rng-32", "test-crypto-rng-seed-rng-32"}
         catalog["test_cases"] = [case for case in catalog["test_cases"] if case["case_id"] in selected]
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
         for version in ("2.0", "2.1"):
             minor = int(version[-1])
             for case in catalog["test_cases"]:
@@ -269,10 +327,11 @@ class ControlledExchangeTests(unittest.TestCase):
                         query = case_id == "test-op-query"
                         ping = case_id == "test-op-ping"
                         hashing = case_id == "test-crypto-hash-sha_256-0"
+                        rng_seed = case_id == "test-crypto-rng-seed-rng-32"
                         locate = case_id == "test-op-locate"
                         rng = case_id == "test-crypto-rng-retrieve-rng-32"
                         operation = {"test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
-                                     "test-crypto-hash-sha_256-0": 0x27, "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-ping": 0x3B}[case_id]
+                                     "test-crypto-hash-sha_256-0": 0x27, "test-crypto-rng-retrieve-rng-32": 0x25, "test-crypto-rng-seed-rng-32": 0x26, "test-op-ping": 0x3B}[case_id]
 
                         def reply(request):
                             tree = parse_children(request[8:])
@@ -281,10 +340,13 @@ class ControlledExchangeTests(unittest.TestCase):
                                 self.assertEqual([], payload)
                             elif rng:
                                 self.assertEqual(payload, [(0x4200C4, 2, struct.pack(">i", 32))])
+                            elif rng_seed:
+                                self.assertEqual(payload, [(0x4200C2, 8, b"A" * 32)])
                             elif locate:
                                 self.assertEqual(payload, [
                                     (0x42004F, 2, struct.pack(">i", 1)),
                                     (0x4200D4, 2, struct.pack(">i", 0)),
+                                    (0x420125, 1, b""),
                                 ])
                             elif hashing:
                                 self.assertEqual(find_value(payload, 0x420038), struct.pack(">I", 6))
@@ -295,10 +357,10 @@ class ControlledExchangeTests(unittest.TestCase):
                                 self.assertEqual(find_value(payload, 0x42006B), struct.pack(">i", minor))
                             if expected == "server_unsupported":
                                 return ping_response(request, 1, 5, protocol_minor=minor)
-                            reply_minor = 1 - minor if expected == "failed" and not (hashing or locate or rng) else minor
+                            reply_minor = 1 - minor if expected == "failed" and not (hashing or locate or rng or rng_seed) else minor
                             if ping:
                                 return ping_response(request, 0, None, protocol_minor=reply_minor)
-                            if not (query or hashing or locate or rng):
+                            if not (query or hashing or locate or rng or rng_seed):
                                 return discover_versions_response(request, 0, None, reply_minor, ((2, minor),))
                             protocol = structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
                                                  item(0x42006B, 2, struct.pack(">i", reply_minor)))
@@ -309,6 +371,8 @@ class ControlledExchangeTests(unittest.TestCase):
                                 if hashing else enumeration(0x42005C, 1))
                             if rng:
                                 returned = item(0x4200C2, 8, bytes(31 if expected == "failed" else 32))
+                            if rng_seed:
+                                returned = item(0x4200C4, 2, struct.pack(">i", 33 if expected == "failed" else 0))
                             if locate:
                                 returned = item(0x4200D5, 2, struct.pack(">i", 2)) + item(0x420094, 7, b"known-id")
                                 if expected == "failed":
@@ -329,12 +393,12 @@ class ControlledExchangeTests(unittest.TestCase):
                                     "client_key_path": str(PKI / "client-key.pem"),
                                     "server_name_override": "localhost",
                                 },
-                                "execution_policy": {"allow_mutations": rng, "probe_unsupported": True},
+                                "execution_policy": {"allow_mutations": rng or rng_seed, "probe_unsupported": True},
                             }
                             selection = {**catalog, "test_cases": [case]}
                             plan = _plan(connection, selection, b"{}")
                             self.assertTrue(plan["cases"][0]["route_available"])
-                            result, = _run(connection, b"{}", selection, b"{}", {}, None, rng)
+                            result, = _run(connection, b"{}", selection, b"{}", {}, None, rng or rng_seed)
                             self.assertEqual(expected, result["status"], result)
                         finally:
                             peer.close()
@@ -347,19 +411,38 @@ class ControlledExchangeTests(unittest.TestCase):
         routes = {"create": [1, 20], "destroy": [1, 20], "get": [1, 10, 20], "get-attributes": [1, 11, 20],
                   "check": [1, 18, 9, 19, 20], "activate": [1, 18, 19, 20], "revoke": [1, 18, 19, 20],
                   "get-attribute-list": [1, 12, 20], "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
+        mutations = {"add-attribute": 0x0D, "modify-attribute": 0x0E,
+                     "delete-attribute": 0x0F, "set-attribute": 0x31}
+        routes.update({name: [1, 11, code, 11, 20] for name, code in mutations.items()})
         combinations = [("generic-ttlv", target, operations) for target, operations in routes.items()]
         combinations += [(api, target, routes[target]) for api in ("typed-protocol", "fluent")
                          for target in ("activate", "revoke")]
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
         for version in ("2.0", "2.1"):
             for api, target, operations in combinations:
-                for valid_get in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke", "check")
+                for valid_get in ((True, False) if target in {"get", "get-attributes", "get-attribute-list", "activate", "revoke", "check", *mutations}
                                   and (target != "revoke" or api == "generic-ttlv") else (True,)):
                     with self.subTest(version=version, api=api, target=target, valid_get=valid_get):
                         minor = int(version[-1])
                         owned_id = b"owned-key-id"
                         seen = []
+                        description = None if target == "add-attribute" else b"kmipkit-attribute-fixture"
+                        updated = b"kmipkit-changed-description"
+                        attr_tag = 0x4200FD if target == "delete-attribute" else 0x4200FC
 
                         def answer(request):
+                            nonlocal description
                             tree = parse_children(request[8:])
                             operation = int.from_bytes(find_value(tree, 0x42005C), "big")
                             seen.append(operation)
@@ -368,6 +451,8 @@ class ControlledExchangeTests(unittest.TestCase):
                             if operation == 1:
                                 self.assertEqual(find_value(payload, 0x420028), struct.pack(">I", 3))
                                 self.assertEqual(find_value(payload, 0x42002A), struct.pack(">i", 256))
+                                if target in mutations:
+                                    self.assertEqual(description, find_value(payload, attr_tag))
                                 fields = enumeration(0x420057, 2) + fields
                             else:
                                 self.assertEqual(find_value(payload, 0x420094), owned_id)
@@ -378,7 +463,25 @@ class ControlledExchangeTests(unittest.TestCase):
                                     enumeration(0x420028, 3), item(0x42002A, 2, struct.pack(">i", 256))))
                                 fields = (enumeration(0x420057, 2)
                                           + item(0x420094, 7, owned_id if valid_get else b"foreign-key-id") + key)
-                            if operation == 11:
+                            if target in mutations and operation == 11:
+                                self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", attr_tag))
+                                if description is not None:
+                                    fields += structure(0x420125, item(attr_tag, 7, description))
+                            if operation == mutations.get(target):
+                                current = find_value(payload, 0x42013C)
+                                new = find_value(payload, 0x42013D)
+                                if target == "modify-attribute":
+                                    self.assertEqual([(0x4200FC, 7, description)], parse_children(current))
+                                else:
+                                    self.assertIsNone(current)
+                                if target == "delete-attribute":
+                                    self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", attr_tag))
+                                    self.assertIsNone(new)
+                                else:
+                                    self.assertEqual([(0x4200FC, 7, updated)], parse_children(new))
+                                if valid_get:
+                                    description = None if target == "delete-attribute" else updated
+                            if operation == 11 and target not in mutations:
                                 self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x42002A))
                                 fields += structure(0x420125, item(0x42002A, 2, struct.pack(">i", 256 if valid_get else 128)))
                             if operation == 12:
@@ -477,6 +580,18 @@ class ControlledExchangeTests(unittest.TestCase):
         from kmipkit import protocol_values
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
         for version in ("2.0", "2.1"):
             cases = [
                 case["case_id"] for case in catalog["test_cases"]
@@ -514,13 +629,14 @@ class ControlledExchangeTests(unittest.TestCase):
         protocol_version: str = "2.1",
         encoding: str = "TTLV",
         transport: str = "raw_tls",
+        api_level: str = "typed-protocol",
     ) -> dict:
         connection = {
             "server_id": "loopback",
             "protocol_version": protocol_version,
             "transport": transport,
             "encoding": encoding,
-            "api_level": "typed-protocol",
+            "api_level": api_level,
             "endpoints": {
                 "raw_tls": {"host": "127.0.0.1", "port": peer.port},
                 "https": {"url": f"https://127.0.0.1:{peer.port}/kmip"},
@@ -541,6 +657,11 @@ class ControlledExchangeTests(unittest.TestCase):
         driver = None
         try:
             driver = PythonKmipDriver(connection)
+            if api_level == "generic-ttlv":
+                from kmipkit_validator import generic
+
+                self.assertTrue(generic.supports(case, connection))
+                return generic.run(driver, case)
             return driver.execute_case(case)
         finally:
             if driver is not None:
@@ -616,6 +737,86 @@ class ControlledExchangeTests(unittest.TestCase):
         self.assertNotIn("interop-user-sentinel", json.dumps(observed))
         self.assertNotIn("interop-password-sentinel", json.dumps(observed))
 
+    def test_failed_async_create_does_not_count_as_poll_or_cancel(self):
+        for operation in ("poll", "cancel"):
+            for version in ("2.0", "2.1"):
+                with self.subTest(operation=operation, version=version):
+                    peer = ControlledTlsPeer(status=1, reason=5, protocol_version=version)
+                    observed = self._execute_ping(peer, case_id=f"test-op-{operation}", protocol_version=version)
+                    self.assertEqual("not_run", observed["status"])
+                    self.assertIsNone(observed.get("result_reason_code"))
+                    request, = peer.requests
+                    fields = parse_children(request[8:])
+                    self.assertEqual(1, int.from_bytes(find_value(fields, 0x42005C), "big"))
+                    self.assertEqual(1, int.from_bytes(find_value(fields, 0x420007), "big"))
+
+    def test_async_targets_use_peer_correlation_and_destroy_the_located_fixture(self):
+        owned_id = b"controlled-async-object"
+        token = b"peer-generated-correlation"
+        updated_token = b"peer-updated-correlation"
+        scenarios = (
+            ("cancel", "typed-protocol", "server_unsupported"),
+            ("cancel", "generic-ttlv", "server_unsupported"),
+            ("cancel", "generic-ttlv", "passed"),
+            ("cancel", "generic-ttlv", "failed"),
+            ("poll", "typed-protocol", "passed"),
+            ("poll", "generic-ttlv", "passed"),
+        )
+        for minor, (target, api_level, status) in ((minor, case) for minor in (0, 1) for case in scenarios):
+            with self.subTest(minor=minor, api_level=api_level, target=target, status=status):
+                def response(request):
+                    batch = parse_children(find_value(parse_children(request[8:]), 0x42000F))
+                    operation = int.from_bytes(find_value(batch, 0x42005C), "big")
+                    if operation == 0x19:
+                        payload = parse_children(find_value(batch, 0x420079))
+                        self.assertEqual(token, find_value(payload, 0x420006))
+                        if status == "server_unsupported":
+                            return ping_response(request, 1, 5, protocol_minor=minor)
+
+                    reply = parse_children(ping_response(request, 0, None, protocol_minor=minor)[8:])
+                    header = find_value(reply, 0x42007A)
+                    batch_fields = [enumeration(0x42005C, operation)]
+                    if operation == 1:
+                        batch_fields += [enumeration(0x42007F, 2), item(0x420006, 8, token), structure(0x42007C)]
+                    elif operation == 0x19:
+                        echo = token if status == "passed" else updated_token
+                        batch_fields += [enumeration(0x42007F, 0), structure(
+                            0x42007C, item(0x420006, 8, echo), enumeration(0x420012, 1),
+                        )]
+                    elif operation == 0x1A:
+                        payload = parse_children(find_value(batch, 0x420079))
+                        submitted = find_value(payload, 0x420006)
+                        if submitted == token:
+                            batch_fields += [enumeration(0x42007F, 2), item(0x420006, 8, updated_token)]
+                        else:
+                            self.assertEqual(updated_token, submitted)
+                            batch_fields += [enumeration(0x42007F, 0), structure(
+                                0x42007C, enumeration(0x420057, 2), item(0x420094, 7, owned_id),
+                            )]
+                    elif operation == 0x08:
+                        self.assertIn(b"owned-async-name", request)
+                        batch_fields += [enumeration(0x42007F, 0), structure(
+                            0x42007C, item(0x4200D5, 2, struct.pack(">i", 1)), item(0x420094, 7, owned_id),
+                        )]
+                    elif operation == 0x14:
+                        payload = parse_children(find_value(batch, 0x420079))
+                        self.assertEqual(owned_id, find_value(payload, 0x420094))
+                        batch_fields += [enumeration(0x42007F, 0), structure(0x42007C, item(0x420094, 7, owned_id))]
+                    else:
+                        self.fail(f"Unexpected operation {operation}")
+                    return structure(0x42007B, item(0x42007A, 1, header), structure(0x42000F, *batch_fields))
+
+                version = f"2.{minor}"
+                connections = 4 if target == "cancel" else 5
+                peer = ControlledTlsPeer(connection_count=connections, response_factory=response, protocol_version=version)
+                with patch("kmipkit_validator.driver.uuid.uuid4", return_value="owned-async-name"):
+                    observed = self._execute_ping(peer, case_id=f"test-op-{target}", protocol_version=version,
+                                                  api_level=api_level)
+                reason = 5 if status == "server_unsupported" else None
+                self.assertEqual(status, observed["status"], observed)
+                self.assertEqual(reason, observed["result_reason_code"])
+                self.assertEqual(connections, len(peer.requests))
+
     def test_query_async_requests_uses_installed_explicit_async_api(self):
         from kmipkit import protocol_values
 
@@ -653,6 +854,113 @@ class ControlledExchangeTests(unittest.TestCase):
         self.assertEqual("passed", observed["status"])
         self.assertEqual("passed", observed["library_correctness"])
         self.assertEqual([], peer.requests)
+
+    def test_generic_extended_operations_reach_peer_and_cleanup(self):
+        from kmipkit_validator.cli import _run
+
+        extended = [
+            "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
+            "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
+            "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+            "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
+            "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
+            "test-op-import", "test-op-export",
+        ]
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        by_id = {c["case_id"]: c for c in catalog["test_cases"]}
+        sym_key = structure(0x42008F, structure(0x420040, enumeration(0x420042, 1),
+                            structure(0x420045, item(0x420043, 8, bytes(16)))))
+        expected_connections = {
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
+        for version in ("2.0", "2.1"):
+            minor = int(version[-1])
+            header = structure(
+                0x42007A,
+                structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
+                          item(0x42006B, 2, struct.pack(">i", minor))),
+                item(0x420092, 9, (1).to_bytes(8, "big")),
+                item(0x42000D, 2, struct.pack(">i", 1)),
+            )
+            for case_id in extended:
+                with self.subTest(version=version, case_id=case_id):
+                    def reply(request):
+                        tree = parse_children(request[8:])
+                        op = int.from_bytes(find_value(tree, 0x42005C), "big")
+                        req_payload = find_value(tree, 0x420079)
+                        req_id = find_value(parse_children(req_payload), 0x420094) if req_payload else None
+                        if op == 1:
+                            fields = enumeration(0x420057, 2) + item(0x420094, 7, b"owned-key")
+                        elif op == 2:
+                            fields = item(0x420066, 7, b"priv-key") + item(0x42006F, 7, b"pub-key")
+                        elif op in (3, 0x2A):
+                            fields = item(0x420094, 7, b"reg-key")
+                        elif op == 4:
+                            fields = item(0x420094, 7, b"rekey-key")
+                        elif op == 5:
+                            fields = item(0x420094, 7, b"derived-key")
+                        elif op == 6:
+                            self.assertEqual(req_payload, item(0x420094, 7, b"pub-key")
+                                             + structure(0x420125, enumeration(0x42001D, 1)))
+                            fields = item(0x420094, 7, b"cert-id")
+                        elif op == 7:
+                            fields = item(0x420094, 7, b"recert-id")
+                        elif op in (0x17, 0x22, 0x24):
+                            fields = enumeration(0x42009B, 1)
+                        elif op == 0x1D:
+                            fields = item(0x420066, 7, b"new-priv") + item(0x42006F, 7, b"new-pub")
+                        elif op == 0x1F:
+                            fields = item(0x420094, 7, b"owned-key") + item(0x4200C2, 8, b"cipher")
+                        elif op == 0x20:
+                            fields = item(0x420094, 7, b"owned-key") + item(0x4200C2, 8, b"0123456789abcdef")
+                        elif op == 0x21:
+                            fields = item(0x420094, 7, b"priv-key") + item(0x4200C3, 8, b"sig")
+                        elif op == 0x23:
+                            fields = item(0x420094, 7, b"owned-key") + item(0x4200C6, 8, b"mac")
+                        elif op == 0x28:
+                            fields = item(0x420094, 7, b"split-1") + item(0x420094, 7, b"split-2")
+                        elif op == 0x29:
+                            fields = item(0x420094, 7, b"joined-key")
+                        elif op == 0x2B:
+                            fields = enumeration(0x420057, 2) + item(0x420094, 7, b"owned-key") + sym_key
+                        else:
+                            fields = item(0x420094, 7, req_id or b"owned-key")
+                        batch = structure(0x42000F, enumeration(0x42005C, op),
+                                          enumeration(0x42007F, 0), structure(0x42007C, fields))
+                        return structure(0x42007B, header, batch)
+
+                    peer = ControlledTlsPeer(
+                        response_factory=reply,
+                        protocol_version=version,
+                        connection_count=expected_connections[case_id],
+                    )
+                    try:
+                        connection = {
+                            "server_id": "generic-ext-loopback", "protocol_version": version,
+                            "transport": "raw_tls", "encoding": "TTLV", "api_level": "generic-ttlv",
+                            "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+                            "tls": {
+                                "ca_cert_path": str(PKI / "server-cert.pem"),
+                                "client_cert_path": str(PKI / "client-cert.pem"),
+                                "client_key_path": str(PKI / "client-key.pem"),
+                                "server_name_override": "localhost",
+                            },
+                            "execution_policy": {"allow_mutations": True, "probe_unsupported": True},
+                        }
+                        selection = {**catalog, "test_cases": [by_id[case_id]]}
+                        result, = _run(connection, b"{}", selection, b"{}", {}, None, True)
+                        self.assertEqual("passed", result["status"], result)
+                    finally:
+                        peer.close()
+                    self.assertTrue(peer.requests)
 
 
 if __name__ == "__main__":

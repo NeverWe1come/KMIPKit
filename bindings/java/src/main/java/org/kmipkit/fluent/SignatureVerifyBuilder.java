@@ -8,4 +8,12 @@ public final class SignatureVerifyBuilder extends CryptoOperationBuilder<Signatu
     SignatureVerifyBuilder(KmipClient client) {
         super(client, NATIVE_OPERATION_SIGNATURE_VERIFY);
     }
+
+    /** Configures verification parameters from a curated {@link SignatureSpec}. */
+    public SignatureVerifyBuilder withSignatureSpec(SignatureSpec spec) {
+        if (spec == null) throw new org.kmipkit.InvalidInputException("SignatureSpec is required");
+        try (org.kmipkit.protocol.CryptographicParameters params = spec.toCryptographicParameters()) {
+            return cryptographicParameters(params);
+        }
+    }
 }

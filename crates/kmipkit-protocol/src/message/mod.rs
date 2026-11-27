@@ -36,7 +36,7 @@ pub use version::ProtocolVersion;
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, StructureView, ValueView};
+use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 
 use self::validation::{
     ValidatedRequestHeader, ValidatedRequestMessage, ValidatedResponseHeader,
@@ -198,6 +198,107 @@ impl ResponseMessage {
     #[must_use]
     pub fn into_ttlv(self) -> Structure {
         self.tree
+    }
+
+    /// Attaches the request's `Operation` tag (and optional `UniqueBatchItemId`
+    /// when omitted by a single-item server error) to a single-item
+    /// `OperationFailed` response whose server omitted `Operation`.
+    #[doc(hidden)]
+    pub fn with_single_failed_operation(
+        self,
+        operation: u32,
+        unique_batch_item_id: Option<&[u8]>,
+    ) -> Result<Self, MessageValidationError> {
+        let [batch_index] = self.batch_indices.as_slice() else {
+            return Err(MessageValidationError::new(
+                MessageValidationErrorKind::BatchCountMismatch,
+                None,
+                None,
+            ));
+        };
+        let invalid = || {
+            MessageValidationError::new(
+                MessageValidationErrorKind::InvalidFieldValue,
+                Some(*batch_index),
+                None,
+            )
+        };
+        let operation_tag = RawTag::new(0x0042_005C)
+            .and_then(|raw| raw.try_checked())
+            .map_err(|_| invalid())?;
+        let operation_item =
+            Item::new(operation_tag, Value::enumeration(operation)).map_err(|_| invalid())?;
+
+        let mut new_tree = Structure::new();
+        for (index, child) in self.tree.view().children().iter().enumerate() {
+            if index == *batch_index {
+                let Some(batch_view) = child.as_structure() else {
+                    return Err(invalid());
+                };
+                if batch_view
+                    .children()
+                    .iter()
+                    .any(|item| item.tag().raw() == 0x0042_005C)
+                {
+                    return Err(MessageValidationError::new(
+                        MessageValidationErrorKind::DuplicateField,
+                        Some(*batch_index),
+                        None,
+                    ));
+                }
+                let has_batch_id = batch_view
+                    .children()
+                    .iter()
+                    .any(|item| item.tag().raw() == 0x0042_0093);
+                let mut new_batch = Structure::new();
+                new_batch.try_push(operation_item).map_err(|_| invalid())?;
+                if !has_batch_id && let Some(batch_id) = unique_batch_item_id {
+                    let batch_id_tag = RawTag::new(0x0042_0093)
+                        .and_then(|raw| raw.try_checked())
+                        .map_err(|_| invalid())?;
+                    let batch_id_item =
+                        Item::new(batch_id_tag, Value::byte_string(batch_id.to_vec()))
+                            .map_err(|_| invalid())?;
+                    new_batch.try_push(batch_id_item).map_err(|_| invalid())?;
+                }
+                for batch_child in batch_view.children() {
+                    new_batch
+                        .try_push(batch_child.try_clone().map_err(|_| invalid())?)
+                        .map_err(|_| invalid())?;
+                }
+                let batch_tag = child.tag();
+                new_tree
+                    .try_push(
+                        Item::new(batch_tag, Value::structure(new_batch)).map_err(|_| invalid())?,
+                    )
+                    .map_err(|_| invalid())?;
+                return Self::try_from_ttlv(
+                    self.finish_rest_of_tree(new_tree, index + 1)
+                        .map_err(|()| invalid())?,
+                );
+            }
+            new_tree
+                .try_push(child.try_clone().map_err(|_| invalid())?)
+                .map_err(|_| invalid())?;
+        }
+        Err(MessageValidationError::new(
+            MessageValidationErrorKind::MissingRequiredField,
+            None,
+            None,
+        ))
+    }
+
+    fn finish_rest_of_tree(
+        &self,
+        mut new_tree: Structure,
+        start_index: usize,
+    ) -> Result<Structure, ()> {
+        for child in self.tree.view().children().iter().skip(start_index) {
+            new_tree
+                .try_push(child.try_clone().map_err(|_| ())?)
+                .map_err(|_| ())?;
+        }
+        Ok(new_tree)
     }
 
     pub(in crate::message) const fn validated_header(&self) -> ValidatedResponseHeader {

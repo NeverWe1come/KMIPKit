@@ -260,7 +260,7 @@ fn fluent_rng_seed_sends_secret_once_and_preserves_zero_bytes_used() {
         .request()
         .rng_seed()
         .data(SecretBytes::new(SEED_SENTINEL.to_vec()))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the server may successfully report that it used zero seed bytes");
     assert_eq!(item.outcome().operation(), ClientOperation::RngSeed);
     let ClientBatchOutcome::RngSeed(response) = item.outcome() else {
@@ -295,7 +295,7 @@ fn fluent_rng_seed_preserves_pending_correlation_without_follow_up() {
         .rng_seed()
         .data(SecretBytes::new(SEED_SENTINEL.to_vec()))
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the request explicitly accepts an asynchronous response");
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("Pending remains explicit and resumable by the caller");
@@ -315,7 +315,7 @@ fn fluent_rng_seed_missing_data_fails_before_transport() {
     let error = client
         .request()
         .rng_seed()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Data is required before sending");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));

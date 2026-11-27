@@ -8,4 +8,12 @@ public final class MacVerifyBuilder extends CryptoOperationBuilder<MacVerifyBuil
     MacVerifyBuilder(KmipClient client) {
         super(client, NATIVE_OPERATION_MAC_VERIFY);
     }
+
+    /** Configures MAC verification parameters from a curated {@link MacSpec}. */
+    public MacVerifyBuilder withMacSpec(MacSpec spec) {
+        if (spec == null) throw new org.kmipkit.InvalidInputException("MacSpec is required");
+        try (org.kmipkit.protocol.CryptographicParameters params = spec.toCryptographicParameters()) {
+            return cryptographicParameters(params);
+        }
+    }
 }

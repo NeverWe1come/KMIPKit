@@ -227,7 +227,7 @@ def write_jsonl(path, records):
             output.write(canonical(record) + "\n")
 
 
-def write_report(destination, result, catalog_runs=()):
+def write_report(destination, result, catalog_runs=(), table_summaries=()):
     rows = result["rows"]
     overview = {key: value for key, value in result.items() if key != "rows"}
     if catalog_runs:
@@ -252,6 +252,15 @@ def write_report(destination, result, catalog_runs=()):
     for language, counts in overview.get("oasis_ttlv_construction", {}).get("message_checks", {}).items():
         lines.append(f"- {language} constructed OASIS TTLV messages: "
                      + ", ".join(f"{count} {status}" for status, count in counts.items()))
+    if table_summaries:
+        overview["cosmian_table"] = table_summaries
+        lines.extend(("", "## Cosmian support table", "",
+                      "| KMIP | Rows | Cell status | Count |",
+                      "| --- | ---: | --- | ---: |"))
+        for table in table_summaries:
+            version = table["protocol_version"]
+            for state, count in table["completion"]["cells_by_status"].items():
+                lines.append(f"| [{version}](cosmian-{version}.json) | {table['rows']} | {state.replace('_', ' ')} | {count} |")
     if catalog_runs:
         lines.extend(("", "## Installed-validator execution catalog", "",
                       "| Language | KMIP | Scope | Encoding | Transport | API | Passed | Failed | Unsupported | Policy restricted | Not run |",
@@ -339,6 +348,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", choices=VERSIONS, action="append")
     parser.add_argument("--language", choices=LANGUAGES, action="append")
+    parser.add_argument("--cosmian-minimum", action="store_true",
+                        help="Export table obligations with matching installed-validator case results")
     parser.add_argument("--profile", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--require-complete", action="store_true")
@@ -352,10 +363,20 @@ def main():
                         help="Additional case catalog for matching installed-validator reports")
     parser.add_argument("--live-report", type=Path, action="append", default=[],
                         help="Import an installed validator's live execution-catalog report")
-    parser.add_argument("--oasis-ttlv-report", type=Path,
+    parser.add_argument("--oasis-ttlv-report", type=Path, action="append", default=[],
                         help="Import decoder evidence for OASIS request and response shapes")
-    parser.add_argument("--oasis-construction-report", type=Path,
+    parser.add_argument("--oasis-construction-report", type=Path, action="append", default=[],
                         help="Import local generic tag construction evidence for KMIP 2.x")
+    parser.add_argument("--table-ttlv-report", type=Path, action="append", default=[],
+                        help="Import local table fixture results with --cosmian-minimum")
+    parser.add_argument("--table-key-material-report", type=Path, action="append", default=[],
+                        help="Import local typed Key Material evidence with --cosmian-minimum")
+    parser.add_argument("--table-typed-attributes-report", type=Path, action="append", default=[],
+                        help="Import local typed attribute evidence with --cosmian-minimum")
+    parser.add_argument("--table-managed-objects-report", type=Path, action="append", default=[],
+                        help="Import local typed managed object evidence with --cosmian-minimum")
+    parser.add_argument("--table-vendor-extensions-report", type=Path, action="append", default=[],
+                        help="Import the provider HTTPS JSON extension fixture observations")
     parser.add_argument("evidence", nargs="*", type=Path)
     args = parser.parse_args()
     runners = {language: Path(executable).resolve() for language, executable in args.runner}
@@ -363,6 +384,11 @@ def main():
     try:
         if len(runners) != len(args.runner) or not set(runners).issubset(languages) or not set(languages).issubset(LANGUAGES):
             raise ValueError("give one runner per selected, supported language")
+        table_reports = (args.table_ttlv_report, args.table_key_material_report,
+                         args.table_typed_attributes_report, args.table_managed_objects_report,
+                         args.table_vendor_extensions_report)
+        if any(table_reports) and not args.cosmian_minimum:
+            raise ValueError("table evidence reports require --cosmian-minimum")
         if args.connection and not runners:
             raise ValueError("--connection requires a runner")
         if args.version is not None:
@@ -385,10 +411,10 @@ def main():
         catalog = json.loads((SHARED / "catalog/kmipkit-2x-matrix-catalog.json").read_text(encoding="utf-8"))
         operations = {case["case_id"]: case.get("requires", {}).get("operation") for case in catalog["test_cases"]}
         result = report(matrix, digest, runs, languages, profile, operations)
-        if args.oasis_ttlv_report:
-            attach_decoder_evidence(args.oasis_ttlv_report, result, args.library_commit)
-        if args.oasis_construction_report:
-            attach_decoder_evidence(args.oasis_construction_report, result, args.library_commit, construct=True)
+        for fixture_report in args.oasis_ttlv_report:
+            attach_decoder_evidence(fixture_report, result, args.library_commit)
+        for fixture_report in args.oasis_construction_report:
+            attach_decoder_evidence(fixture_report, result, args.library_commit, construct=True)
         result["runner_failures"] = failures
         catalog_runs = load_catalog_reports(
             [("controlled", path) for path in args.controlled_report] + [("live", path) for path in args.live_report],
@@ -398,12 +424,64 @@ def main():
         )
         if args.library_commit and any(run["execution"]["library_commit"] != args.library_commit for run in catalog_runs):
             raise ValueError("catalog evidence does not match the requested library commit")
-        write_report(args.output_dir, result, catalog_runs)
+        table_summaries = []
+        if args.cosmian_minimum:
+            from verification.interop.shared.tools.cosmian_minimum import (
+                ALLOWED_VERSIONS, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
+            )
+
+            from verification.interop.shared.tools.table_evidence_summary import summarize as summarize_table_evidence
+            from verification.interop.shared.tools.table_key_material import attach_key_material_evidence
+            from verification.interop.shared.tools.table_managed_objects import (
+                attach_evidence as attach_managed_object_evidence,
+            )
+            from verification.interop.shared.tools.table_ttlv import attach_fixture_evidence
+            from verification.interop.shared.tools.table_typed_attributes import (
+                attach_evidence as attach_typed_attribute_evidence,
+            )
+
+            from verification.interop.shared.tools.table_vendor_extensions import attach_evidence as attach_vendor_evidence
+
+            for version in ALLOWED_VERSIONS:
+                if version in (args.version or VERSIONS):
+                    selection, inventory = build_selection(ROOT, version)
+                    inventory = with_execution_evidence(inventory, selection, catalog_runs)
+                    if args.oasis_ttlv_report or args.oasis_construction_report:
+                        attach_oasis_operation_evidence(inventory, result)
+                    if args.table_ttlv_report:
+                        attach_fixture_evidence(ROOT, inventory, args.table_ttlv_report, languages, args.library_commit)
+                    if args.table_key_material_report:
+                        attach_key_material_evidence(ROOT, inventory, args.table_key_material_report,
+                                                     languages, args.library_commit)
+                    if args.table_typed_attributes_report:
+                        attach_typed_attribute_evidence(ROOT, inventory, args.table_typed_attributes_report,
+                                                        languages, args.library_commit)
+                    if args.table_managed_objects_report:
+                        attach_managed_object_evidence(ROOT, inventory, args.table_managed_objects_report,
+                                                       languages, args.library_commit)
+                    if args.table_vendor_extensions_report:
+                        attach_vendor_evidence(ROOT, inventory, args.table_vendor_extensions_report)
+                    table_summaries.append(summarize_table_evidence(inventory, selection, languages))
+                    (args.output_dir / f"cosmian-{version}.json").write_text(
+                        json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
+                    )
+            (args.output_dir / "cosmian-table-summary.json").write_text(
+                json.dumps(table_summaries, indent=2) + "\n", encoding="utf-8",
+            )
+        write_report(args.output_dir, result, catalog_runs, table_summaries)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"Campaign failed: {exc}\n")
-    print(json.dumps({k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}, indent=2))
+    console_summary = {k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}
+    if table_summaries:
+        console_summary["table_completion"] = {
+            summary["protocol_version"]: summary["completion"] for summary in table_summaries
+        }
+    print(json.dumps(console_summary, indent=2))
     if failures or result["parity"].get("mismatched") or (
-        args.require_complete and not coverage_complete(result, tuple(args.version or VERSIONS))
+        args.require_complete and (
+            not coverage_complete(result, tuple(args.version or VERSIONS))
+            or any(not summary["completion"]["complete"] for summary in table_summaries)
+        )
     ):
         return 1
     return 0

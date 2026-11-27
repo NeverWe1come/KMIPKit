@@ -323,7 +323,7 @@ fn revoke_invalid_compromise_date_is_rejected_before_the_transport_exchange() {
         .revoke(RevocationReason::UNSPECIFIED)
         .unique_identifier(UniqueIdentifier::from("key-revoke"))
         .compromise_occurrence_date(1_700_000_000)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("the typed Revoke validator rejects an unrelated compromise date");
     assert_eq!(error.category(), ClientErrorCategory::Validation);
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -340,7 +340,7 @@ fn unsupported_protocol_version_is_rejected_before_the_transport_exchange() {
         .with_options(
             RequestOptions::default().with_protocol_version(ProtocolVersion::from_raw(1, 4)),
         )
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("unsupported KMIP v1.x stays behind the existing client version gate");
     assert_eq!(error.category(), ClientErrorCategory::Validation);
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -356,7 +356,7 @@ fn locate_and_revoke_execute_with_options_reject_unsupported_versions_before_sen
     let error = client
         .request()
         .locate(kmipkit_protocol::AttributeSet::new())
-        .execute_with_options(&CodecLimits::defaults(), unsupported)
+        .execute_outcome_with_limits_and_options(&CodecLimits::defaults(), unsupported)
         .expect_err("Locate execution options use the existing version gate");
     assert_eq!(error.category(), ClientErrorCategory::Validation);
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -367,7 +367,7 @@ fn locate_and_revoke_execute_with_options_reject_unsupported_versions_before_sen
         .request()
         .revoke(RevocationReason::KEY_COMPROMISE)
         .unique_identifier(UniqueIdentifier::from("key-revoke"))
-        .execute_with_options(&CodecLimits::defaults(), unsupported)
+        .execute_outcome_with_limits_and_options(&CodecLimits::defaults(), unsupported)
         .expect_err("Revoke execution options use the existing version gate");
     assert_eq!(error.category(), ClientErrorCategory::Validation);
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -394,7 +394,7 @@ fn revoke_execute_exposes_success_failure_and_pending_without_follow_up() {
         .request()
         .revoke(RevocationReason::KEY_COMPROMISE)
         .unique_identifier(UniqueIdentifier::from("key"))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Success is returned through the existing typed path");
     let ClientBatchOutcome::Revoke(revoke) = response.outcome() else {
         panic!("Success remains the typed Revoke outcome");
@@ -421,7 +421,7 @@ fn revoke_execute_exposes_success_failure_and_pending_without_follow_up() {
         .request()
         .revoke(RevocationReason::UNSPECIFIED)
         .unique_identifier(UniqueIdentifier::from("missing-key"))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("KMIP Failure remains an operation result, not a local error");
     assert_eq!(response.outcome().result().status().raw(), OPERATION_FAILED);
     assert_eq!(
@@ -451,7 +451,7 @@ fn revoke_execute_exposes_success_failure_and_pending_without_follow_up() {
         .unique_identifier(UniqueIdentifier::from("pending-key"))
         .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V2_1))
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Pending remains visible without an implicit Poll");
     let ClientBatchOutcome::Pending(pending) = response.outcome() else {
         panic!("the server's Pending result is preserved");
@@ -503,7 +503,7 @@ macro_rules! pending_lifecycle_exchange {
             builder.validate().expect("valid fields validate locally");
             assert_eq!(fake.borrow().exchange_count(), 0);
             let response = builder
-                .execute(&CodecLimits::defaults())
+                .execute_outcome_with_limits(&CodecLimits::defaults())
                 .expect("Pending is returned without an automatic follow-up");
             let ClientBatchOutcome::Pending(pending) = response.outcome() else {
                 panic!("Pending remains visible");

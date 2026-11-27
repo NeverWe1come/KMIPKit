@@ -61,7 +61,7 @@ fn get_constraints(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<ClientBatchItemResponse, ClientError> {
-    let response = client.request().get_constraints().execute(limits)?;
+    let response = client.request().get_constraints().execute_outcome_with_limits(limits)?;
     let _typed_response = response.outcome().response().get_constraints();
     Ok(response)
 }
@@ -85,7 +85,7 @@ fn allocate(
         .get_usage_allocation()
         .unique_identifier(object_id)
         .usage_limits_count(requested_units)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     let _outcome = response.outcome(); // Inspecciona Success, Pending o Failure.
     Ok(())
 }
@@ -116,7 +116,7 @@ fn allocate_for_object(
         .get_usage_allocation()
         .unique_identifier(object_id)
         .usage_limits_count(requested_units)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     let response_view = response.outcome().response();
     let allocation = response_view
         .get_usage_allocation()

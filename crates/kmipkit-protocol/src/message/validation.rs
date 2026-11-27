@@ -94,7 +94,7 @@ pub struct MessageValidationError {
 }
 
 impl MessageValidationError {
-    const fn new(
+    pub(super) const fn new(
         kind: MessageValidationErrorKind,
         structure_index: Option<usize>,
         field_index: Option<usize>,

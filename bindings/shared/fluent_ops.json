@@ -1,0 +1,646 @@
+{
+  "schema_version": 1,
+  "description": "Canonical 64 client-to-server KMIP operations (v2.0, v2.1, v3.0) for cross-language fluent API parity and C11 code generation.",
+  "operations": [
+    {
+      "code": "0x00000001",
+      "name": "Create",
+      "c_name": "create",
+      "rust_method": "create",
+      "python_method": "create",
+      "java_method": "create",
+      "min_kmip": "2.0",
+      "c_kind": "create"
+    },
+    {
+      "code": "0x00000002",
+      "name": "CreateKeyPair",
+      "c_name": "create_key_pair",
+      "rust_method": "create_key_pair",
+      "python_method": "create_key_pair",
+      "java_method": "createKeyPair",
+      "min_kmip": "2.0",
+      "c_kind": "create_key_pair"
+    },
+    {
+      "code": "0x00000003",
+      "name": "Register",
+      "c_name": "register",
+      "rust_method": "register",
+      "python_method": "register",
+      "java_method": "register",
+      "min_kmip": "2.0",
+      "c_kind": "register"
+    },
+    {
+      "code": "0x00000004",
+      "name": "Rekey",
+      "c_name": "rekey",
+      "rust_method": "rekey",
+      "python_method": "rekey",
+      "java_method": "rekey",
+      "min_kmip": "2.0",
+      "c_kind": "rekey"
+    },
+    {
+      "code": "0x00000005",
+      "name": "DeriveKey",
+      "c_name": "derive_key",
+      "rust_method": "derive_key",
+      "python_method": "derive_key",
+      "java_method": "deriveKey",
+      "min_kmip": "2.0",
+      "c_kind": "derive_key"
+    },
+    {
+      "code": "0x00000006",
+      "name": "Certify",
+      "c_name": "certify",
+      "rust_method": "certify",
+      "python_method": "certify",
+      "java_method": "certify",
+      "min_kmip": "2.0",
+      "c_kind": "certify"
+    },
+    {
+      "code": "0x00000007",
+      "name": "Recertify",
+      "c_name": "recertify",
+      "rust_method": "recertify",
+      "python_method": "recertify",
+      "java_method": "recertify",
+      "min_kmip": "2.0",
+      "c_kind": "recertify"
+    },
+    {
+      "code": "0x00000008",
+      "name": "Locate",
+      "c_name": "locate",
+      "rust_method": "locate",
+      "python_method": "locate",
+      "java_method": "locate",
+      "min_kmip": "2.0",
+      "c_kind": "locate"
+    },
+    {
+      "code": "0x00000009",
+      "name": "Check",
+      "c_name": "check",
+      "rust_method": "check",
+      "python_method": "check",
+      "java_method": "check",
+      "min_kmip": "2.0",
+      "c_kind": "check"
+    },
+    {
+      "code": "0x0000000a",
+      "name": "Get",
+      "c_name": "get",
+      "rust_method": "get",
+      "python_method": "get",
+      "java_method": "get",
+      "min_kmip": "2.0",
+      "c_kind": "get"
+    },
+    {
+      "code": "0x0000000b",
+      "name": "GetAttributes",
+      "c_name": "get_attributes",
+      "rust_method": "get_attributes",
+      "python_method": "get_attributes",
+      "java_method": "getAttributes",
+      "min_kmip": "2.0",
+      "c_kind": "get_attributes"
+    },
+    {
+      "code": "0x0000000c",
+      "name": "GetAttributeList",
+      "c_name": "get_attribute_list",
+      "rust_method": "get_attribute_list",
+      "python_method": "get_attribute_list",
+      "java_method": "getAttributeList",
+      "min_kmip": "2.0",
+      "c_kind": "get_attribute_list"
+    },
+    {
+      "code": "0x0000000d",
+      "name": "AddAttribute",
+      "c_name": "add_attribute",
+      "rust_method": "add_attribute",
+      "python_method": "add_attribute",
+      "java_method": "addAttribute",
+      "min_kmip": "2.0",
+      "c_kind": "add_attribute"
+    },
+    {
+      "code": "0x0000000e",
+      "name": "ModifyAttribute",
+      "c_name": "modify_attribute",
+      "rust_method": "modify_attribute",
+      "python_method": "modify_attribute",
+      "java_method": "modifyAttribute",
+      "min_kmip": "2.0",
+      "c_kind": "modify_attribute"
+    },
+    {
+      "code": "0x0000000f",
+      "name": "DeleteAttribute",
+      "c_name": "delete_attribute",
+      "rust_method": "delete_attribute",
+      "python_method": "delete_attribute",
+      "java_method": "deleteAttribute",
+      "min_kmip": "2.0",
+      "c_kind": "delete_attribute"
+    },
+    {
+      "code": "0x00000010",
+      "name": "ObtainLease",
+      "c_name": "obtain_lease",
+      "rust_method": "obtain_lease",
+      "python_method": "obtain_lease",
+      "java_method": "obtainLease",
+      "min_kmip": "2.0",
+      "c_kind": "uid_only"
+    },
+    {
+      "code": "0x00000011",
+      "name": "GetUsageAllocation",
+      "c_name": "get_usage_allocation",
+      "rust_method": "get_usage_allocation",
+      "python_method": "get_usage_allocation",
+      "java_method": "getUsageAllocation",
+      "min_kmip": "2.0",
+      "c_kind": "get_usage_allocation"
+    },
+    {
+      "code": "0x00000012",
+      "name": "Activate",
+      "c_name": "activate",
+      "rust_method": "activate",
+      "python_method": "activate",
+      "java_method": "activate",
+      "min_kmip": "2.0",
+      "c_kind": "uid_only"
+    },
+    {
+      "code": "0x00000013",
+      "name": "Revoke",
+      "c_name": "revoke",
+      "rust_method": "revoke",
+      "python_method": "revoke",
+      "java_method": "revoke",
+      "min_kmip": "2.0",
+      "c_kind": "revoke"
+    },
+    {
+      "code": "0x00000014",
+      "name": "Destroy",
+      "c_name": "destroy",
+      "rust_method": "destroy",
+      "python_method": "destroy",
+      "java_method": "destroy",
+      "min_kmip": "2.0",
+      "c_kind": "uid_only"
+    },
+    {
+      "code": "0x00000015",
+      "name": "Archive",
+      "c_name": "archive",
+      "rust_method": "archive",
+      "python_method": "archive",
+      "java_method": "archive",
+      "min_kmip": "2.0",
+      "c_kind": "uid_only"
+    },
+    {
+      "code": "0x00000016",
+      "name": "Recover",
+      "c_name": "recover",
+      "rust_method": "recover",
+      "python_method": "recover",
+      "java_method": "recover",
+      "min_kmip": "2.0",
+      "c_kind": "uid_only"
+    },
+    {
+      "code": "0x00000017",
+      "name": "Validate",
+      "c_name": "validate",
+      "rust_method": "validate",
+      "python_method": "validate",
+      "java_method": "validate",
+      "min_kmip": "2.0",
+      "c_kind": "validate"
+    },
+    {
+      "code": "0x00000018",
+      "name": "Query",
+      "c_name": "query",
+      "rust_method": "query",
+      "python_method": "query",
+      "java_method": "query",
+      "min_kmip": "2.0",
+      "c_kind": "query"
+    },
+    {
+      "code": "0x00000019",
+      "name": "Cancel",
+      "c_name": "cancel",
+      "rust_method": "cancel",
+      "python_method": "cancel",
+      "java_method": "cancel",
+      "min_kmip": "2.0",
+      "c_kind": "cancel"
+    },
+    {
+      "code": "0x0000001a",
+      "name": "Poll",
+      "c_name": "poll",
+      "rust_method": "poll",
+      "python_method": "poll",
+      "java_method": "poll",
+      "min_kmip": "2.0",
+      "c_kind": "poll"
+    },
+    {
+      "code": "0x0000001d",
+      "name": "RekeyKeyPair",
+      "c_name": "rekey_key_pair",
+      "rust_method": "rekey_key_pair",
+      "python_method": "rekey_key_pair",
+      "java_method": "rekeyKeyPair",
+      "min_kmip": "2.0",
+      "c_kind": "rekey_key_pair"
+    },
+    {
+      "code": "0x0000001e",
+      "name": "DiscoverVersions",
+      "c_name": "discover_versions",
+      "rust_method": "discover_versions",
+      "python_method": "discover_versions",
+      "java_method": "discoverVersions",
+      "min_kmip": "2.0",
+      "c_kind": "discover_versions"
+    },
+    {
+      "code": "0x0000001f",
+      "name": "Encrypt",
+      "c_name": "encrypt",
+      "rust_method": "encrypt",
+      "python_method": "encrypt",
+      "java_method": "encrypt",
+      "min_kmip": "2.0",
+      "c_kind": "encrypt"
+    },
+    {
+      "code": "0x00000020",
+      "name": "Decrypt",
+      "c_name": "decrypt",
+      "rust_method": "decrypt",
+      "python_method": "decrypt",
+      "java_method": "decrypt",
+      "min_kmip": "2.0",
+      "c_kind": "decrypt"
+    },
+    {
+      "code": "0x00000021",
+      "name": "Sign",
+      "c_name": "sign",
+      "rust_method": "sign",
+      "python_method": "sign",
+      "java_method": "sign",
+      "min_kmip": "2.0",
+      "c_kind": "sign"
+    },
+    {
+      "code": "0x00000022",
+      "name": "SignatureVerify",
+      "c_name": "signature_verify",
+      "rust_method": "signature_verify",
+      "python_method": "signature_verify",
+      "java_method": "signatureVerify",
+      "min_kmip": "2.0",
+      "c_kind": "signature_verify"
+    },
+    {
+      "code": "0x00000023",
+      "name": "Mac",
+      "c_name": "mac",
+      "rust_method": "mac",
+      "python_method": "mac",
+      "java_method": "mac",
+      "min_kmip": "2.0",
+      "c_kind": "mac"
+    },
+    {
+      "code": "0x00000024",
+      "name": "MacVerify",
+      "c_name": "mac_verify",
+      "rust_method": "mac_verify",
+      "python_method": "mac_verify",
+      "java_method": "macVerify",
+      "min_kmip": "2.0",
+      "c_kind": "mac_verify"
+    },
+    {
+      "code": "0x00000025",
+      "name": "RngRetrieve",
+      "c_name": "rng_retrieve",
+      "rust_method": "rng_retrieve",
+      "python_method": "rng_retrieve",
+      "java_method": "rngRetrieve",
+      "min_kmip": "2.0",
+      "c_kind": "rng_retrieve"
+    },
+    {
+      "code": "0x00000026",
+      "name": "RngSeed",
+      "c_name": "rng_seed",
+      "rust_method": "rng_seed",
+      "python_method": "rng_seed",
+      "java_method": "rngSeed",
+      "min_kmip": "2.0",
+      "c_kind": "rng_seed"
+    },
+    {
+      "code": "0x00000027",
+      "name": "Hash",
+      "c_name": "hash",
+      "rust_method": "hash",
+      "python_method": "hash",
+      "java_method": "hash",
+      "min_kmip": "2.0",
+      "c_kind": "hash"
+    },
+    {
+      "code": "0x00000028",
+      "name": "CreateSplitKey",
+      "c_name": "create_split_key",
+      "rust_method": "create_split_key",
+      "python_method": "create_split_key",
+      "java_method": "createSplitKey",
+      "min_kmip": "2.0",
+      "c_kind": "create_split_key"
+    },
+    {
+      "code": "0x00000029",
+      "name": "JoinSplitKey",
+      "c_name": "join_split_key",
+      "rust_method": "join_split_key",
+      "python_method": "join_split_key",
+      "java_method": "joinSplitKey",
+      "min_kmip": "2.0",
+      "c_kind": "join_split_key"
+    },
+    {
+      "code": "0x0000002a",
+      "name": "Import",
+      "c_name": "import_object",
+      "rust_method": "import_object",
+      "python_method": "import_object",
+      "java_method": "importObject",
+      "min_kmip": "2.0",
+      "c_kind": "import_object"
+    },
+    {
+      "code": "0x0000002b",
+      "name": "Export",
+      "c_name": "export",
+      "rust_method": "export",
+      "python_method": "export",
+      "java_method": "export",
+      "min_kmip": "2.0",
+      "c_kind": "export"
+    },
+    {
+      "code": "0x0000002c",
+      "name": "Log",
+      "c_name": "log",
+      "rust_method": "log",
+      "python_method": "log",
+      "java_method": "log",
+      "min_kmip": "2.0",
+      "c_kind": "log"
+    },
+    {
+      "code": "0x0000002d",
+      "name": "Login",
+      "c_name": "login",
+      "rust_method": "login",
+      "python_method": "login",
+      "java_method": "login",
+      "min_kmip": "2.0",
+      "c_kind": "login"
+    },
+    {
+      "code": "0x0000002e",
+      "name": "Logout",
+      "c_name": "logout",
+      "rust_method": "logout",
+      "python_method": "logout",
+      "java_method": "logout",
+      "min_kmip": "2.0",
+      "c_kind": "logout"
+    },
+    {
+      "code": "0x0000002f",
+      "name": "DelegatedLogin",
+      "c_name": "delegated_login",
+      "rust_method": "delegated_login",
+      "python_method": "delegated_login",
+      "java_method": "delegatedLogin",
+      "min_kmip": "2.0",
+      "c_kind": "delegated_login"
+    },
+    {
+      "code": "0x00000030",
+      "name": "AdjustAttribute",
+      "c_name": "adjust_attribute",
+      "rust_method": "adjust_attribute",
+      "python_method": "adjust_attribute",
+      "java_method": "adjustAttribute",
+      "min_kmip": "2.0",
+      "c_kind": "adjust_attribute"
+    },
+    {
+      "code": "0x00000031",
+      "name": "SetAttribute",
+      "c_name": "set_attribute",
+      "rust_method": "set_attribute",
+      "python_method": "set_attribute",
+      "java_method": "setAttribute",
+      "min_kmip": "2.0",
+      "c_kind": "set_attribute"
+    },
+    {
+      "code": "0x00000032",
+      "name": "SetEndpointRole",
+      "c_name": "set_endpoint_role",
+      "rust_method": "set_endpoint_role",
+      "python_method": "set_endpoint_role",
+      "java_method": "setEndpointRole",
+      "min_kmip": "2.0",
+      "c_kind": "set_endpoint_role"
+    },
+    {
+      "code": "0x00000033",
+      "name": "Pkcs11",
+      "c_name": "pkcs11",
+      "rust_method": "pkcs11",
+      "python_method": "pkcs11",
+      "java_method": "pkcs11",
+      "min_kmip": "2.0",
+      "c_kind": "pkcs11"
+    },
+    {
+      "code": "0x00000034",
+      "name": "Interop",
+      "c_name": "interop",
+      "rust_method": "interop",
+      "python_method": "interop",
+      "java_method": "interop",
+      "min_kmip": "2.0",
+      "c_kind": "interop"
+    },
+    {
+      "code": "0x00000035",
+      "name": "ReProvision",
+      "c_name": "reprovision",
+      "rust_method": "reprovision",
+      "python_method": "reprovision",
+      "java_method": "reprovision",
+      "min_kmip": "2.0",
+      "c_kind": "reprovision"
+    },
+    {
+      "code": "0x00000036",
+      "name": "SetDefaults",
+      "c_name": "set_defaults",
+      "rust_method": "set_defaults",
+      "python_method": "set_defaults",
+      "java_method": "setDefaults",
+      "min_kmip": "2.0",
+      "c_kind": "set_defaults"
+    },
+    {
+      "code": "0x00000037",
+      "name": "SetConstraints",
+      "c_name": "set_constraints",
+      "rust_method": "set_constraints",
+      "python_method": "set_constraints",
+      "java_method": "setConstraints",
+      "min_kmip": "2.0",
+      "c_kind": "set_constraints"
+    },
+    {
+      "code": "0x00000038",
+      "name": "GetConstraints",
+      "c_name": "get_constraints",
+      "rust_method": "get_constraints",
+      "python_method": "get_constraints",
+      "java_method": "getConstraints",
+      "min_kmip": "2.0",
+      "c_kind": "no_arg"
+    },
+    {
+      "code": "0x00000039",
+      "name": "QueryAsynchronousRequests",
+      "c_name": "query_async_requests",
+      "rust_method": "query_async_requests",
+      "python_method": "query_async_requests",
+      "java_method": "queryAsyncRequests",
+      "min_kmip": "2.0",
+      "c_kind": "query_async_requests"
+    },
+    {
+      "code": "0x0000003a",
+      "name": "Process",
+      "c_name": "process",
+      "rust_method": "process",
+      "python_method": "process",
+      "java_method": "process",
+      "min_kmip": "2.0",
+      "c_kind": "process"
+    },
+    {
+      "code": "0x0000003b",
+      "name": "Ping",
+      "c_name": "ping",
+      "rust_method": "ping",
+      "python_method": "ping",
+      "java_method": "ping",
+      "min_kmip": "2.0",
+      "c_kind": "no_arg"
+    },
+    {
+      "code": "0x0000003c",
+      "name": "CreateGroup",
+      "c_name": "create_group",
+      "rust_method": "create_group",
+      "python_method": "create_group",
+      "java_method": "createGroup",
+      "min_kmip": "3.0",
+      "c_kind": "create_group"
+    },
+    {
+      "code": "0x0000003d",
+      "name": "Obliterate",
+      "c_name": "obliterate",
+      "rust_method": "obliterate",
+      "python_method": "obliterate",
+      "java_method": "obliterate",
+      "min_kmip": "3.0",
+      "c_kind": "obliterate"
+    },
+    {
+      "code": "0x0000003e",
+      "name": "CreateUser",
+      "c_name": "create_user",
+      "rust_method": "create_user",
+      "python_method": "create_user",
+      "java_method": "createUser",
+      "min_kmip": "3.0",
+      "c_kind": "create_user"
+    },
+    {
+      "code": "0x0000003f",
+      "name": "CreateCredential",
+      "c_name": "create_credential",
+      "rust_method": "create_credential",
+      "python_method": "create_credential",
+      "java_method": "createCredential",
+      "min_kmip": "3.0",
+      "c_kind": "create_credential"
+    },
+    {
+      "code": "0x00000040",
+      "name": "Deactivate",
+      "c_name": "deactivate",
+      "rust_method": "deactivate",
+      "python_method": "deactivate",
+      "java_method": "deactivate",
+      "min_kmip": "3.0",
+      "c_kind": "deactivate"
+    },
+    {
+      "code": "0x00000041",
+      "name": "Encapsulate",
+      "c_name": "encapsulate",
+      "rust_method": "encapsulate",
+      "python_method": "encapsulate",
+      "java_method": "encapsulate",
+      "min_kmip": "3.0",
+      "c_kind": "encapsulate"
+    },
+    {
+      "code": "0x00000042",
+      "name": "Decapsulate",
+      "c_name": "decapsulate",
+      "rust_method": "decapsulate",
+      "python_method": "decapsulate",
+      "java_method": "decapsulate",
+      "min_kmip": "3.0",
+      "c_kind": "decapsulate"
+    }
+  ]
+}

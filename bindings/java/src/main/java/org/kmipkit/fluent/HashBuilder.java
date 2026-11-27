@@ -8,4 +8,12 @@ public final class HashBuilder extends CryptoOperationBuilder<HashBuilder>
     HashBuilder(KmipClient client) {
         super(client, NATIVE_OPERATION_HASH);
     }
+
+    /** Configures hash algorithm parameters from a curated {@link HashAlgorithm}. */
+    public HashBuilder withHashAlgorithm(HashAlgorithm alg) {
+        if (alg == null) throw new org.kmipkit.InvalidInputException("HashAlgorithm is required");
+        try (org.kmipkit.protocol.CryptographicParameters params = alg.toCryptographicParameters()) {
+            return cryptographicParameters(params);
+        }
+    }
 }

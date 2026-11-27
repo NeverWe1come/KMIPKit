@@ -46,7 +46,7 @@ def enumeration(tag: int, value: int) -> bytes:
 
 def crypto_output_for_request(operations: tuple[int, ...], request: bytes) -> bytes | None:
     """Choose the deterministic Encrypt output from the request's cipher mode."""
-    if (operations == (1, 18, 31, 19, 20) and
+    if (operations in ((31,), (1, 18, 31, 19, 20)) and
             enumeration(0x420011, 1) in request):
         return BATCH_CRYPTO_AES256_CBC_CIPHERTEXT
     return None
@@ -115,6 +115,32 @@ def ttlv_contains_tag(message: bytes, target_tag: int) -> bool:
     return False
 
 
+def extract_tlvs(message: bytes, target_tag: int, target_type: int) -> list[bytes]:
+    """Collect raw values of all nested TTLV items matching tag and type."""
+    if len(message) < 8:
+        raise AssertionError("request TTLV is truncated")
+    item_tag = int.from_bytes(message[:3], "big")
+    item_type = message[3]
+    item_length = int.from_bytes(message[4:8], "big")
+    padded_end = 8 + ((item_length + 7) // 8) * 8
+    if padded_end > len(message):
+        raise AssertionError("request TTLV item is truncated")
+    if item_tag == target_tag and item_type == target_type:
+        return [message[8:8 + item_length]]
+    if item_type != 1:
+        return []
+    matches: list[bytes] = []
+    offset = 8
+    while offset < 8 + item_length:
+        child_length = int.from_bytes(message[offset + 4:offset + 8], "big")
+        child_end = offset + 8 + ((child_length + 7) // 8) * 8
+        if child_end > 8 + item_length or child_end > len(message):
+            raise AssertionError("request contains a truncated nested TTLV item")
+        matches.extend(extract_tlvs(message[offset:child_end], target_tag, target_type))
+        offset = child_end
+    return matches
+
+
 def response(operations: tuple[int, ...], protocol_minor: int,
              selected_attribute_tag: int = 0,
              created_object_type: int = 2,
@@ -130,6 +156,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              crypto_output: bytes | None = None,
              signature_data: bytes | None = None,
              multipart_hash: bool = False,
+             final_hash: bool = False,
              hash_correlation_value: bytes | None = None,
              unknown_key_format: bool = False) -> bytes:
     version = tlv(0x420069, 1,
@@ -179,6 +206,21 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             else:
                 response_identifier = other_identifier if item_index == 5 else target_identifier
                 payload_value = tlv(0x420094, 7, response_identifier)
+        elif operation == 2 and len(operations) == 1:
+            payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                tlv(0x42006F, 7, b"fixture-public-key-1")
+        elif operation == 6 and len(operations) == 1:
+            payload_value = tlv(0x420094, 7, b"fixture-certificate-1")
+        elif operation == 7 and len(operations) == 1:
+            payload_value = tlv(0x420094, 7, b"fixture-recertified-certificate-1")
+        elif operation == 33 and len(operations) == 1:
+            payload_value = tlv(
+                0x420094, 7, returned_unique_identifier or b"fixture-private-key-1"
+            ) + tlv(0x4200C3, 8, signature_data if signature_data is not None else bytes(256))
+        elif operation == 34 and len(operations) == 1:
+            payload_value = tlv(
+                0x420094, 7, returned_unique_identifier or b"fixture-public-key-1"
+            ) + enumeration(0x42009B, 2)
         elif operations == (2, 20, 20):
             if item_index == 0:
                 payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
@@ -275,7 +317,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 + symmetric_key
             )
         elif operation == 39:
-            if multipart_hash:
+            if final_hash:
+                payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"KMIP Hash!").digest())
+            elif multipart_hash:
                 payload_value = (tlv(0x4200D6, 8, hash_correlation_value)
                                  if hash_correlation_value is not None else b"")
             else:
@@ -305,7 +349,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             )
         elif operation == 16:
             payload_value = (
-                tlv(0x420094, 7, b"fixture-key-1")
+                tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1")
                 + integer(0x420049, 3600, item_type=10)
                 + tlv(0x420048, 9, struct.pack(">q", 1_700_000_000))
                 + integer(0x541234, -7)
@@ -334,19 +378,19 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 5:
             payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-derived-key")
         elif operation == 31:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1") + tlv(
                 0x4200C2, 8, crypto_output if crypto_output is not None else
                 bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
         elif operation == 32:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
         elif operation == 35:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1") + tlv(
                 0x4200C6, 8, bytes(range(32)))
         elif operation == 36:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1") + enumeration(0x42009B, 1)
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1") + enumeration(0x42009B, 1)
         elif operation in (13, 14, 15, 48, 49):
-            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1")
         elif operation == 11:
             if selected_attribute_wire is not None:
                 attributes = selected_attribute_wire
@@ -356,22 +400,22 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 attributes = integer(0x42002A, 128)
             else:
                 attributes = enumeration(0x420028, 3) + integer(0x42002A, 128)
-            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(0x420125, 1, attributes)
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1") + tlv(0x420125, 1, attributes)
         elif operation == 12:
             payload_value = (
-                tlv(0x420094, 7, b"fixture-key-1")
+                tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1")
                 + enumeration(0x42013B, 0x420028)
                 + enumeration(0x42013B, 0x42002A)
             )
         elif operation in (9, 18, 21, 22):
-            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1")
         elif operation == 20:
             identifier = (returned_unique_identifiers[item_index]
                           if returned_unique_identifiers is not None else
                           returned_unique_identifier or b"fixture-key-1")
             payload_value = tlv(0x420094, 7, identifier)
         elif operation == 17:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-key-1")
         elif operation == 19 and result_status == 0:
             identifier = (returned_unique_identifiers[item_index]
                           if returned_unique_identifiers is not None else
@@ -633,6 +677,7 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
             0x13: b"",
             0x18: enumeration(0x42005c, 0x18) + enumeration(0x42005c, 0x3b),
             0x25: tlv(0x4200c2, 8, bytes(31 if invalid_payload else 32)),
+            0x26: integer(0x4200c4, 33 if invalid_payload else 0),
             0x27: tlv(0x4200c2, 8, hashlib.sha256(b"wrong" if invalid_payload else b"abc").digest()),
             0x3b: b"",
         }[operation]
@@ -640,7 +685,7 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
             payload = integer(0x4200d5, 2) + tlv(0x420094, 7, b"known-id")
             if invalid_payload:
                 payload += tlv(0x420094, 7, b"second-id")
-        if generic_locate or (major < 3 and operation in (0x18, 0x1e, 0x25, 0x27, 0x3b)):
+        if generic_locate or (major < 3 and operation in (0x18, 0x1e, 0x25, 0x26, 0x27, 0x3b)):
             apis = ("generic-ttlv",)
         else:
             apis = ("typed-protocol",) if operation == 0x18 else ("typed-protocol", "fluent")
@@ -668,48 +713,82 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                     command.append("--allow-mutations")
                 with subprocess.Popen(command, cwd=repository, stdout=subprocess.DEVNULL,
                                       stderr=subprocess.PIPE) as process:
-                    raw, _ = server.accept()
-                    with context.wrap_socket(raw, server_side=True) as client:
-                        client.settimeout(5)
-                        request = read_message(client)
-                        assert request and enumeration(0x42005c, operation) in request
-                        assert integer(0x42006a, major) in request and integer(0x42006b, minor) in request
-                        if major == 3:
-                            assert bytes.fromhex("42000d02") not in request
-                        if operation == 0x25:
-                            assert tlv(0x420079, 1, integer(0x4200c4, 32)) in request
-                        if operation == 0x27:
-                            assert enumeration(0x420038, 6) in request and tlv(0x4200c2, 8, b"abc") in request
-                        if operation == 0x08:
-                            assert integer(0x42004f, 1 if major == 3 or generic_locate else 3) in request
-                            if major == 3:
-                                assert enumeration(0x420028, 3) in request
-                            if generic_locate:
-                                assert tlv(0x420079, 1, integer(0x42004f, 1) +
-                                           integer(0x4200d4, 0)) in request
-                        if operation == 0x18:
-                            assert tlv(0x420079, 1, enumeration(0x420074, 1)) in request
-                        if operation == 0x1e:
-                            assert tlv(0x420079, 1, offered) in request
-                        if operation == 0x3b:
-                            assert tlv(0x420079, 1, b"") in request
+                    active_raw = None
+                    active_client = None
+
+                    def accept_next_message():
+                        nonlocal active_raw, active_client
+                        while True:
+                            if active_client is not None:
+                                msg = read_message(active_client)
+                                if msg is not None:
+                                    return msg, active_client
+                                active_client.close()
+                                active_client = None
+                                if active_raw is not None:
+                                    active_raw.close()
+                                    active_raw = None
+                            active_raw, _ = server.accept()
+                            active_client = context.wrap_socket(active_raw, server_side=True)
+                            active_client.settimeout(5)
+
+                    try:
+                        request, client = accept_next_message()
                         if operation == 0x13:
-                            operations = (1, 19, 20)
-                            assert top_level_batch_operations(request) == operations
-                            assert tlv(0x420081, 1, enumeration(0x420082, 6)) in request
-                            request_wires.append(request)
-                            client.sendall(response(operations, minor, unique_batch_item_ids=(
-                                b"interop-create", b"interop-revoke", b"interop-destroy",
-                            )))
+                            assert request and top_level_batch_operations(request) == (1,)
+                            assert integer(0x42006a, major) in request and integer(0x42006b, minor) in request
+                            client.sendall(response((1,), minor, unique_batch_item_ids=(b"interop-create",)))
+                            revoke_req, client = accept_next_message()
+                            assert revoke_req and top_level_batch_operations(revoke_req) == (19,)
+                            assert tlv(0x420081, 1, enumeration(0x420082, 6)) in revoke_req
+                            assert tlv(0x420094, 7, b"fixture-key-1") in revoke_req
+                            request_wires.append(revoke_req)
+                            client.sendall(response((19,), minor, returned_unique_identifier=b"fixture-key-1",
+                                                    unique_batch_item_ids=(b"interop-revoke",)))
+                            destroy_req, client = accept_next_message()
+                            assert destroy_req and top_level_batch_operations(destroy_req) == (20,)
+                            client.sendall(response((20,), minor, returned_unique_identifier=b"fixture-key-1",
+                                                    unique_batch_item_ids=(b"interop-destroy",)))
                         elif operation == 0x02:
-                            assert top_level_batch_operations(request) == (2, 20, 20)
+                            assert request and top_level_batch_operations(request) == (2,)
+                            assert integer(0x42006a, major) in request and integer(0x42006b, minor) in request
                             assert enumeration(0x420028, 4) in request
                             assert integer(0x42002A, 2048) in request
                             assert integer(0x42002C, 1) in request and integer(0x42002C, 2) in request
-                            client.sendall(response((2, 20, 20), minor, unique_batch_item_ids=(
-                                b"create-pair", b"destroy-private", b"destroy-public",
-                            )))
+                            client.sendall(response((2,), minor, unique_batch_item_ids=(b"create-pair",)))
+                            for destroy_id, destroy_uid in (
+                                (b"destroy-private", b"fixture-private-key-1"),
+                                (b"destroy-public", b"fixture-public-key-1"),
+                            ):
+                                destroy_req, client = accept_next_message()
+                                assert destroy_req and top_level_batch_operations(destroy_req) == (20,)
+                                assert tlv(0x420094, 7, destroy_uid) in destroy_req
+                                client.sendall(response((20,), minor, returned_unique_identifier=destroy_uid,
+                                                        unique_batch_item_ids=(destroy_id,)))
                         else:
+                            assert request and enumeration(0x42005c, operation) in request
+                            assert integer(0x42006a, major) in request and integer(0x42006b, minor) in request
+                            if major == 3:
+                                assert bytes.fromhex("42000d02") not in request
+                            if operation == 0x25:
+                                assert tlv(0x420079, 1, integer(0x4200c4, 32)) in request
+                            if operation == 0x26:
+                                assert tlv(0x420079, 1, tlv(0x4200c2, 8, b"A" * 32)) in request
+                            if operation == 0x27:
+                                assert enumeration(0x420038, 6) in request and tlv(0x4200c2, 8, b"abc") in request
+                            if operation == 0x08:
+                                assert integer(0x42004f, 1 if major == 3 or generic_locate else 3) in request
+                                if major == 3:
+                                    assert enumeration(0x420028, 3) in request
+                                if generic_locate:
+                                    assert tlv(0x420079, 1, integer(0x42004f, 1) +
+                                               integer(0x4200d4, 0) + tlv(0x420125, 1, b"")) in request
+                            if operation == 0x18:
+                                assert tlv(0x420079, 1, enumeration(0x420074, 1)) in request
+                            if operation == 0x1e:
+                                assert tlv(0x420079, 1, offered) in request
+                            if operation == 0x3b:
+                                assert tlv(0x420079, 1, b"") in request
                             request_wires.append(request)
                             version = tlv(0x420069, 1, integer(0x42006a, major) + integer(0x42006b, minor))
                             timestamp = tlv(0x420092, 9, (1).to_bytes(8, "big"))
@@ -718,9 +797,16 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                             response_item = tlv(0x42000f, 1, enumeration(0x42005c, operation)
                                                 + enumeration(0x42007f, 0) + tlv(0x42007c, 1, payload))
                             client.sendall(tlv(0x42007b, 1, header + response_item))
+                    finally:
+                        if active_client is not None:
+                            active_client.close()
+                        elif active_raw is not None:
+                            active_raw.close()
                     _, errors = process.communicate(timeout=10)
                     assert process.returncode == (3 if invalid_payload else 0), errors
-                row, = json.loads(result.read_text())["cases"]
+                report = json.loads(result.read_text())
+                assert report["catalog_sha256"] == hashlib.sha256(catalog_path.read_bytes()).hexdigest()
+                row, = report["cases"]
                 assert row["status"] == ("failed" if invalid_payload else "passed"), row
         if len(request_wires) > 1:
             assert request_wires[0] == request_wires[1]
@@ -735,6 +821,14 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
     operations = {"create": (1, 20), "get": (1, 10, 20), "destroy": (1, 20), "get-attributes": (1, 11, 20),
                   "get-attribute-list": (1, 12, 20), "activate": (1, 18, 19, 20), "check": (1, 18, 9, 19, 20),
                   "revoke": (1, 18, 19, 20), "archive": (1, 21, 22, 20), "recover": (1, 21, 22, 20)}
+    mutations = {"add-attribute": 0x0d, "modify-attribute": 0x0e,
+                 "delete-attribute": 0x0f, "set-attribute": 0x31}
+    operations.update({name: (1, 11, code, 11, 20) for name, code in mutations.items()})
+    initial_description = tlv(0x4200fc, 7, b"kmipkit-attribute-fixture")
+    initial_comment = tlv(0x4200fd, 7, b"kmipkit-attribute-fixture")
+    changed_description = tlv(0x4200fc, 7, b"kmipkit-changed-description")
+    description_reference = enumeration(0x42013b, 0x4200fc)
+    comment_reference = enumeration(0x42013b, 0x4200fd)
     with tempfile.TemporaryDirectory(prefix="kmip-c-owned-") as temporary:
         directory = Path(temporary)
         ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -751,11 +845,12 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
         header = tlv(0x42007a, 1, tlv(0x420069, 1, integer(0x42006a, 2) + integer(0x42006b, minor))
                      + tlv(0x420092, 9, (1).to_bytes(8, "big")) + integer(0x42000d, 1))
         for target, exchanges in operations.items():
-            for valid in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke", "check") else (True,)):
+            for valid in ((True, False) if target in {"get", "get-attributes", "get-attribute-list", "activate", "revoke", "check", *mutations} else (True,)):
+                description = b"" if target == "add-attribute" else (initial_comment if target == "delete-attribute" else initial_description)
                 with socket.socket() as listener:
                     listener.bind(("127.0.0.1", 0))
                     listener.listen()
-                    listener.settimeout(5)
+                    listener.settimeout(2)
                     connection = {
                         "server_id": "owned-key-peer", "server_configuration_fingerprint": "b" * 64,
                         "server_product": "controlled peer", "server_version": "fixture",
@@ -779,7 +874,12 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                           stderr=subprocess.PIPE) as process:
                         try:
                             for operation in exchanges:
-                                raw, _ = listener.accept()
+                                try:
+                                    raw, _ = listener.accept()
+                                except TimeoutError as error:
+                                    raise AssertionError(
+                                        f"{version} {target} valid={valid}: no request for operation {operation:#x}"
+                                    ) from error
                                 with context.wrap_socket(raw, server_side=True) as stream:
                                     stream.settimeout(5)
                                     request = read_message(stream)
@@ -787,17 +887,32 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                     fields = owned_id
                                     if operation == 1:
                                         assert enumeration(0x420028, 3) in request and integer(0x42002a, 256) in request
+                                        if target in mutations:
+                                            expected_initial = initial_comment if target == "delete-attribute" else initial_description
+                                            assert (expected_initial in request) == (target != "add-attribute")
                                         fields = object_type + owned_id
                                     else:
                                         assert owned_id in request
-                                        if operation not in (9, 11, 19):
+                                        if operation not in (9, 11, 19, *mutations.values()):
                                             assert tlv(0x420079, 1, owned_id) in request
                                     if operation == 10:
                                         returned_id = owned_id if valid else tlv(0x420094, 7, b"foreign-key")
                                         fields = object_type + returned_id + symmetric_key
-                                    if operation == 11:
+                                    if operation == 11 and target in mutations:
+                                        expected_ref = comment_reference if target == "delete-attribute" else description_reference
+                                        assert tlv(0x420079, 1, owned_id + expected_ref) in request
+                                        if description:
+                                            fields += tlv(0x420125, 1, description)
+                                    elif operation == 11:
                                         assert tlv(0x420079, 1, owned_id + enumeration(0x42013b, 0x42002a)) in request
                                         fields += tlv(0x420125, 1, integer(0x42002a, 256 if valid else 128))
+                                    if operation == mutations.get(target):
+                                        selector = tlv(0x42013c, 1, initial_description) if target == "modify-attribute" else b""
+                                        replacement = (comment_reference if target == "delete-attribute"
+                                                       else tlv(0x42013d, 1, changed_description))
+                                        assert tlv(0x420079, 1, owned_id + selector + replacement) in request
+                                        if valid:
+                                            description = b"" if target == "delete-attribute" else changed_description
                                     if operation == 12:
                                         fields += enumeration(0x42013b, 0x420028)
                                         if valid:
@@ -840,6 +955,8 @@ def main() -> int:
         for invalid in (False, True):
             versioned_operation(binary, openssl, repository, "test-crypto-rng-retrieve-rng-32", 0x25,
                                 protocol_version, invalid_payload=invalid)
+            versioned_operation(binary, openssl, repository, "test-crypto-rng-seed-rng-32", 0x26,
+                                protocol_version, invalid_payload=invalid)
             versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version,
                                 generic_locate=True, invalid_payload=invalid)
         versioned_operation(binary, openssl, repository, "test-op-query", 0x18, protocol_version)
@@ -856,17 +973,17 @@ def main() -> int:
         b"crypto-decrypt", b"crypto-revoke", b"crypto-destroy",
     )
     expected_operations = (
-        (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
-         1, 20, 19, 20,
-         1, 18, 19, 20, 8, 24, 44, 45, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20,
+        (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 20, 1, 19, 20,
+         1, 20,
+         1, 18, 19, 20, 8, 24, 30, 44, 45, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20,
          1, 18, 20, 19, 20)
         if protocol_version == "2.0"
-        else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
-              1, 20, 19, 20, 1, 18, 19, 20, 1, 56, 19, 20, 8, 24, 30, 44, 45, 59, 1, 11, 20,
+        else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 20, 1, 19, 20,
+              1, 20, 1, 18, 19, 20, 1, 56, 20, 8, 24, 30, 44, 45, 59, 1, 11, 20,
               1, 11, 20, 1, 20, 1, 20, 1, 20, 1, 18, 20, 19, 20)
     )
     expected_cases = (
-        ("test-op-locate", "test-op-query", "test-op-log", "test-op-login", "test-op-logout",
+        ("test-op-locate", "test-op-query", "test-op-discover-versions", "test-op-log", "test-op-login", "test-op-logout",
          "test-op-interop")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
@@ -878,13 +995,13 @@ def main() -> int:
     )
     expected_operations, expected_cases = include_delegated_login(
         expected_operations, expected_cases)
-    expected_operations += (1, 43, 19, 20)
+    expected_operations += (1, 43, 20)
     expected_cases += ("test-op-export",)
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
     expected_operations += (1, 49, 19, 20)
-    expected_operations += (1, 17, 19, 20)
+    expected_operations += (1, 17, 20)
     expected_operations += (45, 46)
     if protocol_version == "2.1":
         expected_operations += (55, 54)
@@ -912,12 +1029,12 @@ def main() -> int:
     expected_cases += ("test-obj-secret-data",)
     expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 31, 19, 20)
-    expected_operations += (1, 31, 19, 20)  # test-neg-encrypt-preactive-key
+    expected_operations += (1, 31, 20)  # test-neg-encrypt-preactive-key
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
-    expected_operations += (1, 18, 36, 19, 20)
-    expected_operations += (1, 18, 36, 19, 20)
+    expected_operations += (1, 18, 35, 36, 19, 20)
+    expected_operations += (1, 18, 35, 36, 19, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
@@ -932,17 +1049,17 @@ def main() -> int:
     expected_operations += (40, 20, 20)
     expected_cases += ("test-obj-split-key",)
     expected_operations += (40, 41, 20, 20, 20)
-    expected_operations += (1, 4, 19, 20, 19, 20)
-    expected_operations += (1, 18, 5, 19, 20, 20)
+    expected_operations += (1, 4, 20, 20)
+    expected_operations += (1, 18, 5, 20, 19, 20)
     expected_cases += ("test-op-derive-key",)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
     expected_operations += (2, 18, 6, 7, 19, 20, 20, 20, 20)
     expected_operations += (23,)
     expected_operations += (1, 18, 51, 19, 20)
     expected_cases += ("test-op-pkcs#11",)
-    expected_operations += (1, 16, 19, 20)
+    expected_operations += (1, 16, 20)
     expected_cases += ("test-op-obtain-lease",)
-    expected_operations += (1, 21, 19, 20)
+    expected_operations += (1, 21, 20)
     expected_cases += ("test-op-archive",)
     expected_operations += (1, 21, 22, 20)
     expected_cases += ("test-op-recover",)
@@ -1011,7 +1128,7 @@ def main() -> int:
     expected_cases += ("test-op-create-split-key",)
     expected_cases += ("test-op-join-split-key",)
     expected_cases += ("test-op-re-key",)
-    expected_operations += (2, 18, 29, 19, 19, 20, 20, 20, 20)
+    expected_operations += (2, 18, 29, 20, 20, 19, 20, 20)
     expected_cases += ("test-op-re-key-key-pair",)
     expected_cases += ("test-op-certify",)
     expected_cases += ("test-op-re-certify", "test-op-validate")
@@ -1074,6 +1191,12 @@ def main() -> int:
         case for case in catalog_cases
         if protocol_version in case["execution"]["protocol_versions"]
     ]
+    extra_attr_cases = tuple(
+        case["case_id"] for case in version_cases
+        if case["case_id"].startswith("test-attr-") and case["case_id"] not in expected_cases
+    )
+    expected_cases += extra_attr_cases
+    expected_operations += (1, 11, 20) * len(extra_attr_cases)
     local_value_cases = sum(
         case["execution"]["mode"] == "local_model"
         and ("enum_type" in case["requires"] or "bitmask_type" in case["requires"])
@@ -1169,38 +1292,23 @@ def main() -> int:
                                         integer(0x42002A, 128) not in request or
                                         integer(0x42002C, 4) not in request):
                                     raise AssertionError("Re-key setup must create a typed AES-128 Symmetric Key")
-                            if operations == (1, 18) and tlv(0x420093, 8, b"derive-create") in request:
+                            if operations == (1,) and tlv(0x420093, 8, b"derive-create") in request:
                                 if (enumeration(0x420057, 2) not in request or
                                         enumeration(0x420028, 3) not in request or
                                         integer(0x42002A, 128) not in request or
-                                        integer(0x42002C, 512) not in request or
-                                        enumeration(0x420094, 1) not in request or
-                                        any(tlv(0x420093, 8, item_id) not in request for item_id in (
-                                            b"derive-create", b"derive-activate"))):
-                                    raise AssertionError("Derive Key setup must create and activate an AES source with Derive Key usage")
-                            if operations == (5, 19, 20, 20):
-                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 3 or
-                                        request.count(enumeration(0x420094, 1)) != 1 or
+                                        integer(0x42002C, 512) not in request):
+                                    raise AssertionError("Derive Key setup must create an AES source with Derive Key usage")
+                            if operations == (5,) and tlv(0x420093, 8, b"derive-target") in request:
+                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 1 or
                                         tlv(0x420030, 8, b"synthetic-derivation-data") not in request or
                                         tlv(0x420084, 8, b"synthetic-derivation-salt") not in request or
                                         integer(0x42003C, 1000) not in request or
                                         enumeration(0x420038, 6) not in request or
-                                        integer(0x42002C, 4) not in request or
-                                        any(tlv(0x420093, 8, item_id) not in request for item_id in (
-                                            b"derive-target", b"derive-revoke-source",
-                                            b"derive-destroy-derived", b"derive-destroy-source")) or
-                                        tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01") not in request or
-                                        enumeration(0x42000E, 1) not in request):
-                                    raise AssertionError("Derive Key request fields or placeholder cleanup mismatch")
-                            if operations == (4, 19, 20, 19, 20):
-                                item_ids = (b"rekey-target", b"rekey-revoke-replacement",
-                                            b"rekey-destroy-replacement", b"rekey-revoke-original",
-                                            b"rekey-destroy-original")
-                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 3 or
-                                        request.count(enumeration(0x420094, 1)) != 2 or
-                                        any(tlv(0x420093, 8, item_id) not in request for item_id in item_ids) or
-                                        tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01") not in request):
-                                    raise AssertionError("Re-key must target the source, resolve ID Placeholder to the replacement, and clean both keys")
+                                        integer(0x42002C, 4) not in request):
+                                    raise AssertionError("Derive Key request fields mismatch")
+                            if operations == (4,) and tlv(0x420093, 8, b"rekey-target") in request:
+                                if request.count(tlv(0x420094, 7, b"fixture-key-1")) != 1:
+                                    raise AssertionError("Re-key must target the created source UID")
                             if operations == (42, 20):
                                 imported_object = tlv(
                                     0x42005B, 1,
@@ -1213,7 +1321,7 @@ def main() -> int:
                                         any(tlv(0x420093, 8, item_id) not in request for item_id in (
                                             b"import-object", b"import-destroy"))):
                                     raise AssertionError("Import request did not match the controlled nonsecret Opaque Object fixture")
-                            if (operations == (3, 20) and
+                            if (operations == (3,) and
                                     bytes.fromhex("42008501") in request):
                                 secret_data = (
                                     enumeration(0x420086, 1) +
@@ -1223,20 +1331,13 @@ def main() -> int:
                                             tlv(0x420043, 8, SECRET_DATA_MATERIAL))))
                                 if (enumeration(0x420057, 7) not in request or
                                         tlv(0x420085, 1, secret_data) not in request or
-                                        tlv(0x420093, 8, b"interop-register") not in request or
-                                        tlv(0x420093, 8, b"interop-destroy") not in request or
-                                        tlv(0x420094, 5, b"\x00\x00\x00\x01") not in request):
+                                        tlv(0x420093, 8, b"interop-register") not in request):
                                     raise AssertionError("Secret Data Register request did not match the synthetic Password fixture")
-                            if operations == (41, 20, 20, 20):
+                            if operations == (41,) and tlv(0x420093, 8, b"join-split-target") in request:
                                 if (not split_key_created or
-                                        request.count(tlv(0x420094, 7, split_identifiers[0])) != 2 or
-                                        request.count(tlv(0x420094, 7, split_identifiers[1])) != 2 or
-                                        request.count(enumeration(0x420094, 1)) != 1 or
-                                        any(tlv(0x420093, 8, item_id) not in request for item_id in (
-                                            b"join-split-target", b"join-split-destroy-joined",
-                                            b"join-split-destroy-part-1", b"join-split-destroy-part-2"))):
-                                    raise AssertionError("Join Split Key must consume both parts and clean all three objects")
-                                split_key_destroyed.update(split_identifiers)
+                                        request.count(tlv(0x420094, 7, split_identifiers[0])) != 1 or
+                                        request.count(tlv(0x420094, 7, split_identifiers[1])) != 1):
+                                    raise AssertionError("Join Split Key must reference both split key parts")
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
                             if operations == (25,) and request.count(
@@ -1493,17 +1594,16 @@ def main() -> int:
                             elif operations not in (stop_on_first_failure_batch, (1, 10)):
                                 response_statuses = None
                                 response_reasons = None
-                            if operations == (1, 31, 19, 20):
-                                response_statuses = (0, 1, 0, 0)
-                                response_reasons = (None, 10, None, None)
-                            if (operations == (2, 18, 33, 19, 20, 20) and
+                            if operations == (31,) and tlv(0x420093, 8, b"preactive-encrypt-target") in request:
+                                response_statuses = (1,)
+                                response_reasons = (10,)
+                            if operations == (20,) and tlv(0x420093, 8, b"interop-destroy-active-target") in request:
+                                response_statuses = (1,)
+                                response_reasons = (67,)
+                            if (operations == (33,) and tlv(0x420093, 8, b"sign-target") in request and
                                     not ttlv_contains_tag(request, 0x42002B)):
-                                response_item_ids = (
-                                    b"sign-create-pair", b"sign-activate", b"sign-target",
-                                    b"sign-revoke", b"sign-destroy-private", b"sign-destroy-public",
-                                )
-                                response_statuses = (0, 0, 1, 0, 0, 0)
-                                response_reasons = (None, None, 36, None, None, None)
+                                response_statuses = (1,)
+                                response_reasons = (36,)
                             if placeholder_chain:
                                 expected_item_ids = (
                                     b"placeholder-create", b"placeholder-activate", b"placeholder-get"
@@ -1599,16 +1699,14 @@ def main() -> int:
                                     raise AssertionError(
                                         "lifecycle Create omitted the expected key algorithm or length"
                                     )
-                            selected_attribute_tag = next((tag for tag in (0x420028, 0x42002A)
-                                                           if enumeration(0x42013B, tag) in request), 0)
-                            prior_attribute_requests = sum(1 for prior in handled_batches
-                                                           if prior == (1, 11, 20))
-                            if operations == (1, 11, 20) and prior_attribute_requests > 0:
-                                expected_tag = 0x420028 if prior_attribute_requests == 1 else 0x42002A
-                                if selected_attribute_tag != expected_tag:
-                                    raise AssertionError(
-                                        "attribute-specific Get Attributes used the wrong Attribute Reference"
-                                    )
+                            attr_ref_tags = [
+                                int.from_bytes(val, "big")
+                                for val in extract_tlvs(request, 0x42013B, 5)
+                                if len(val) == 4
+                            ]
+                            selected_attribute_tag = next(
+                                (tag for tag in (0x420028, 0x42002A) if tag in attr_ref_tags), 0
+                            )
                             if create_lifecycle and request.count(enumeration(0x420094, 1)) < 1:
                                 raise AssertionError("Create cleanup must Destroy through ID Placeholder")
                             if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
@@ -1809,8 +1907,8 @@ def main() -> int:
                                     (19,), protocol_minor,
                                     unique_batch_item_ids=(b"process-operation-revoke",)))
                             else:
-                                if operations == (1,) and tlv(0x420093, 8, b"interop-create") not in request:
-                                    response_item_ids = (None,)
+                                req_ids = extract_tlvs(request, 0x420093, 8)
+                                req_uids = extract_tlvs(request, 0x420094, 7)
                                 if operations == (20,) and async_lifecycle_poll:
                                     response_item_ids = (None,)
                                     async_lifecycle_poll = False
@@ -1823,6 +1921,10 @@ def main() -> int:
                                         async_process_route_finished = True
                                     async_process_completed = False
                                     async_process_standalone_seed = False
+                                elif operations == (42, 20):
+                                    response_item_ids = (b"import-object", b"import-destroy")
+                                elif response_item_ids is None and len(operations) == 1:
+                                    response_item_ids = (req_ids[0],) if req_ids else (None,)
                                 cancellation_result = 1
                                 if operations == (25,) and async_request_pending:
                                     if cancel_result_index >= len(cancel_result_values):
@@ -1832,43 +1934,6 @@ def main() -> int:
                                 if operations == (25,) and request.count(
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
-                                if operations == (40,):
-                                    response_item_ids = (b"join-split-create" if
-                                        tlv(0x420093, 8, b"join-split-create") in request else b"split-create",)
-                                elif operations == (41, 20, 20, 20):
-                                    response_item_ids = (b"join-split-target", b"join-split-destroy-joined",
-                                        b"join-split-destroy-part-1", b"join-split-destroy-part-2")
-                                elif operations == (2, 18):
-                                    response_item_ids = (b"rekey-pair-create", b"rekey-pair-activate")
-                                elif operations == (29,):
-                                    response_item_ids = (b"rekey-pair-target",)
-                                elif operations == (19, 19, 20, 20, 20, 20):
-                                    response_item_ids = (
-                                        b"rekey-pair-revoke-original",
-                                        b"rekey-pair-revoke-replacement",
-                                        b"rekey-pair-destroy-original-private",
-                                        b"rekey-pair-destroy-original-public",
-                                        b"rekey-pair-destroy-replacement-private",
-                                        b"rekey-pair-destroy-replacement-public",
-                                    )
-                                elif operations == (1,) and tlv(0x420093, 8, b"rekey-create") in request:
-                                    response_item_ids = (b"rekey-create",)
-                                elif operations == (4, 19, 20, 19, 20):
-                                    response_item_ids = (b"rekey-target", b"rekey-revoke-replacement",
-                                        b"rekey-destroy-replacement", b"rekey-revoke-original",
-                                        b"rekey-destroy-original")
-                                elif (operations == (3, 20) and
-                                      bytes.fromhex("42008501") in request):
-                                    response_item_ids = (b"interop-register", b"interop-destroy")
-                                elif operations == (42, 20):
-                                    response_item_ids = (b"import-object", b"import-destroy")
-                                elif operations == (20,):
-                                    split_cleanup_id = next((identifier for identifier in split_identifiers
-                                        if tlv(0x420094, 7, identifier) in request), None)
-                                    if split_cleanup_id is not None:
-                                        response_item_ids = (b"split-destroy-part-1" if
-                                            split_cleanup_id == split_identifiers[0] else
-                                            b"split-destroy-part-2",)
                                 multipart_hash = operations == (39,) and any(
                                     marker in request for marker in (
                                         tlv(0x4200D6, 8, b"fixture-hash-correlation"),
@@ -1880,6 +1945,14 @@ def main() -> int:
                                     b"fixture-hash-correlation"
                                     if multipart_hash and multipart_hash_exchange_count == 0 else None
                                 )
+                                returned_uid = (
+                                    b"fixture-imported-secret-data" if operations == (42, 20)
+                                    else req_uids[0] if (
+                                        len(operations) == 1 and
+                                        operations[0] not in (4, 5, 6, 7, 41, 42) and
+                                        req_uids
+                                    ) else None
+                                )
                                 stream.sendall(response(
                                     response_operations, protocol_minor, selected_attribute_tag,
                                     4 if private_key_create else 3 if public_key_create else 2,
@@ -1887,28 +1960,12 @@ def main() -> int:
                                     result_statuses=response_statuses,
                                     result_reasons=response_reasons,
                                     rng_length=32 if integer(0x4200C4, 32) in request or
-                                    tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
+                                    tlv(0x4200C2, 8, b"A" * 32) in request else 16,
                                     cancellation_result=cancellation_result,
-                                    returned_unique_identifier=(
-                                        b"fixture-imported-secret-data" if operations == (42, 20) else
-                                        b"fixture-derived-key" if operations == (5, 19, 20, 20) else
-                                        next((identifier for identifier in split_identifiers
-                                            if operations == (20,) and tlv(0x420094, 7, identifier) in request), None)),
-                                    returned_unique_identifiers=(
-                                        (b"fixture-private-key-1", b"fixture-rekeyed-private-key-1",
-                                         b"fixture-private-key-1", b"fixture-public-key-1",
-                                         b"fixture-rekeyed-private-key-1", b"fixture-rekeyed-public-key-1")
-                                        if operations == (19, 19, 20, 20, 20, 20) else
-                                        (b"fixture-joined-key", b"fixture-joined-key",
-                                         *split_identifiers) if operations == (41, 20, 20, 20) else
-                                        (b"fixture-derived-key", b"fixture-key-1",
-                                         b"fixture-derived-key", b"fixture-key-1")
-                                        if operations == (5, 19, 20, 20) else
-                                        (b"fixture-rekeyed-key", b"fixture-rekeyed-key",
-                                         b"fixture-rekeyed-key", b"fixture-key-1", b"fixture-key-1")
-                                        if operations == (4, 19, 20, 19, 20) else None),
+                                    returned_unique_identifier=returned_uid,
                                     crypto_output=crypto_output_for_request(operations, request),
                                     multipart_hash=multipart_hash,
+                                    final_hash=multipart_hash and tlv(0x4200D8, 6, b"\x00" * 7 + b"\x01") in request,
                                     hash_correlation_value=hash_correlation_value))
                                 if multipart_hash:
                                     multipart_hash_exchange_count += 1
@@ -1999,9 +2056,9 @@ def main() -> int:
                 f"batches={handled_batches!r}; stdout={run.stdout[:1200]!r}; stderr={run.stderr[-1200:]!r}"
             )
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
-                or (1, 11, 20) not in handled_batches
-                or (1, 12, 20) not in handled_batches
-                or (1, 10, 20) not in handled_batches
+                or (11,) not in handled_batches
+                or (12,) not in handled_batches
+                or (10,) not in handled_batches
                 or registered_key_batch not in handled_batches
                 or not split_key_created or split_key_destroyed != {b"fixture-split-part-1", b"fixture-split-part-2"}):
             raise AssertionError(
@@ -2091,12 +2148,6 @@ def main() -> int:
                     "KMIP 2.1-only Query Asynchronous Requests must be rejected before transport under KMIP 2.0: "
                     f"{query_async_boundary!r}"
                 )
-            discovery = next(case for case in result["cases"]
-                             if case["case_id"] == "test-op-discover-versions")
-            if discovery["status"] != "not_run" or "cannot construct a KMIP 2.0 offer" not in discovery.get("diagnostic", ""):
-                raise AssertionError(
-                    "KMIP 2.0 Discover Versions must report the documented C API offer limitation"
-                )
             login = next(case for case in result["cases"] if case["case_id"] == "test-op-login")
             if login["status"] != "passed":
                 raise AssertionError("KMIP 2.0 Login must execute its typed response route")
@@ -2181,7 +2232,147 @@ def main() -> int:
                 raise AssertionError("unexecuted cases must include a sanitized reason")
         if run.stderr:
             print(run.stderr, file=sys.stderr)
+    verify_extended_operations(binary, openssl, repository, "generic-ttlv")
+    verify_extended_operations(binary, openssl, repository, "typed-protocol")
     return 0
+
+
+def verify_extended_operations(binary, openssl, repository, api_level):
+    extended_cases = [
+        "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
+        "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
+        "test-op-cancel", "test-op-poll", "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+        "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
+        "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
+        "test-op-import", "test-op-export",
+    ]
+    if api_level == "typed-protocol":
+        extended_cases = ["test-op-poll", "test-op-cancel"]
+    catalog = json.loads((repository / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
+    cases_by_id = {c["case_id"]: c for c in catalog["test_cases"]}
+    sym_key = tlv(0x42008f, 1, tlv(0x420040, 1, enumeration(0x420042, 1)
+                        + tlv(0x420045, 1, tlv(0x420043, 8, bytes(16)))))
+    for version in ("2.0", "2.1"):
+        minor = int(version[-1])
+        header = tlv(0x42007a, 1, tlv(0x420069, 1, integer(0x42006a, 2) + integer(0x42006b, minor))
+                     + tlv(0x420092, 9, (1).to_bytes(8, "big")) + integer(0x42000d, 1))
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.minimum_version = ssl.TLSVersion.TLSv1_3
+            context.load_cert_chain(server_cert, server_key)
+            context.load_verify_locations(ca)
+            context.verify_mode = ssl.CERT_REQUIRED
+            for case_id in extended_cases:
+                with socket.socket() as listener:
+                    listener.bind(("127.0.0.1", 0))
+                    listener.listen()
+                    listener.settimeout(0.05)
+                    connection = {
+                        "server_id": "extended-generic-peer", "server_configuration_fingerprint": "b" * 64,
+                        "server_product": "controlled peer", "server_version": "fixture",
+                        "protocol_version": version, "transport": "raw_tls", "encoding": "TTLV",
+                        "api_level": api_level,
+                        "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": listener.getsockname()[1]}},
+                        "tls": {"ca_cert_path": str(ca), "client_cert_path": str(client_cert),
+                                "client_key_path": str(client_key), "server_name_override": "localhost"},
+                        "environment": {"kind": "dedicated_test", "dedicated_test_environment_confirmed": True},
+                        "execution_policy": {"allow_mutations": True, "probe_unsupported": True},
+                    }
+                    config = directory / "connection.json"
+                    selection = directory / "catalog.json"
+                    output = directory / f"{case_id}.json"
+                    config.write_text(json.dumps(connection))
+                    selection.write_text(json.dumps({**catalog, "test_cases": [cases_by_id[case_id]],
+                                                      "statistics": {**catalog["statistics"], "total_cases": 1}}))
+                    command = [str(binary), "run", "--connection", str(config), "--catalog", str(selection),
+                               "--output", str(output), "--allow-mutations"]
+                    observed_operations = []
+                    initial = b"c-peer-initial-token"
+                    updated = b"c-peer-updated-token"
+                    asynchronous = case_id in {"test-op-poll", "test-op-cancel"}
+                    with subprocess.Popen(command, cwd=repository, stdout=subprocess.DEVNULL,
+                                          stderr=subprocess.PIPE) as process:
+                        try:
+                            while process.poll() is None:
+                                try:
+                                    raw, _ = listener.accept()
+                                except socket.timeout:
+                                    continue
+                                with context.wrap_socket(raw, server_side=True) as stream:
+                                    stream.settimeout(5)
+                                    request = read_message(stream)
+                                    op = top_level_batch_operations(request)[0]
+                                    observed_operations.append(op)
+                                    if asynchronous and op == 1:
+                                        assert enumeration(0x420007, 1) in request
+                                        batch = tlv(0x42000f, 1, enumeration(0x42005c, op)
+                                                    + enumeration(0x42007f, 2) + tlv(0x420006, 8, initial)
+                                                    + tlv(0x42007c, 1, b""))
+                                        stream.sendall(tlv(0x42007b, 1, header + batch))
+                                        continue
+                                    if op == 1:
+                                        fields = enumeration(0x420057, 2) + tlv(0x420094, 7, b"owned-key")
+                                    elif op == 2:
+                                        fields = tlv(0x420066, 7, b"priv-key") + tlv(0x42006f, 7, b"pub-key")
+                                    elif op in (3, 0x2a):
+                                        fields = tlv(0x420094, 7, b"reg-key")
+                                    elif op == 4:
+                                        fields = tlv(0x420094, 7, b"rekey-key")
+                                    elif op == 5:
+                                        fields = tlv(0x420094, 7, b"derived-key")
+                                    elif op == 6:
+                                        assert tlv(0x420079, 1, tlv(0x420094, 7, b"pub-key")
+                                                   + tlv(0x420125, 1, enumeration(0x42001d, 1))) in request
+                                        fields = tlv(0x420094, 7, b"cert-id")
+                                    elif op == 7:
+                                        fields = tlv(0x420094, 7, b"recert-id")
+                                    elif op in (0x17, 0x22, 0x24):
+                                        fields = enumeration(0x42009b, 1)
+                                    elif op == 0x19:
+                                        assert tlv(0x420006, 8, initial) in request
+                                        fields = tlv(0x420006, 8, initial) + enumeration(0x420012, 1)
+                                    elif op == 0x1a:
+                                        if tlv(0x420006, 8, initial) in request:
+                                            batch = tlv(0x42000f, 1, enumeration(0x42005c, op)
+                                                        + enumeration(0x42007f, 2) + tlv(0x420006, 8, updated))
+                                            stream.sendall(tlv(0x42007b, 1, header + batch))
+                                            continue
+                                        assert tlv(0x420006, 8, updated) in request
+                                        fields = enumeration(0x420057, 2) + tlv(0x420094, 7, b"owned-key")
+                                    elif op == 0x1d:
+                                        fields = tlv(0x420066, 7, b"new-priv") + tlv(0x42006f, 7, b"new-pub")
+                                    elif op == 0x1f:
+                                        fields = tlv(0x420094, 7, b"owned-key") + tlv(0x4200c2, 8, b"cipher")
+                                    elif op == 0x20:
+                                        fields = tlv(0x420094, 7, b"owned-key") + tlv(0x4200c2, 8, b"0123456789abcdef")
+                                    elif op == 0x21:
+                                        fields = tlv(0x420094, 7, b"priv-key") + tlv(0x4200c3, 8, b"sig")
+                                    elif op == 0x23:
+                                        fields = tlv(0x420094, 7, b"owned-key") + tlv(0x4200c6, 8, b"mac")
+                                    elif op == 0x28:
+                                        fields = tlv(0x420094, 7, b"split-1") + tlv(0x420094, 7, b"split-2")
+                                    elif op == 0x29:
+                                        fields = tlv(0x420094, 7, b"joined-key")
+                                    elif op == 0x2b:
+                                        fields = enumeration(0x420057, 2) + tlv(0x420094, 7, b"owned-key") + sym_key
+                                    else:
+                                        fields = tlv(0x420094, 7, b"owned-key")
+                                    batch = tlv(0x42000f, 1, enumeration(0x42005c, op)
+                                                + enumeration(0x42007f, 0) + tlv(0x42007c, 1, fields))
+                                    stream.sendall(tlv(0x42007b, 1, header + batch))
+                        finally:
+                            _, stderr = process.communicate(timeout=10)
+                        if process.returncode != 0:
+                            raise AssertionError(f"C {api_level} extended {version} {case_id} failed: {stderr.decode()}")
+                    report = json.loads(output.read_text())
+                    if case_id == "test-op-cancel":
+                        assert observed_operations == [1, 0x19], observed_operations
+                    if case_id == "test-op-poll":
+                        assert observed_operations == [1, 0x1a, 0x1a, 0x14], observed_operations
+                    if report["cases"][0]["status"] != "passed":
+                        raise AssertionError(f"C {api_level} extended {version} {case_id} status={report['cases'][0]}")
 
 
 if __name__ == "__main__":

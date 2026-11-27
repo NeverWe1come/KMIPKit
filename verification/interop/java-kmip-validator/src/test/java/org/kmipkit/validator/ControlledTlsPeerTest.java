@@ -1,5 +1,6 @@
 package org.kmipkit.validator;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
@@ -33,8 +34,10 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -49,14 +52,18 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
@@ -363,9 +370,23 @@ class ControlledTlsPeerTest {
         byte[] recover = legacyKeyResponse(minor, 0x16, identifier);
         var cases = new ArrayList<>(List.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover",
                 "test-op-activate", "test-op-revoke"));
+        var mutations = java.util.Map.of("test-op-add-attribute", 0x0d, "test-op-modify-attribute", 0x0e,
+                "test-op-delete-attribute", 0x0f, "test-op-set-attribute", 0x31);
+        byte[] initialDescription = item(0x4200fc, 7, "kmipkit-attribute-fixture".getBytes(StandardCharsets.US_ASCII));
+        byte[] initialComment = item(0x4200fd, 7, "kmipkit-attribute-fixture".getBytes(StandardCharsets.US_ASCII));
+        byte[] changedDescription = item(0x4200fc, 7, "kmipkit-changed-description".getBytes(StandardCharsets.US_ASCII));
+        byte[] descriptionReference = item(0x42013b, 5, intBytes(0x4200fc));
+        byte[] commentReference = item(0x42013b, 5, intBytes(0x4200fd));
+        if ("typed-protocol".equals(apiLevel) || "generic-ttlv".equals(apiLevel)) {
+            cases.addAll(List.of("test-op-check", "test-op-check-invalid",
+                    "test-op-obtain-lease", "test-op-obtain-lease-invalid"));
+        }
         if ("generic-ttlv".equals(apiLevel)) {
+            for (String mutation : mutations.keySet()) {
+                cases.add(mutation);
+                cases.add(mutation + "-invalid");
+            }
             cases.add("test-op-create");
-            cases.addAll(List.of("test-op-check", "test-op-check-invalid"));
             cases.add("test-op-get-invalid");
             cases.add("test-op-get-attributes");
             cases.add("test-op-get-attributes-invalid");
@@ -381,7 +402,17 @@ class ControlledTlsPeerTest {
         byte[] list = legacyKeyResponse(minor, 12, identifier, item(0x42013b, 5, intBytes(0x420028)),
                 item(0x42013b, 5, intBytes(0x42002a)));
         for (String id : cases) {
-            List<byte[]> responses = switch (id) {
+            boolean invalid = id.endsWith("-invalid");
+            String caseId = invalid ? id.substring(0, id.length() - "-invalid".length()) : id;
+            Integer mutation = mutations.get(caseId);
+            byte[] before = "test-op-add-attribute".equals(caseId) ? new byte[0]
+                    : ("test-op-delete-attribute".equals(caseId) ? initialComment : initialDescription);
+            byte[] after = invalid ? before : "test-op-delete-attribute".equals(caseId)
+                    ? new byte[0] : changedDescription;
+            List<byte[]> responses = mutation != null ? List.of(create,
+                    legacyKeyResponse(minor, 0x0b, identifier, before.length == 0 ? before : structure(0x420125, before)),
+                    legacyKeyResponse(minor, mutation, identifier),
+                    legacyKeyResponse(minor, 0x0b, identifier, after.length == 0 ? after : structure(0x420125, after)), destroy) : switch (id) {
                 case "test-op-get" -> List.of(create, get, destroy);
                 case "test-op-check", "test-op-check-invalid" -> List.of(create, activate,
                         legacyKeyResponse(minor, 9, identifier, item(0x42002c, 2,
@@ -395,21 +426,23 @@ class ControlledTlsPeerTest {
                 case "test-op-get-invalid" -> List.of(create, invalidGet, destroy);
                 case "test-op-get-attributes" -> List.of(create, getAttrs, destroy);
                 case "test-op-get-attributes-invalid" -> List.of(create, invalidAttrs, destroy);
+                case "test-op-obtain-lease", "test-op-obtain-lease-invalid" -> List.of(create,
+                        legacyKeyResponse(minor, 0x10, identifier, item(0x420049, invalid ? 2 : 10, intBytes(0)),
+                                item(0x420048, 9, longBytes(1))), destroy);
                 case "test-op-destroy", "test-op-create" -> List.of(create, destroy);
                 default -> List.of(create, archive, recover, destroy);
             };
-            List<Integer> operations = switch (id) {
+            List<Integer> operations = mutation != null ? List.of(1, 0x0b, mutation, 0x0b, 0x14) : switch (id) {
                 case "test-op-get", "test-op-get-invalid" -> List.of(1, 0x0a, 0x14);
                 case "test-op-check", "test-op-check-invalid" -> List.of(1, 18, 9, 19, 20);
                 case "test-op-activate", "test-op-revoke", "test-op-activate-invalid",
                         "test-op-revoke-invalid" -> List.of(1, 18, 19, 20);
                 case "test-op-get-attribute-list", "test-op-get-attribute-list-invalid" -> List.of(1, 12, 20);
                 case "test-op-get-attributes", "test-op-get-attributes-invalid" -> List.of(1, 0x0b, 0x14);
+                case "test-op-obtain-lease", "test-op-obtain-lease-invalid" -> List.of(1, 0x10, 0x14);
                 case "test-op-destroy", "test-op-create" -> List.of(1, 0x14);
                 default -> List.of(1, 0x15, 0x16, 0x14);
             };
-            boolean invalid = id.endsWith("-invalid");
-            String caseId = invalid ? id.substring(0, id.length() - "-invalid".length()) : id;
             var testCase = catalog.cases().stream().filter(value -> value.caseId().equals(caseId))
                     .findFirst().orElseThrow();
             byte[] serverPem = fixture("server-cert.pem");
@@ -451,7 +484,7 @@ class ControlledTlsPeerTest {
                     assertEquals(invalid ? "failed" : "passed", evidence.path("status").asText());
                 } else try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
                     var outcome = driver.execute(testCase);
-                    assertEquals("passed", outcome.status(), outcome.toString());
+                    assertEquals(invalid ? "failed" : "passed", outcome.status(), outcome.toString());
                 }
                 var requests = peer.get(15, TimeUnit.SECONDS);
                 assertEquals(operations.size(), requests.size());
@@ -465,11 +498,25 @@ class ControlledTlsPeerTest {
                 if ("test-op-get-attributes".equals(caseId)) {
                     assertTrue(contains(requests.get(1), item(0x42013b, 5, intBytes(0x42002a))));
                 }
+                if (mutation != null) {
+                    byte[] expectedInitial = "test-op-delete-attribute".equals(caseId) ? initialComment : initialDescription;
+                    byte[] expectedRef = "test-op-delete-attribute".equals(caseId) ? commentReference : descriptionReference;
+                    assertEquals(before.length != 0, contains(requests.get(0), expectedInitial));
+                    for (int index : List.of(1, 3)) {
+                        assertTrue(contains(requests.get(index), structure(0x420079, identifier, expectedRef)));
+                    }
+                    byte[] replacement = mutation == 0x0f ? expectedRef : structure(0x42013d, changedDescription);
+                    byte[] expectedPayload = mutation == 0x0e
+                            ? structure(0x420079, identifier, structure(0x42013c, initialDescription), replacement)
+                            : structure(0x420079, identifier, replacement);
+                    assertTrue(contains(requests.get(2), expectedPayload));
+                }
                 if (operations.contains(19)) {
                     assertTrue(contains(requests.get(operations.indexOf(19)), structure(0x420081,
                             item(0x420082, 5, intBytes(6)))));
                 }
                 if ("test-op-check".equals(caseId)) {
+                    assertTrue(contains(requests.get(0), item(0x42002c, 2, intBytes(4))));
                     assertTrue(contains(requests.get(2), structure(0x420079, identifier, item(0x42002c, 2, intBytes(4)))));
                 }
                 for (int index = 1; index < requests.size(); index++) {
@@ -480,12 +527,120 @@ class ControlledTlsPeerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"2.0,test-op-query,24", "2.1,test-op-query,24",
-            "2.0,test-op-discover-versions,30", "2.1,test-op-discover-versions,30", "2.1,test-op-ping,59",
-            "2.0,test-crypto-hash-sha_256-0,39", "2.1,test-crypto-hash-sha_256-0,39",
-            "2.0,test-op-locate,8", "2.1,test-op-locate,8",
-            "2.0,test-crypto-rng-retrieve-rng-32,37", "2.1,test-crypto-rng-retrieve-rng-32,37"})
-    void genericTagsReachThePeerThroughMain(String version, String caseId, int operation) throws Exception {
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    void splitKeyPartsAreReadAndCleanedThroughBothApis(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream().filter(row -> row.caseId().equals("test-obj-split-key"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, JavaRouteInventory.routeFor(testCase).status());
+        assertTrue(JavaKmipDriver.supportsFluent(testCase));
+
+        int minor = Integer.parseInt(version.substring(2));
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        byte[] first = item(0x420094, 7, "split-part-a".getBytes(StandardCharsets.US_ASCII));
+        byte[] second = item(0x420094, 7, "split-part-b".getBytes(StandardCharsets.US_ASCII));
+        for (boolean wrongPart : List.of(false, true)) {
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), true, apiLevel));
+                Path connection = temporaryDirectory.resolve("split-key.json");
+                Files.writeString(connection, config.put("protocol_version", version).toString());
+                var peer = new FutureTask<>(() -> List.of(
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x28, first, second)),
+                        serveOneResponse(listener, splitPartResponse(minor, first, 1)),
+                        serveOneResponse(listener, splitPartResponse(minor, second, wrongPart ? 1 : 2)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x14, first)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x14, second))));
+                var thread = new Thread(peer, "java-validator-split-key");
+                thread.setDaemon(true);
+                thread.start();
+                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
+                    var outcome = driver.execute(testCase);
+                    assertEquals(wrongPart ? "failed" : "passed", outcome.status(), outcome.toString());
+                }
+                var requests = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(requests.get(0), item(0x42005c, 5, intBytes(0x28))));
+                assertTrue(contains(requests.get(0), item(0x42008a, 5, intBytes(1))));
+                assertTrue(contains(requests.get(0), item(0x42008b, 2, intBytes(2))));
+                assertTrue(contains(requests.get(0), item(0x42008c, 2, intBytes(2))));
+                for (int index : List.of(1, 3)) {
+                    assertTrue(contains(requests.get(index), first));
+                    assertTrue(contains(requests.get(index + 1), second));
+                }
+            }
+        }
+    }
+
+    private static byte[] splitPartResponse(int minor, byte[] identifier, int part) throws Exception {
+        byte[] keyBlock = structure(0x420040, item(0x420042, 5, intBytes(1)),
+                structure(0x420045, item(0x420043, 8, new byte[32])),
+                item(0x420028, 5, intBytes(3)), item(0x42002a, 2, intBytes(256)));
+        byte[] splitKey = structure(0x420089, item(0x42008b, 2, intBytes(2)), item(0x420044, 2, intBytes(part)),
+                item(0x42008c, 2, intBytes(2)), item(0x42008a, 5, intBytes(1)), keyBlock);
+        return legacyKeyResponse(minor, 0x0a, item(0x420057, 5, intBytes(5)), identifier, splitKey);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    void opaqueObjectRegistrationChecksReadbackAndCleansUp(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream().filter(row -> row.caseId().equals("test-obj-opaque-object"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, JavaRouteInventory.routeFor(testCase).status());
+        assertTrue(JavaKmipDriver.supportsFluent(testCase));
+
+        int minor = Integer.parseInt(version.substring(2));
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        byte[] identifier = item(0x420094, 7, "registered-opaque".getBytes(StandardCharsets.US_ASCII));
+        byte[] objectType = item(0x420057, 5, intBytes(8));
+        byte[] opaqueType = item(0x420059, 5, intBytes(0x80000001));
+        byte[] expected = "KMIPKit dedicated opaque fixture".getBytes(StandardCharsets.US_ASCII);
+        for (boolean wrongValue : List.of(false, true)) {
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), true, apiLevel));
+                Path connection = temporaryDirectory.resolve("opaque.json");
+                Files.writeString(connection, config.put("protocol_version", version).toString());
+                byte[] returned = expected.clone();
+                if (wrongValue) returned[0] ^= 1;
+                var peer = new FutureTask<>(() -> List.of(
+                        serveOneResponse(listener, legacyKeyResponse(minor, 3, identifier)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x0a, objectType, identifier,
+                                structure(0x42005b, opaqueType, item(0x42005a, 8, returned)))),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x14, identifier))));
+                var thread = new Thread(peer, "java-validator-register-opaque");
+                thread.setDaemon(true);
+                thread.start();
+                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
+                    var outcome = driver.execute(testCase);
+                    assertEquals(wrongValue ? "failed" : "passed", outcome.status(), outcome.toString());
+                }
+                var requests = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(requests.get(0), item(0x42005c, 5, intBytes(3))));
+                assertTrue(contains(requests.get(0), objectType));
+                assertTrue(contains(requests.get(0), structure(0x42005b, opaqueType, item(0x42005a, 8, expected))));
+                assertTrue(contains(requests.get(1), item(0x42005c, 5, intBytes(0x0a))));
+                assertTrue(contains(requests.get(1), identifier));
+                assertTrue(contains(requests.get(2), item(0x42005c, 5, intBytes(0x14))));
+                assertTrue(contains(requests.get(2), identifier));
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2.0,test-op-query,24,generic-ttlv", "2.1,test-op-query,24,generic-ttlv",
+            "2.0,test-op-discover-versions,30,generic-ttlv", "2.1,test-op-discover-versions,30,generic-ttlv", "2.1,test-op-ping,59,generic-ttlv",
+            "2.0,test-crypto-hash-sha_256-0,39,generic-ttlv", "2.1,test-crypto-hash-sha_256-0,39,generic-ttlv",
+            "2.0,test-op-locate,8,generic-ttlv", "2.1,test-op-locate,8,generic-ttlv",
+            "2.0,test-crypto-rng-retrieve-rng-32,37,generic-ttlv", "2.1,test-crypto-rng-retrieve-rng-32,37,generic-ttlv",
+            "2.0,test-crypto-rng-seed-rng-32,38,generic-ttlv", "2.1,test-crypto-rng-seed-rng-32,38,generic-ttlv",
+            "2.0,test-crypto-rng-retrieve-rng-32,37,typed-protocol", "2.1,test-crypto-rng-retrieve-rng-32,37,typed-protocol",
+            "2.0,test-crypto-rng-seed-rng-32,38,typed-protocol", "2.1,test-crypto-rng-seed-rng-32,38,typed-protocol"})
+    void diagnosticRecipesReachThePeerThroughMain(String version, String caseId, int operation, String api) throws Exception {
         var source = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         var mapper = new ObjectMapper();
         var catalog = (ObjectNode) mapper.readTree(source.toFile());
@@ -498,10 +653,12 @@ class ControlledTlsPeerTest {
         int minor = Integer.parseInt(version.substring(2));
         byte[] offered = structure(0x420069, item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minor)));
         byte[] requestPayload = switch (operation) {
-            case 8 -> structure(0x420079, item(0x42004f, 2, intBytes(1)), item(0x4200d4, 2, intBytes(0)));
+            case 8 -> structure(0x420079, item(0x42004f, 2, intBytes(1)), item(0x4200d4, 2, intBytes(0)),
+                    structure(0x420125));
             case 24 -> structure(0x420079, item(0x420074, 5, intBytes(1)));
             case 30 -> structure(0x420079, offered);
             case 37 -> structure(0x420079, item(0x4200c4, 2, intBytes(32)));
+            case 38 -> structure(0x420079, item(0x4200c2, 8, "A".repeat(32).getBytes(StandardCharsets.US_ASCII)));
             case 39 -> structure(0x420079, structure(0x42002b, item(0x420038, 5, intBytes(6))),
                     item(0x4200c2, 8, new byte[] {97, 98, 99}));
             default -> structure(0x420079);
@@ -517,7 +674,7 @@ class ControlledTlsPeerTest {
             try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
                     certificate(clientPem))) {
                 var config = (ObjectNode) mapper.readTree(connectionJson(listener.getLocalPort(),
-                        serverPem, clientPem, fixture("client-key.pem"), operation == 37, "generic-ttlv"));
+                        serverPem, clientPem, fixture("client-key.pem"), operation == 37 || operation == 38, api));
                 Path connection = temporaryDirectory.resolve("generic-connection.json");
                 mapper.writeValue(connection.toFile(), config.put("protocol_version", version));
                 byte[] response;
@@ -527,6 +684,8 @@ class ControlledTlsPeerTest {
                     response = legacyKeyResponse(minor, operation, item(0x4200c2, 8, digest));
                 } else if (operation == 37) {
                     response = legacyKeyResponse(minor, operation, item(0x4200c2, 8, new byte[validResponse ? 32 : 31]));
+                } else if (operation == 38) {
+                    response = legacyKeyResponse(minor, operation, item(0x4200c4, 2, intBytes(validResponse ? 0 : 33)));
                 } else if (operation == 8) {
                     byte[] total = item(0x4200d5, 2, intBytes(2));
                     byte[] identifier = item(0x420094, 7, "known-id".getBytes(StandardCharsets.US_ASCII));
@@ -545,7 +704,7 @@ class ControlledTlsPeerTest {
                     var args = new ArrayList<>(List.of("run", "--connection", connection.toString(),
                             "--catalog", catalogFile.toString(), "--artifact-manifest",
                             System.getProperty("kmipkit.artifactManifest"), "--output-dir", output.toString()));
-                    if (operation == 37) args.add("--enable-mutations");
+                    if (operation == 37 || operation == 38) args.add("--enable-mutations");
                     int exit = Main.execute(args.toArray(String[]::new), diagnostics, diagnostics);
                     assertEquals(validResponse ? 0 : 1, exit);
                 }
@@ -581,6 +740,56 @@ class ControlledTlsPeerTest {
         digest[0] ^= 1;
         assertEquals("failed", probeReadOnly(catalog, hash, 0x27, version, apiLevel,
                 item(0x4200c2, 8, digest)).status());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    void multipartHashChecksEveryStage(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream().filter(c -> c.caseId().equals("test-multipart-hash-sha256"))
+                .findFirst().orElseThrow();
+        int minor = version.equals("2.1") ? 1 : 0;
+        byte[] prefix = "KMIP ".getBytes(StandardCharsets.US_ASCII);
+        byte[] update = "Hash".getBytes(StandardCharsets.US_ASCII);
+        byte[] suffix = "!".getBytes(StandardCharsets.US_ASCII);
+        byte[] correlation = item(0x4200d6, 8, "peer-correlation".getBytes(StandardCharsets.US_ASCII));
+        byte[] init = item(0x4200d7, 6, longBytes(1));
+        byte[] end = item(0x4200d8, 6, longBytes(1));
+        byte[] correctDigest = MessageDigest.getInstance("SHA-256").digest("KMIP Hash!".getBytes(StandardCharsets.US_ASCII));
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        for (boolean badDigest : new boolean[]{false, true}) {
+            byte[] digest = correctDigest.clone();
+            if (badDigest) digest[0] ^= 1;
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), true, apiLevel));
+                Path file = temporaryDirectory.resolve("multipart-hash.json");
+                Files.writeString(file, config.put("protocol_version", version).toString());
+                var peer = new FutureTask<>(() -> List.of(
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x27, correlation)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x27)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x27, item(0x4200c2, 8, digest)))));
+                Thread thread = new Thread(peer, "java-validator-multipart-hash");
+                thread.setDaemon(true);
+                thread.start();
+                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(file))) {
+                    var outcome = driver.execute(testCase);
+                    assertEquals(badDigest ? "failed" : "passed", outcome.status(), outcome.toString());
+                }
+                var requests = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(requests.get(0), item(0x4200c2, 8, prefix)));
+                assertTrue(contains(requests.get(0), init));
+                assertTrue(!contains(requests.get(0), correlation) && !contains(requests.get(0), end));
+                assertTrue(contains(requests.get(1), item(0x4200c2, 8, update)));
+                assertTrue(contains(requests.get(1), correlation));
+                assertTrue(!contains(requests.get(1), init) && !contains(requests.get(1), end));
+                assertTrue(contains(requests.get(2), item(0x4200c2, 8, suffix)));
+                assertTrue(contains(requests.get(2), correlation) && contains(requests.get(2), end));
+                assertTrue(!contains(requests.get(2), init));
+            }
+        }
     }
 
     @Test
@@ -887,5 +1096,236 @@ class ControlledTlsPeerTest {
             return true;
         }
         return false;
+    }
+
+    @Test
+    void extendedOperationsReachPeerAcrossAllApis() throws Exception {
+        var genericCases = List.of(
+                "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
+                "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
+                "test-op-cancel", "test-op-poll", "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+                "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
+                "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
+                "test-op-import", "test-op-export"
+        );
+        var typedCases = List.of(
+                "test-op-create-key-pair", "test-op-re-key", "test-op-re-key-key-pair",
+                "test-op-certify", "test-op-re-certify", "test-op-validate",
+                "test-op-derive-key", "test-op-join-split-key", "test-op-import", "test-op-export",
+                "test-op-get-usage-allocation", "test-op-poll", "test-op-cancel",
+                "test-op-add-attribute", "test-op-modify-attribute", "test-op-delete-attribute",
+                "test-op-set-attribute", "test-crypto-encrypt-aes-256-cbc", "test-crypto-decrypt-aes-256-cbc",
+                "test-crypto-mac-hmac_sha256-256", "test-crypto-mac-verify-hmac_sha256-256", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5"
+        );
+        var fluentCases = List.of(
+                "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-re-key-key-pair",
+                "test-op-re-certify", "test-op-add-attribute", "test-op-set-attribute", "test-op-delete-attribute",
+                "test-crypto-encrypt-aes-256-cbc", "test-crypto-decrypt-aes-256-cbc", "test-crypto-mac-hmac_sha256-256", "test-crypto-mac-verify-hmac_sha256-256",
+                "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5"
+        );
+        var source = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        var mapper = new ObjectMapper();
+        var baseCatalog = (ObjectNode) mapper.readTree(source.toFile());
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        byte[] symKey = structure(0x42008f, structure(0x420040, item(0x420042, 5, intBytes(1)),
+                structure(0x420045, item(0x420043, 8, new byte[16]))));
+
+        for (String version : List.of("2.0", "2.1")) {
+            int minor = Integer.parseInt(version.substring(2));
+            for (var entry : List.of(
+                    Map.entry("generic-ttlv", genericCases),
+                    Map.entry("typed-protocol", typedCases),
+                    Map.entry("fluent", fluentCases))) {
+                String api = entry.getKey();
+                for (String caseId : entry.getValue()) {
+                    var catalog = baseCatalog.deepCopy();
+                    var selected = catalog.path("test_cases").findParents("case_id").stream()
+                            .filter(v -> caseId.equals(v.path("case_id").asText())).findFirst().orElseThrow();
+                    catalog.putArray("test_cases").add(selected);
+                    ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
+                    Path catalogFile = temporaryDirectory.resolve("ext-catalog.json");
+                    mapper.writeValue(catalogFile.toFile(), catalog);
+
+                    try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                            certificate(clientPem))) {
+                        var config = (ObjectNode) mapper.readTree(connectionJson(listener.getLocalPort(),
+                                serverPem, clientPem, fixture("client-key.pem"), true, api));
+                        Path connection = temporaryDirectory.resolve("ext-connection.json");
+                        mapper.writeValue(connection.toFile(), config.put("protocol_version", version));
+                        var serverError = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+                        var operations = new ArrayList<Integer>();
+                        byte[] initial = "java-peer-initial-token".getBytes(StandardCharsets.US_ASCII);
+                        byte[] updated = "java-peer-updated-token".getBytes(StandardCharsets.US_ASCII);
+                        boolean asynchronous = Set.of("test-op-poll", "test-op-cancel").contains(caseId);
+                        Thread peer = new Thread(() -> {
+                            try {
+                                listener.setSoTimeout(500);
+                                while (!Thread.currentThread().isInterrupted()) {
+                                    try (var socket = (SSLSocket) listener.accept()) {
+                                        byte[] req = readTtlv(socket.getInputStream());
+                                        int op = extractFirstIntTag(req, 0x42005c);
+                                        byte[] batchId = extractFirstBytesTag(req, 0x420093);
+                                        byte[] reqId = extractFirstTagBytes(req, 0x420094, 7);
+                                        operations.add(op);
+                                        byte[] ver = structure(0x420069, item(0x42006a, 2, intBytes(2)),
+                                                item(0x42006b, 2, intBytes(minor)));
+                                        byte[] hdr = structure(0x42007a, ver, item(0x420092, 9, longBytes(1L)),
+                                                item(0x42000d, 2, intBytes(1)));
+                                        byte[] submitted = extractFirstBytesTag(req, 0x420006);
+                                        if (asynchronous && op == 1) {
+                                            assertEquals(1, extractFirstIntTag(req, 0x420007));
+                                            byte[] batch = structure(0x42000f, item(0x42005c, 5, intBytes(op)),
+                                                    item(0x42007f, 5, intBytes(2)), item(0x420006, 8, initial),
+                                                    structure(0x42007c));
+                                            socket.getOutputStream().write(structure(0x42007b, hdr, batch));
+                                            socket.getOutputStream().flush();
+                                            continue;
+                                        }
+                                        if (asynchronous && op == 0x1a && Arrays.equals(submitted, initial)) {
+                                            byte[] batch = structure(0x42000f, item(0x42005c, 5, intBytes(op)),
+                                                    item(0x42007f, 5, intBytes(2)), item(0x420006, 8, updated));
+                                            socket.getOutputStream().write(structure(0x42007b, hdr, batch));
+                                            socket.getOutputStream().flush();
+                                            continue;
+                                        }
+                                        if (asynchronous && op == 0x19) assertArrayEquals(initial, submitted);
+                                        if (asynchronous && op == 0x1a) assertArrayEquals(updated, submitted);
+                                        if (op == 6) {
+                                            assertTrue(contains(req, structure(0x420079,
+                                                    item(0x420094, 7, "pub-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    structure(0x420125, item(0x42001d, 5, intBytes(1))))));
+                                        }
+                                        byte[] payload = switch (op) {
+                                            case 1 -> concat(item(0x420057, 5, intBytes(2)),
+                                                    item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)));
+                                            case 2 -> concat(
+                                                    item(0x420066, 7, "priv-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x42006f, 7, "pub-key".getBytes(StandardCharsets.US_ASCII)));
+                                            case 3, 0x2a -> item(0x420094, 7, "reg-key".getBytes(StandardCharsets.US_ASCII));
+                                            case 4 -> item(0x420094, 7, "rekey-key".getBytes(StandardCharsets.US_ASCII));
+                                            case 5 -> item(0x420094, 7, "derived-key".getBytes(StandardCharsets.US_ASCII));
+                                            case 6 -> item(0x420094, 7, "cert-id".getBytes(StandardCharsets.US_ASCII));
+                                            case 7 -> item(0x420094, 7, "recert-id".getBytes(StandardCharsets.US_ASCII));
+                                            case 0x0a -> concat(
+                                                    item(0x420057, 5, intBytes(8)),
+                                                    item(0x420094, 7, reqId != null ? reqId
+                                                            : "reg-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    structure(0x42005b,
+                                                            item(0x420059, 5, intBytes(0x8000_0001)),
+                                                            item(0x42005a, 8, "KMIPKit dedicated opaque fixture"
+                                                                    .getBytes(StandardCharsets.US_ASCII))));
+                                            case 0x17 -> item(0x42009b, 5, intBytes(1));
+                                            case 0x22 -> concat(
+                                                    item(0x420094, 7, "pub-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x42009b, 5, intBytes(1)));
+                                            case 0x24 -> concat(
+                                                    item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x42009b, 5, intBytes(1)));
+                                            case 0x19 -> concat(
+                                                    item(0x420006, 8, initial),
+                                                    item(0x420012, 5, intBytes(1)));
+                                            case 0x1a -> concat(item(0x420057, 5, intBytes(2)), item(0x420094, 7,
+                                                    "owned-key".getBytes(StandardCharsets.US_ASCII)));
+                                            case 0x1d -> concat(
+                                                    item(0x420066, 7, "new-priv".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x42006f, 7, "new-pub".getBytes(StandardCharsets.US_ASCII)));
+                                            case 0x1f -> concat(
+                                                    item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x4200c2, 8, "cipher".getBytes(StandardCharsets.US_ASCII)));
+                                            case 0x20 -> concat(
+                                                    item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x4200c2, 8, "0123456789abcdef".getBytes(StandardCharsets.US_ASCII)));
+                                            case 0x21 -> concat(
+                                                    item(0x420094, 7, "priv-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x4200c3, 8, "sig".getBytes(StandardCharsets.US_ASCII)));
+                                            case 0x23 -> concat(
+                                                    item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x4200c6, 8, "mac".getBytes(StandardCharsets.US_ASCII)));
+                                            case 0x28 -> concat(
+                                                    item(0x420094, 7, "split-1".getBytes(StandardCharsets.US_ASCII)),
+                                                    item(0x420094, 7, "split-2".getBytes(StandardCharsets.US_ASCII)));
+                                            case 0x29 -> item(0x420094, 7, "joined-key".getBytes(StandardCharsets.US_ASCII));
+                                            case 0x2b -> concat(item(0x420057, 5, intBytes(2)),
+                                                    item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    structure(0x420125),
+                                                    symKey);
+                                            default -> item(0x420094, 7, reqId != null ? reqId
+                                                    : "owned-key".getBytes(StandardCharsets.US_ASCII));
+                                        };
+                                        byte[] batch = batchId != null
+                                                ? structure(0x42000f, item(0x42005c, 5, intBytes(op)),
+                                                        item(0x420093, 8, batchId), item(0x42007f, 5, intBytes(0)),
+                                                        structure(0x42007c, payload))
+                                                : structure(0x42000f, item(0x42005c, 5, intBytes(op)),
+                                                        item(0x42007f, 5, intBytes(0)),
+                                                        structure(0x42007c, payload));
+                                        socket.getOutputStream().write(structure(0x42007b, hdr, batch));
+                                        socket.getOutputStream().flush();
+                                    } catch (java.net.SocketTimeoutException ignored) {
+                                    }
+                                }
+                            } catch (Throwable t) {
+                                serverError.set(t);
+                            }
+                        });
+                        peer.start();
+                        Path output = temporaryDirectory.resolve("ext-out");
+                        var errOut = new ByteArrayOutputStream();
+                        int exit = Main.execute(new String[] {
+                                "run", "--connection", connection.toString(), "--catalog", catalogFile.toString(),
+                                "--artifact-manifest", Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
+                                "--output-dir", output.toString(), "--enable-mutations"
+                        }, new PrintStream(OutputStream.nullOutputStream()), new PrintStream(errOut));
+                        peer.interrupt();
+                        peer.join(2000);
+                        JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
+                        assertNull(serverError.get());
+                        if (asynchronous) {
+                            assertEquals("test-op-poll".equals(caseId)
+                                    ? List.of(1, 0x1a, 0x1a, 0x14) : List.of(1, 0x19), operations);
+                        }
+                        assertEquals("passed", report.path("cases").get(0).path("status").asText(),
+                                api + " " + version + " " + caseId + " -> " + report.path("cases").get(0));
+                        assertEquals(0, exit, api + " " + version + " " + caseId + " err=" + errOut.toString(StandardCharsets.UTF_8));
+                    }
+                }
+            }
+        }
+    }
+
+    private static int extractFirstIntTag(byte[] frame, int wantedTag) {
+        byte[] tagBytes = new byte[] {(byte) (wantedTag >> 16), (byte) (wantedTag >> 8), (byte) wantedTag};
+        for (int i = 0; i <= frame.length - 12; i++) {
+            if (frame[i] == tagBytes[0] && frame[i + 1] == tagBytes[1] && frame[i + 2] == tagBytes[2]
+                    && (frame[i + 3] == 2 || frame[i + 3] == 5)) {
+                return ByteBuffer.wrap(frame, i + 8, 4).getInt();
+            }
+        }
+        return 0;
+    }
+
+    private static byte[] extractFirstBytesTag(byte[] frame, int wantedTag) {
+        return extractFirstTagBytes(frame, wantedTag, 8);
+    }
+
+    private static byte[] extractFirstTagBytes(byte[] frame, int wantedTag, int wantedType) {
+        byte[] tagBytes = new byte[] {(byte) (wantedTag >> 16), (byte) (wantedTag >> 8), (byte) wantedTag};
+        for (int i = 0; i <= frame.length - 8; i++) {
+            if (frame[i] == tagBytes[0] && frame[i + 1] == tagBytes[1] && frame[i + 2] == tagBytes[2]
+                    && frame[i + 3] == wantedType) {
+                int len = ByteBuffer.wrap(frame, i + 4, 4).getInt();
+                if (i + 8 + len <= frame.length) {
+                    return Arrays.copyOfRange(frame, i + 8, i + 8 + len);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static byte[] concat(byte[]... parts) throws IOException {
+        var out = new ByteArrayOutputStream();
+        for (byte[] p : parts) out.write(p);
+        return out.toByteArray();
     }
 }

@@ -5,7 +5,9 @@ mod driver;
 mod fixtures;
 mod fluent;
 mod generic;
+mod generic_wire;
 mod incoming;
+mod key_block;
 mod models;
 mod query_campaign;
 mod recipes;
@@ -56,6 +58,9 @@ enum Command {
         capabilities: PathBuf,
         #[arg(long)]
         catalog: Option<PathBuf>,
+        /// Run one catalog case for the configured protocol version.
+        #[arg(long)]
+        case: Option<String>,
         #[arg(long)]
         output: Option<PathBuf>,
         #[arg(long)]
@@ -78,6 +83,31 @@ fn emit(value: &Value) -> Result<()> {
     );
     Ok(())
 }
+fn load_run_catalog(
+    path: Option<PathBuf>,
+    case_id: Option<&str>,
+    version: &str,
+) -> Result<(Vec<u8>, Catalog)> {
+    let catalog = read(&catalog_path(path))?;
+    let mut cases: Catalog =
+        serde_json::from_slice(&catalog).map_err(|_| "invalid catalog contract")?;
+    cases.validate()?;
+    if let Some(case_id) = case_id {
+        cases.test_cases.retain(|candidate| {
+            candidate.case_id == case_id
+                && candidate
+                    .execution
+                    .protocol_versions
+                    .iter()
+                    .any(|item| item == version)
+        });
+        if cases.test_cases.len() != 1 {
+            return Err("no unique case for the selected protocol version");
+        }
+    }
+    Ok((catalog, cases))
+}
+
 fn dispatch(cli: Cli) -> Result<bool> {
     match cli.command {
         Command::QueryCampaign(args) => query_campaign::run(&args),
@@ -132,20 +162,19 @@ fn dispatch(cli: Cli) -> Result<bool> {
             connection,
             capabilities,
             catalog,
+            case,
             output,
             markdown,
         } => {
             let configuration = read(&connection)?;
             let connection: Connection = serde_json::from_slice(&configuration)
                 .map_err(|_| "invalid connection contract")?;
+            let (catalog, cases) =
+                load_run_catalog(catalog, case.as_deref(), &connection.protocol_version)?;
             let profile: Value = load(&capabilities)?;
             if profile["server"]["id"] != connection.server_id {
                 return Err("connection/profile server identity mismatch");
             }
-            let catalog = read(&catalog_path(catalog))?;
-            let cases: Catalog =
-                serde_json::from_slice(&catalog).map_err(|_| "invalid catalog contract")?;
-            cases.validate()?;
             let mut client = driver::client(&connection)?;
             let mut listener = incoming::listener(&connection, &listener)?;
             let results: Vec<_> = cases

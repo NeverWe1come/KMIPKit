@@ -23,6 +23,7 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
         ));
     }
     if connection.protocol_version == "2.0"
+        && case.execution.mode == "server_exchange"
         && [
             "Ping",
             "Process",
@@ -42,6 +43,28 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             "policy_restricted",
             "mutations require explicit opt-in".to_owned(),
         ));
+    }
+    if case.case_id == "test-query-username-password-credential"
+        && connection
+            .authentication
+            .as_ref()
+            .and_then(|a| a.username_password.as_ref())
+            .is_none()
+    {
+        return Some(CaseResult::non_run(
+            case,
+            "not_run",
+            "the recipe requires a route with configured Request Header Authentication".to_owned(),
+        ));
+    }
+    if case.requires["workflow_type"] == "server_to_client" {
+        return (!crate::incoming::route_available(connection)).then(|| {
+            CaseResult::non_run(
+                case,
+                "not_run",
+                "no Rust incoming recipe for the selected API, version or transport".to_owned(),
+            )
+        });
     }
     if connection.api_level == "generic-ttlv"
         && case.execution.mode != "local_model"
@@ -66,12 +89,57 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
     None
 }
 
+fn result_from_observation(
+    case: &Case,
+    connection: &Connection,
+    observed: &crate::driver::Observed,
+) -> CaseResult {
+    let mut result = observed_result(case, observed.status, observed.reason);
+    if case.case_id == "test-query-attestation-nonce"
+        && observed.status == 0
+        && !observed.usable_nonce
+    {
+        result.status = "failed";
+        result.server_compatibility = "unknown";
+        "Query did not return a usable Nonce".clone_into(&mut result.diagnostic);
+    }
+    if case.case_id == "test-op-query"
+        && observed.status == 0
+        && observed.query_operation_count.is_none()
+    {
+        result.status = "failed";
+        result.server_compatibility = "unknown";
+        "Query did not advertise any operations".clone_into(&mut result.diagnostic);
+    }
+    if case.requires["base_object"] == "Attribute"
+        && observed.status == 0
+        && !observed.fixture_attribute_returned
+    {
+        result.status = "failed";
+        result.server_compatibility = "unknown";
+        "Get Attributes did not return the registered vendor value"
+            .clone_into(&mut result.diagnostic);
+    }
+    if connection.api_level == "generic-ttlv" {
+        "generic TTLV asynchronous target request and response validated"
+            .clone_into(&mut result.diagnostic);
+    }
+    if connection.api_level == "high-level" {
+        result.actual_api_level = Some(if observed.used_high_level {
+            "high-level"
+        } else {
+            "typed-protocol"
+        });
+    }
+    result
+}
+
 pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client) -> CaseResult {
     if let Some(result) = classify(case, connection) {
         return result;
     }
     if case.execution.mode == "local_model" {
-        let passed = adapters::local::verify(&case.case_id);
+        let passed = adapters::verify_local(case, &connection.protocol_version);
         let mut result = CaseResult::non_run(
             case,
             if passed { "passed" } else { "failed" },
@@ -80,17 +148,17 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
         result.library_correctness = if passed { "passed" } else { "failed" };
         return result;
     }
-    if connection.api_level == "generic-ttlv" {
+    if connection.api_level == "generic-ttlv"
+        && !matches!(case.operation.as_str(), "Poll" | "Cancel")
+    {
         return crate::generic::run(case, connection);
     }
     let start = std::time::Instant::now();
     let (result, clean) = crate::recipes::execute(case, connection, client);
+    let rotate_boundary =
+        case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string();
     let mut output = match result {
-        Ok(observed) => {
-            // Shape metadata is inspected in memory; payload bytes never enter reports.
-            let _shape = observed.payload_tags;
-            observed_result(case, observed.status, observed.reason)
-        }
+        Ok(observed) => result_from_observation(case, connection, &observed),
         Err(crate::recipes::Failure::LocalRejection(reason)) => {
             let mut result = CaseResult::non_run(case, "not_run", reason.to_owned());
             result.library_correctness = "passed";
@@ -113,6 +181,8 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
                 )
             } else if case.requires["expected_status"] == "NotSent"
                 && error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent)
+                && (!rotate_boundary
+                    || error.cause_category() == Some(kmipkit::ClientCauseCategory::InvalidInput))
             {
                 let mut result = CaseResult::non_run(
                     case,
@@ -120,13 +190,20 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
                     "version boundary rejected before sending; server not checked".to_owned(),
                 );
                 result.library_correctness = "passed";
+                if rotate_boundary
+                    && connection.api_level == "high-level"
+                    && connection.authentication.is_none()
+                {
+                    // This recipe calls Client::locate_with_options directly.
+                    result.actual_api_level = Some("high-level");
+                }
                 result
             } else {
                 CaseResult::non_run(
                     case,
                     "failed",
                     format!(
-                        "local {:?}; delivery={:?}; request not retried",
+                        "local {:?} ({error}); delivery={:?}; request not retried",
                         error.category(),
                         error.delivery_state()
                     ),
@@ -147,6 +224,7 @@ pub(crate) fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> 
     let accepted_negative_reason = match case.case_id.as_str() {
         "test-neg-encrypt-preactive-key" => matches!(reason, Some(7 | 10)),
         "test-neg-destroy-active-without-revoke" => reason == Some(0x43),
+        "test-crypto-decrypt-aes-256-gcm-invalid-tag" => reason == Some(0x0a),
         _ => false,
     };
     let (outcome, server) = if status == 1 && matches!(reason, Some(5 | 8)) {
@@ -167,6 +245,8 @@ pub(crate) fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> 
     );
     result.library_correctness = "passed";
     result.server_compatibility = server;
+    result.result_status_code = Some(status);
+    result.result_reason_code = reason;
     result.result_status = Some(
         kmipkit::ResultStatus::from_raw(status)
             .known_name()

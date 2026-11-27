@@ -483,7 +483,7 @@ fn locally_invalid_cryptographic_requests_are_not_sent() {
         .request()
         .hash()
         .data(b"message".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Hash requires caller-selected Cryptographic Parameters");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 0);
@@ -496,7 +496,7 @@ fn locally_invalid_cryptographic_requests_are_not_sent() {
         .correlation_value(b"part-1".to_vec())
         .init_indicator(false)
         .authenticated_encryption_additional_data(b"aad".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("AEAD additional data is invalid on a non-initial part");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 0);
@@ -510,7 +510,7 @@ fn locally_invalid_cryptographic_requests_are_not_sent() {
             RequestOptions::default()
                 .with_protocol_version(kmipkit_protocol::ProtocolVersion::from_raw(1, 4)),
         )
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("an unsupported KMIP version remains behind the typed gate");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 0);
@@ -538,7 +538,7 @@ fn cryptographic_builder_expert_parameter_paths_validate() {
         .decrypt()
         .unique_identifier(UniqueIdentifier::from("decrypt-key"))
         .data(b"ciphertext".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Decrypt reaches its typed client route");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 1, "{error:?}");
@@ -571,7 +571,7 @@ fn decrypt_sign_and_signature_verify_execute_the_typed_route() {
         .decrypt()
         .unique_identifier(UniqueIdentifier::from("decrypt-key"))
         .data(b"ciphertext".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Decrypt reaches its typed client route");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -585,7 +585,7 @@ fn decrypt_sign_and_signature_verify_execute_the_typed_route() {
         .data_value(OperationData::ByteString(SecretBytes::new(
             b"message".to_vec(),
         )))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Sign reaches its typed client route");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -598,7 +598,7 @@ fn decrypt_sign_and_signature_verify_execute_the_typed_route() {
         .cryptographic_parameters_structure(typed_signature_parameters().into_ttlv())
         .data(b"message".to_vec())
         .signature_data(b"signature".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Signature Verify reaches its typed client route");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -615,7 +615,7 @@ fn mac_mac_verify_and_hash_execute_the_typed_route() {
         .data_value(OperationData::ByteString(SecretBytes::new(
             b"message".to_vec(),
         )))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("MAC reaches its typed client route");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -631,7 +631,7 @@ fn mac_mac_verify_and_hash_execute_the_typed_route() {
         .correlation_value(b"mac-correlation".to_vec())
         .init_indicator(true)
         .final_indicator(true)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("MAC Verify reaches its typed client route");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -642,7 +642,7 @@ fn mac_mac_verify_and_hash_execute_the_typed_route() {
         .hash()
         .cryptographic_parameters(typed_hash_parameters())
         .data(b"message".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Hash reaches its typed client route");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -761,7 +761,7 @@ fn encrypt_builder_executes_once_and_preserves_success_failure_and_pending_resul
         .encrypt()
         .unique_identifier(UniqueIdentifier::from("execution-key"))
         .data(b"plaintext".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing typed route accepts a valid Encrypt response");
     assert_eq!(success.outcome().operation(), ClientOperation::Encrypt);
     assert_eq!(success.outcome().result().status().raw(), SUCCESS);
@@ -783,7 +783,7 @@ fn encrypt_builder_executes_once_and_preserves_success_failure_and_pending_resul
         .encrypt()
         .unique_identifier(UniqueIdentifier::from("execution-key"))
         .data(b"plaintext".to_vec())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing typed route returns KMIP Failure results");
     assert_eq!(failure.outcome().result().status().raw(), OPERATION_FAILED);
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -805,7 +805,7 @@ fn encrypt_builder_executes_once_and_preserves_success_failure_and_pending_resul
         .unique_identifier(UniqueIdentifier::from("execution-key"))
         .data(b"plaintext".to_vec())
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing typed route returns KMIP Pending results");
     let ClientBatchOutcome::Pending(pending_result) = pending.outcome() else {
         panic!("Encrypt Pending remains visible to the caller");

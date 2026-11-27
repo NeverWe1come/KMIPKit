@@ -98,12 +98,12 @@ let created = client
     .aes_256()
     .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
     .name("application-key")
-    .execute(&limits)?;
+    .execute_outcome_with_limits(&limits)?;
 let identifier = created.outcome().create_response()
     .and_then(|response| response.unique_identifier())
     .expect("Create correcto devuelve un Unique Identifier").clone();
-let key = client.request().get(identifier.clone()).execute(&limits)?;
-let destroyed = client.request().destroy(identifier).execute(&limits)?;
+let key = client.request().get(identifier.clone()).execute_outcome_with_limits(&limits)?;
+let destroyed = client.request().destroy(identifier).execute_outcome_with_limits(&limits)?;
 let _ = (key, destroyed);
 Ok(())
 }
@@ -212,7 +212,7 @@ fn create_signing_key_pair(
         .public_usage_mask(CryptographicUsageMask::VERIFY)
         .private_name("application-signing-private")
         .public_name("application-signing-public")
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     if let Some(pair) = response.outcome().create_key_pair_response() {
         let private_id = pair.private_key_unique_identifier();
         let public_id = pair.public_key_unique_identifier();
@@ -374,7 +374,7 @@ fn split_key(
         .method(SplitKeyMethod::XOR)
         .parts(3)
         .threshold(2)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     if let ClientBatchOutcome::CreateSplitKeyCompleted(completed) = response.outcome() {
         let identifiers = completed.unique_identifiers();
         let _ = identifiers;
@@ -679,10 +679,16 @@ formato, configurar la confianza, los plazos y el comportamiento de conexiones.
 El modelo de credenciales y autenticación proporciona valores tipados de Credential y Authentication que
 conservan el árbol TTLV original en `kmipkit-protocol`. Authentication
 contiene una o más Credential en el orden indicado por el llamador. El cliente
-puede adjuntar ese valor a un `ClientBatch`; se codifica en el Request Header
-del mensaje enviado. Los modelos Credential no se adjuntan por separado: se
-incluyen dentro de Authentication. El objeto `Client` no conserva esas
-credenciales para peticiones posteriores.
+puede adjuntar Authentication a un lote o pasarlo a la operación Query de alto
+nivel. El cliente lo codifica en el Request Header de ese intercambio.
+
+En Rust usa `Client::query_with_authentication`. En C usa
+`kmipkit_client_query_with_authentication_v1`. En Java usa la sobrecarga de
+`KmipClient.query` que recibe `Authentication`. En Python usa el argumento
+`authentication` de `Client.query`. Estos métodos consumen Authentication
+al adjuntarlo a la solicitud. En C, la función pone a nulo el puntero de
+Authentication que recibe por referencia, incluso si el intercambio falla
+después de adjuntarlo.
 
 Una Credential tipada Hashed Password requiere la marca de tiempo y los bytes
 hash proporcionados por el llamador. Hashing Algorithm es opcional. Si se
@@ -1044,12 +1050,12 @@ fn fluent_attribute_reads(client: &mut Client) -> Result<(), Box<dyn std::error:
     let attributes = client.request().get_attributes()
         .unique_identifier("existing-key")
         .attribute_reference(AttributeReference::tag(0x0042_002F))
-        .execute(&limits)?;
+        .execute_outcome_with_limits(&limits)?;
     let _typed_attributes = attributes.outcome().response().get_attributes();
 
     let names = client.request().get_attribute_list()
         .unique_identifier("existing-key")
-        .execute(&limits)?;
+        .execute_outcome_with_limits(&limits)?;
     let _typed_names = names.outcome().response().get_attribute_list();
 
     let placeholder = client.request().get_attribute_list().to_batch_item()?;

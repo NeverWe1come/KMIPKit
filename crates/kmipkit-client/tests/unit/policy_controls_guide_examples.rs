@@ -74,7 +74,7 @@ fn allocate_for_object(
         .get_usage_allocation()
         .unique_identifier(object_id)
         .usage_limits_count(requested_units)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     let response_view = response.outcome().response();
     let allocation = response_view
         .get_usage_allocation()
@@ -90,7 +90,10 @@ fn get_constraints_fluently(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<ClientBatchItemResponse, ClientError> {
-    let response = client.request().get_constraints().execute(limits)?;
+    let response = client
+        .request()
+        .get_constraints()
+        .execute_outcome_with_limits(limits)?;
     let _typed_response = response.outcome().response().get_constraints();
     Ok(response)
 }
@@ -159,7 +162,7 @@ fn documented_policy_payloads_preserve_defaults_omission_semantics() {
         assert!(guide.contains("GetUsageAllocationRequest::new(25)"));
         assert!(guide.contains(".get_usage_allocation()"));
         assert!(guide.contains(".usage_limits_count(requested_units)"));
-        assert!(guide.contains(".get_constraints().execute(limits)"));
+        assert!(guide.contains(".get_constraints().execute_outcome_with_limits(limits)"));
         assert!(guide.contains("with_defaults_information(defaults)"));
         assert!(guide.contains("execute_guarded_protection"));
         assert!(guide.contains("local"));

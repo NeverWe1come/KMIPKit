@@ -1,9 +1,21 @@
 //! Collect local draft and generic TTLV evidence from the installed public API.
 #![forbid(unsafe_code)]
 
+#[path = "../generic_wire.rs"]
+mod generic_wire;
+#[path = "../table_managed_objects.rs"]
+mod table_managed_objects;
+#[path = "../table_typed_attributes.rs"]
+mod table_typed_attributes;
+
 use clap::{Parser, ValueEnum};
+use generic_wire::decode_hex;
+use kmipkit::protocol::named_values_generated::values::enumeration::{
+    key_format_type, object_type,
+};
+use kmipkit::protocol::{KeyFormatType, KeyMaterial};
 use kmipkit::ttlv::{Item, ItemType, ModelError, RawTag, Structure, Value as TtlvValue, ValueView};
-use kmipkit::{ClientBatchItem, ClientRequest};
+use kmipkit::{ClientBatchItem, ClientRequest, ProtocolVersion, VersionGate};
 use serde_json::{Value, json};
 use std::collections::HashMap;
 use std::fs::File;
@@ -192,6 +204,31 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         };
     }
+    if mode.as_deref() == Some("--inspect-table-version") {
+        return if inspect_version().is_ok() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
+    if matches!(
+        mode.as_deref(),
+        Some("--inspect-table-key-material" | "--inspect-table-managed-objects")
+    ) {
+        let managed = mode.as_deref() == Some("--inspect-table-managed-objects");
+        return if inspect_typed_structure(managed).is_ok() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
+    if mode.as_deref() == Some("--inspect-table-typed-attributes") {
+        return if table_typed_attributes::inspect().is_ok() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
     match run(Args::parse()) {
         Ok(true) => ExitCode::SUCCESS,
         Ok(false) => ExitCode::FAILURE,
@@ -200,6 +237,97 @@ fn main() -> ExitCode {
             ExitCode::from(2)
         }
     }
+}
+
+fn key_material_verdict(
+    material: Option<KeyMaterial>,
+    format: u32,
+    expected: &[u8],
+) -> &'static str {
+    let Some(material) = material else {
+        return "rejected";
+    };
+    let actual_format = material.format_raw();
+    let mut encoded = Vec::new();
+    if actual_format == format
+        && generic_wire::encode(&material.into_item(), &mut encoded).is_ok()
+        && encoded == expected
+    {
+        "passed"
+    } else {
+        "failed"
+    }
+}
+
+fn inspect_typed_structure(managed: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let mut output = BufWriter::new(std::io::stdout().lock());
+    writeln!(
+        output,
+        "{}",
+        json!({
+            "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"),
+            "artifact_sha256": env!("KMIPKIT_ARTIFACT_SHA256"),
+        })
+    )?;
+    for line in std::io::stdin().lock().lines() {
+        let input = line?;
+        let mut words = input.split_whitespace();
+        let format = words.next().ok_or("missing key format")?.parse()?;
+        let wire = decode_hex(words.next().ok_or("missing key material")?)?;
+        let mut fields = Structure::new();
+        for field in words {
+            fields.try_push(kmipkit::ttlv::codec::decode(&decode_hex(field)?)?)?;
+        }
+        let item = kmipkit::ttlv::codec::decode(&wire)?;
+        let (construct, read) = if managed {
+            table_managed_objects::check(format, &fields, item, &wire)
+        } else {
+            let constructed = KeyMaterial::structure(format, fields).ok();
+            let read = KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format)).ok();
+            (
+                key_material_verdict(constructed, format, &wire),
+                key_material_verdict(read, format, &wire),
+            )
+        };
+        writeln!(
+            output,
+            "{}",
+            json!({
+                "construct": construct,
+                "read": read,
+            })
+        )?;
+    }
+    output.flush()?;
+    Ok(())
+}
+
+fn inspect_version() -> Result<(), Box<dyn std::error::Error>> {
+    let mut output = BufWriter::new(std::io::stdout().lock());
+    writeln!(
+        output,
+        "{}",
+        json!({
+            "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"),
+            "artifact_sha256": env!("KMIPKIT_ARTIFACT_SHA256"),
+        })
+    )?;
+    for line in std::io::stdin().lock().lines() {
+        let input = line?;
+        let (kind, raw) = input.split_once(' ').ok_or("missing table version input")?;
+        let code = raw.parse()?;
+        for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
+            let assigned = match kind {
+                "tag" => VersionGate::validate_tag(version, code).is_ok(),
+                "key-format" => key_format_type::name(code).is_some(),
+                "object-type" => object_type::name(code).is_some(),
+                _ => return Err("unsupported table version input".into()),
+            };
+            writeln!(output, "{assigned}")?;
+        }
+    }
+    output.flush()?;
+    Ok(())
 }
 
 fn inspect_ttlv(construct: bool) -> Result<(), Box<dyn std::error::Error>> {
@@ -214,17 +342,15 @@ fn inspect_ttlv(construct: bool) -> Result<(), Box<dyn std::error::Error>> {
     )?;
     for line in std::io::stdin().lock().lines() {
         let line = line?;
-        if line.len() % 2 != 0 {
-            return Err("fixture hex length is not even".into());
-        }
-        let wire = (0..line.len())
-            .step_by(2)
-            .map(|index| u8::from_str_radix(line.get(index..index + 2).unwrap_or(""), 16))
-            .collect::<Result<Vec<_>, _>>()?;
+        let wire = decode_hex(&line)?;
         let item = if construct {
             construct_item(&wire, 0)
                 .filter(|(_, remaining)| remaining.is_empty())
                 .map(|(item, _)| item)
+                .filter(|item| {
+                    let mut encoded = Vec::new();
+                    generic_wire::encode(item, &mut encoded).is_ok() && encoded == wire
+                })
         } else {
             kmipkit::ttlv::codec::decode(&wire).ok()
         };
@@ -286,7 +412,7 @@ fn construct_item(wire: &[u8], depth: u8) -> Option<(Item, &[u8])> {
     Some((Item::new(tag, value).ok()?, remaining))
 }
 
-fn append_node(item: &Item, nodes: &mut Vec<(u32, usize, usize)>) -> Result<(), &'static str> {
+fn append_node(item: &Item, nodes: &mut Vec<Value>) -> Result<(), &'static str> {
     let kind = TTLV_TYPES
         .iter()
         .position(|kind| *kind == item.item_type())
@@ -294,15 +420,39 @@ fn append_node(item: &Item, nodes: &mut Vec<(u32, usize, usize)>) -> Result<(), 
         + 1;
     item.with_value(|value| {
         if let ValueView::Structure(structure) = value {
-            nodes.push((item.tag().raw(), kind, structure.children().len()));
+            nodes.push(json!([item.tag().raw(), kind, structure.children().len()]));
             for child in structure.children() {
                 append_node(child, nodes)?;
             }
         } else {
-            nodes.push((item.tag().raw(), kind, 0));
+            let scalar = match value {
+                ValueView::Integer(value) => json!(value),
+                ValueView::LongInteger(value)
+                | ValueView::DateTime(value)
+                | ValueView::DateTimeExtended(value) => json!(value),
+                ValueView::Enumeration(value) | ValueView::Interval(value) => json!(value),
+                ValueView::Boolean(value) => json!(value),
+                ValueView::BigInteger(value) | ValueView::ByteString(value) => json!(hex(value)),
+                ValueView::TextString(value)
+                | ValueView::Identifier(value)
+                | ValueView::Reference(value)
+                | ValueView::NameReference(value) => json!(hex(value.as_bytes())),
+                _ => return Err("unknown scalar type"),
+            };
+            nodes.push(json!([item.tag().raw(), kind, 0, scalar]));
         }
         Ok(())
     })
+}
+
+fn hex(bytes: &[u8]) -> String {
+    const DIGITS: &[u8; 16] = b"0123456789abcdef";
+    let mut result = String::with_capacity(2 * bytes.len());
+    for byte in bytes {
+        result.push(char::from(DIGITS[usize::from(byte >> 4)]));
+        result.push(char::from(DIGITS[usize::from(byte & 15)]));
+    }
+    result
 }
 
 #[cfg(test)]

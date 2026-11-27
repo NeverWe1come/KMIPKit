@@ -1,0 +1,142 @@
+<AttributeFixtures>
+  <Fixture row="Activation Date"><ActivationDate type="DateTime" value="1700000010"/></Fixture>
+  <Fixture row="Alternative Name">
+    <AlternativeName>
+      <AlternativeNameValue type="TextString" value="alias.example.test"/>
+      <AlternativeNameType type="Enumeration" value="DNSName"/>
+    </AlternativeName>
+  </Fixture>
+  <Fixture row="Always Sensitive"><AlwaysSensitive type="Boolean" value="true"/></Fixture>
+  <Fixture row="Application Specific Information">
+    <ApplicationSpecificInformation>
+      <ApplicationNamespace type="TextString" value="org.kmipkit.fixture"/>
+      <ApplicationData type="TextString" value="application data"/>
+    </ApplicationSpecificInformation>
+  </Fixture>
+  <Fixture row="Archive Date"><ArchiveDate type="DateTime" value="1700000060"/></Fixture>
+  <Fixture row="Certificate Attributes">
+    <CertificateSubjectCN type="TextString" value="test.example"/>
+    <CertificateIssuerCN type="TextString" value="Fixture Issuer"/>
+  </Fixture>
+  <Fixture row="Certificate Length"><CertificateLength type="Integer" value="2048"/></Fixture>
+  <Fixture row="Certificate Type"><CertificateType type="Enumeration" value="X.509"/></Fixture>
+  <Fixture row="Comment"><Comment type="TextString" value="fixture comment"/></Fixture>
+  <Fixture row="Compromise Date"><CompromiseDate type="DateTime" value="1700000055"/></Fixture>
+  <Fixture row="Compromise Occurrence Date"><CompromiseOccurrenceDate type="DateTime" value="1700000050"/></Fixture>
+  <Fixture row="Contact Information"><ContactInformation type="TextString" value="kmip@example.test"/></Fixture>
+  <Fixture row="Cryptographic Algorithm"><CryptographicAlgorithm type="Enumeration" value="AES"/></Fixture>
+  <Fixture row="Cryptographic Domain Parameters">
+    <CryptographicDomainParameters><RecommendedCurve type="Enumeration" value="P-256"/></CryptographicDomainParameters>
+  </Fixture>
+  <Fixture row="Cryptographic Length"><CryptographicLength type="Integer" value="256"/></Fixture>
+  <Fixture row="Cryptographic Parameters">
+    <CryptographicParameters>
+      <BlockCipherMode type="Enumeration" value="CBC"/>
+      <PaddingMethod type="Enumeration" value="PKCS5"/>
+    </CryptographicParameters>
+  </Fixture>
+  <Fixture row="Cryptographic Usage Mask"><CryptographicUsageMask type="Integer" value="Encrypt Decrypt"/></Fixture>
+  <Fixture row="Deactivation Date"><DeactivationDate type="DateTime" value="1700000040"/></Fixture>
+  <Fixture row="Description"><Description type="TextString" value="fixture description"/></Fixture>
+  <Fixture row="Destroy Date"><DestroyDate type="DateTime" value="1700000070"/></Fixture>
+  <Fixture row="Digest">
+    <Digest>
+      <HashingAlgorithm type="Enumeration" value="SHA256"/>
+      <DigestValue type="ByteString" value="ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"/>
+      <KeyFormatType type="Enumeration" value="Raw"/>
+    </Digest>
+  </Fixture>
+  <Fixture row="Digital Signature Algorithm"><DigitalSignatureAlgorithm type="Enumeration" value="ECDSAWithSHA256"/></Fixture>
+  <Fixture row="Extractable"><Extractable type="Boolean" value="false"/></Fixture>
+  <Fixture row="Fresh"><Fresh type="Boolean" value="true"/></Fixture>
+  <Fixture row="Initial Date"><InitialDate type="DateTime" value="1700000000"/></Fixture>
+  <Fixture row="Key Format Type"><KeyFormatType type="Enumeration" value="TransparentSymmetricKey"/></Fixture>
+  <Fixture row="Key Value Location">
+    <KeyValueLocation>
+      <KeyValueLocationValue type="TextString" value="https://key.example.test/fixture"/>
+      <KeyValueLocationType type="Enumeration" value="URI"/>
+    </KeyValueLocation>
+  </Fixture>
+  <Fixture row="Key Value Present"><KeyValuePresent type="Boolean" value="true"/></Fixture>
+  <Fixture row="Last Change Date"><LastChangeDate type="DateTime" value="1700000011"/></Fixture>
+  <Fixture row="Lease Time"><LeaseTime type="Interval" value="120"/></Fixture>
+  <Fixture row="Link">
+    <Link>
+      <LinkType type="Enumeration" value="PublicKeyLink"/>
+      <LinkedObjectIdentifier type="TextString" value="fixture-public-key"/>
+    </Link>
+  </Fixture>
+  <Fixture row="Name">
+    <Name>
+      <NameValue type="TextString" value="named-fixture"/>
+      <NameType type="Enumeration" value="UninterpretedTextString"/>
+    </Name>
+  </Fixture>
+  <Fixture row="Never Extractable"><NeverExtractable type="Boolean" value="true"/></Fixture>
+  <Fixture row="Nist Key Type"><NISTKeyType type="Enumeration" value="SymmetricDataEncryptionKey"/></Fixture>
+  <Fixture row="Object Group"><ObjectGroup type="TextString" value="fixture-group"/></Fixture>
+  <Fixture row="Object Type"><ObjectType type="Enumeration" value="SymmetricKey"/></Fixture>
+  <Fixture row="Opaque Data Type"><OpaqueDataType type="Enumeration" value="0x80123456"/></Fixture>
+  <Fixture row="Original Creation Date"><OriginalCreationDate type="DateTime" value="1699999999"/></Fixture>
+  <Fixture row="PKCS#12 Friendly Name"><PKCS12FriendlyName type="TextString" value="fixture certificate"/></Fixture>
+  <Fixture row="Process Start Date"><ProcessStartDate type="DateTime" value="1700000020"/></Fixture>
+  <Fixture row="Protect Stop Date"><ProtectStopDate type="DateTime" value="1700000030"/></Fixture>
+  <Fixture row="Protection Level"><ProtectionLevel type="Enumeration" value="High"/></Fixture>
+  <Fixture row="Protection Period"><ProtectionPeriod type="Interval" value="600"/></Fixture>
+  <Fixture row="Quantum Safe"><QuantumSafe type="Boolean" value="false"/></Fixture>
+  <Fixture row="Random Number Generator">
+    <RandomNumberGenerator><RNGAlgorithm type="Enumeration" value="Unspecified"/></RandomNumberGenerator>
+  </Fixture>
+  <Fixture row="Revocation Reason">
+    <RevocationReason>
+      <RevocationReasonCode type="Enumeration" value="Superseded"/>
+      <RevocationMessage type="TextString" value="fixture key rotation"/>
+    </RevocationReason>
+  </Fixture>
+  <Fixture row="Rotate Automatic" since="2.1"><RotateAutomatic type="Boolean" value="true"/></Fixture>
+  <Fixture row="Rotate Date" since="2.1"><RotateDate type="DateTime" value="1730000000"/></Fixture>
+  <Fixture row="Rotate Generation" since="2.1"><RotateGeneration type="Integer" value="2"/></Fixture>
+  <Fixture row="Rotate Interval" since="2.1"><RotateInterval type="Interval" value="86400"/></Fixture>
+  <Fixture row="Rotate Latest" since="2.1"><RotateLatest type="Boolean" value="false"/></Fixture>
+  <Fixture row="Rotate Name" since="2.1">
+    <RotateName>
+      <RotateNameValue type="TextString" value="fixture-rotate"/>
+      <RotateNameType type="Enumeration" value="UninterpretedTextString"/>
+    </RotateName>
+  </Fixture>
+  <Fixture row="Rotate Offset" since="2.1"><RotateOffset type="Interval" value="300"/></Fixture>
+  <Fixture row="Sensitive"><Sensitive type="Boolean" value="true"/></Fixture>
+  <Fixture row="Short Unique Identifier"><ShortUniqueIdentifier type="ByteString" value="d382b08928c2598655e33b2649c0e03334ec6e2df686cbdd688924d7ec0778e0"/></Fixture>
+  <Fixture row="State"><State type="Enumeration" value="Active"/></Fixture>
+  <Fixture row="Unique Identifier"><UniqueIdentifier type="TextString" value="fixture-attribute-target"/></Fixture>
+  <Fixture row="Usage Limits">
+    <UsageLimits>
+      <UsageLimitsTotal type="LongInteger" value="1099511627776"/>
+      <UsageLimitsCount type="LongInteger" value="1099511627775"/>
+      <UsageLimitsUnit type="Enumeration" value="Byte"/>
+    </UsageLimits>
+  </Fixture>
+  <Fixture row="Vendor Attribute">
+    <Attribute>
+      <VendorIdentification type="TextString" value="org.kmipkit.fixture"/>
+      <AttributeName type="TextString" value="Fixture Attribute"/>
+      <AttributeValue type="TextString" value="vendor value"/>
+    </Attribute>
+  </Fixture>
+  <Fixture row="X.509 Certificate Identifier">
+    <X509CertificateIdentifier>
+      <IssuerDistinguishedName type="ByteString" value="30193117301506035504030c0e4669787475726520497373756572"/>
+      <CertificateSerialNumber type="ByteString" value="0102"/>
+    </X509CertificateIdentifier>
+  </Fixture>
+  <Fixture row="X.509 Certificate Issuer">
+    <X509CertificateIssuer>
+      <IssuerDistinguishedName type="ByteString" value="30193117301506035504030c0e4669787475726520497373756572"/>
+    </X509CertificateIssuer>
+  </Fixture>
+  <Fixture row="X.509 Certificate Subject">
+    <X509CertificateSubject>
+      <SubjectDistinguishedName type="ByteString" value="30173115301306035504030c0c746573742e6578616d706c65"/>
+    </X509CertificateSubject>
+  </Fixture>
+</AttributeFixtures>

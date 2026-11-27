@@ -129,7 +129,7 @@ fn fluent_create_executes_once_and_preserves_typed_response_and_optional_masks()
         .object_type(ObjectType::from_raw(7))
         .attributes(AttributeSet::new())
         .protection_storage_masks(kmipkit_ttlv::Structure::new())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the Create operation returns its typed success");
 
     let ClientBatchOutcome::CreateCompleted(create) = result.outcome() else {
@@ -176,7 +176,7 @@ fn fluent_create_passes_exchange_options_to_the_existing_typed_executor() {
         .create()
         .object_type(ObjectType::from_raw(7))
         .with_options(options)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the typed Create executor accepts the selected options");
 
     assert_eq!(&*observed_options.borrow(), &[options]);
@@ -198,7 +198,7 @@ fn fluent_create_preserves_pending_correlation_without_follow_up() {
         .create()
         .object_type(ObjectType::from_raw(7))
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the caller allowed a Pending Create result");
 
     let ClientBatchOutcome::Pending(pending) = result.outcome() else {
@@ -217,7 +217,7 @@ fn fluent_create_missing_object_type_fails_not_sent_without_transport() {
     let error: ClientError = client
         .request()
         .create()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Object Type is required by the Create request table");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));

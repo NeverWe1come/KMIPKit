@@ -17,6 +17,13 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def installed_file(member, destination):
+    checked = tarfile.data_filter(member, destination)
+    # Cargo builds these packages as path dependencies and uses source mtimes
+    # to decide whether to recompile. Crate archives carry normalized mtimes.
+    return checked.replace(mtime=None)
+
+
 def install():
     LOCAL.mkdir(parents=True, exist_ok=True)
     bundle = LOCAL / "kmipkit-rust-1.0.0.tar.gz"
@@ -58,13 +65,13 @@ def install():
         shutil.rmtree(target)
     target.mkdir()
     with tarfile.open(bundle) as source:
-        source.extractall(target, filter="data")
+        source.extractall(target, filter=installed_file)
     if (target / "library-commit").read_text().strip() != commit:
         raise SystemExit("package source identity mismatch")
     (target / "crates").mkdir()
     for package in (target / "packages").glob("*.crate"):
         with tarfile.open(package) as source:
-            source.extractall(target / "crates", filter="data")
+            source.extractall(target / "crates", filter=installed_file)
     print(json.dumps(data))
 
 

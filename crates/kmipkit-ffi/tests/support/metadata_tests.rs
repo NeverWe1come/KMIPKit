@@ -538,9 +538,13 @@ fn source_c_exports() -> Vec<(String, bool)> {
 
 #[test]
 fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
-    const INTERNAL_C_SYMBOLS: [&str; 7] = [
+    const INTERNAL_C_SYMBOLS: [&str; 11] = [
+        "kmipkit_client_batch_build_request_message",
+        "kmipkit_client_batch_item_discover_versions_with_versions",
         "kmipkit_client_batch_item_response_metadata_v1",
         "kmipkit_client_batch_item_response_release",
+        "kmipkit_client_configuration_codec_limits_v1",
+        "kmipkit_client_configuration_with_codec_limits_v1",
         "kmipkit_client_execute_with_options_and_error_ttlv_v1",
         "kmipkit_last_error_clear",
         "kmipkit_transport_config_create_v1",

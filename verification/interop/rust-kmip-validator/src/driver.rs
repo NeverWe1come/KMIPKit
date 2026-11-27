@@ -10,7 +10,7 @@ use kmipkit::ttlv::{Item, RawTag, Structure, Value};
 use kmipkit::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientRequest, RequestOptions,
 };
-use std::time::Duration;
+use std::{num::NonZeroUsize, time::Duration};
 
 pub(crate) fn item(tag: u32, value: Value) -> Result<Item> {
     Item::new(
@@ -118,7 +118,14 @@ pub(crate) fn authenticated_batch(
 ) -> Result<ClientBatch> {
     authenticate(connection, ClientBatch::new(ClientBatchItem::new(request)))
 }
-fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<ClientBatch> {
+fn authenticate(connection: &Connection, batch: ClientBatch) -> Result<ClientBatch> {
+    Ok(match request_authentication(connection)? {
+        Some(authentication) => batch.with_authentication(authentication),
+        None => batch,
+    })
+}
+
+fn request_authentication(connection: &Connection) -> Result<Option<Authentication>> {
     if let Some(credentials) = connection
         .authentication
         .as_ref()
@@ -149,22 +156,95 @@ fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<Clien
             ],
         )?)
         .map_err(|_| "invalid credential")?;
-        batch = batch.with_authentication(
-            Authentication::new(vec![credential]).map_err(|_| "invalid authentication")?,
-        );
+        return Authentication::new(vec![credential])
+            .map(Some)
+            .map_err(|_| "invalid authentication");
     }
-    Ok(batch)
+    Ok(None)
 }
 
 pub(crate) struct Observed {
     pub status: u32,
+    pub used_high_level: bool,
     pub reason: Option<u32>,
-    pub payload_tags: Vec<u32>,
+    pub nonempty_structure_tags: Vec<u32>,
+    pub usable_nonce: bool,
+    pub query_operation_count: Option<NonZeroUsize>,
+    pub fixture_attribute_returned: bool,
     pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
     pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
     pub bytes: Option<kmipkit::protocol::SecretBytes>,
+    pub authentication_tag: Option<kmipkit::protocol::SecretBytes>,
+    pub key_block_shape: Option<crate::key_block::KeyBlockShape>,
+    pub validity: Option<u32>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
+}
+
+pub(crate) fn nonce_fields_present(nonce: &kmipkit::ttlv::StructureView<'_>) -> bool {
+    use kmipkit::ttlv::ValueView;
+    let fields = nonce.children();
+    fields.len() == 2
+        && fields.iter().enumerate().all(|(index, field)| {
+            field.tag().raw() == [0x0042_00c9, 0x0042_00ca][index]
+                && field.with_value(
+                    |value| matches!(value, ValueView::ByteString(bytes) if !bytes.is_empty()),
+                )
+        })
+}
+
+fn response_contains_usable_nonce(response: &ClientBatchItemResponse) -> bool {
+    response.response_header_raw().is_some_and(|header| {
+        header.children().iter().any(|field| {
+            field.tag().raw() == 0x0042_00c8
+                && field
+                    .as_structure()
+                    .is_some_and(|nonce| nonce_fields_present(&nonce))
+        })
+    })
+}
+
+pub(crate) fn query_operation_count(
+    payload: &kmipkit::ttlv::StructureView<'_>,
+) -> Option<NonZeroUsize> {
+    use kmipkit::ttlv::ValueView;
+    let mut count = 0;
+    for field in payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == 0x0042_005c)
+    {
+        if !field.with_value(|value| matches!(value, ValueView::Enumeration(code) if *code != 0)) {
+            return None;
+        }
+        count += 1;
+    }
+    NonZeroUsize::new(count)
+}
+
+fn copy_secret_bytes(
+    value: &kmipkit::ttlv::ValueView<'_>,
+) -> Option<kmipkit::protocol::SecretBytes> {
+    match value {
+        kmipkit::ttlv::ValueView::ByteString(value) => {
+            Some(kmipkit::protocol::SecretBytes::new(value.to_vec()))
+        }
+        _ => None,
+    }
+}
+
+fn response_contains_fixture_attribute(response: &ClientBatchItemResponse) -> bool {
+    response.raw().is_some_and(|payload| {
+        payload.children().iter().any(|field| {
+            field.tag().raw() == 0x0042_0125
+                && field.as_structure().is_some_and(|attrs| {
+                    attrs
+                        .children()
+                        .iter()
+                        .any(crate::fixtures::matches_attribute_fixture)
+                })
+        })
+    })
 }
 
 pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
@@ -174,12 +254,19 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
     let mut identifier = None;
     let mut identifiers = Vec::new();
     let mut bytes = None;
+    let mut validity = None;
     let mut ticket = None;
     let mut correlation = None;
-    let mut payload_tags = Vec::new();
-    if let Some(raw) = response.raw() {
+    let mut nonempty_structure_tags = Vec::new();
+    let raw = response.raw();
+    if let Some(raw) = &raw {
         for value in raw.children() {
-            payload_tags.push(value.tag().raw());
+            if value
+                .as_structure()
+                .is_some_and(|fields| !fields.children().is_empty())
+            {
+                nonempty_structure_tags.push(value.tag().raw());
+            }
             if [0x0042_0094, 0x0042_0066, 0x0042_006f].contains(&value.tag().raw()) {
                 identifier = value.with_value(|v| match v {
                     ValueView::TextString(v) => Some(
@@ -188,6 +275,10 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                     ValueView::Identifier(v) => Some(
                         kmipkit::protocol::UniqueIdentifier::Identifier(v.to_string()),
                     ),
+                    ValueView::Enumeration(v) => {
+                        Some(kmipkit::protocol::UniqueIdentifier::Enumeration(*v))
+                    }
+                    ValueView::Integer(v) => Some(kmipkit::protocol::UniqueIdentifier::Integer(*v)),
                     _ => None,
                 });
                 if let Some(id) = &identifier {
@@ -195,10 +286,11 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                 }
             }
             if [0x0042_00c2, 0x0042_00c3, 0x0042_00c6].contains(&value.tag().raw()) {
-                bytes = value.with_value(|v| match v {
-                    ValueView::ByteString(v) => {
-                        Some(kmipkit::protocol::SecretBytes::new(v.to_vec()))
-                    }
+                bytes = value.with_value(|value| copy_secret_bytes(&value));
+            }
+            if value.tag().raw() == 0x0042_009b {
+                validity = value.with_value(|v| match v {
+                    ValueView::Enumeration(v) => Some(*v),
                     _ => None,
                 });
             }
@@ -209,12 +301,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                     .and_then(|v| kmipkit::protocol::Ticket::try_from_ttlv(v).ok());
             }
             if value.tag().raw() == 0x0042_00d6 {
-                correlation = value.with_value(|v| match v {
-                    ValueView::ByteString(v) => {
-                        Some(kmipkit::protocol::SecretBytes::new(v.to_vec()))
-                    }
-                    _ => None,
-                });
+                correlation = value.with_value(|value| copy_secret_bytes(&value));
             }
         }
     }
@@ -225,13 +312,40 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
     }
     Observed {
         status: result.status().raw(),
+        used_high_level: false,
         reason: result.reason().map(kmipkit::ResultReason::raw),
-        payload_tags,
+        nonempty_structure_tags,
+        usable_nonce: response_contains_usable_nonce(response),
+        query_operation_count: raw.as_ref().and_then(query_operation_count),
+        fixture_attribute_returned: response_contains_fixture_attribute(response),
         identifier,
         identifiers,
         correlation,
         bytes,
+        authentication_tag: response
+            .outcome()
+            .encrypt_response()
+            .and_then(|value| value.authenticated_encryption_tag())
+            .map(|value| kmipkit::protocol::SecretBytes::new(value.with_bytes(<[u8]>::to_vec))),
+        key_block_shape: response
+            .outcome()
+            .get_response()
+            .and_then(|result| result.key_block()?.ok())
+            .and_then(|block| {
+                block
+                    .with_raw(|raw| crate::key_block::shape(&raw))
+                    .ok()
+                    .flatten()
+            }),
+        validity,
         ticket,
+    }
+}
+
+fn observed_high_level(response: &ClientBatchItemResponse) -> Observed {
+    Observed {
+        used_high_level: true,
+        ..observed(response)
     }
 }
 
@@ -251,274 +365,289 @@ pub(crate) fn execute(
         options = options.with_protocol_version(kmipkit::ProtocolVersion::V3_0);
     }
     let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
-    // Direct operation methods are used where the public high-level API admits
-    // the same immutable request. Authentication requires the explicit batch.
-    if connection.api_level == "high-level" && connection.authentication.is_none() {
+    // Query accepts per-request Authentication in the high-level API.
+    if connection.api_level == "high-level"
+        && (connection.authentication.is_none() || matches!(request, ClientRequest::Query(_)))
+    {
         match request {
             ClientRequest::DiscoverVersions(request) => {
                 return client
                     .discover_versions_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Ping(_) => {
                 return client
                     .ping_with_options(&limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Query(request) => {
-                return client
-                    .query_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                let response = match request_authentication(connection)
+                    .map_err(|_| credential_error())?
+                {
+                    Some(authentication) => {
+                        client.query_with_authentication(request, authentication, &limits, &options)
+                    }
+                    None => client.query_with_options(request, &limits, &options),
+                };
+                return response.map(|response| observed_high_level(&response));
             }
             ClientRequest::DelegatedLogin(request) => {
                 return client
                     .delegated_login_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Login(request) => {
                 return client
                     .login_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Logout(request) => {
                 return client
                     .logout_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Get(request) => {
                 return client
                     .get_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Locate(request) => {
                 return client
                     .locate_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::AddAttribute(request) => {
                 return client
                     .add_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::AdjustAttribute(request) => {
                 return client
                     .adjust_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::DeleteAttribute(request) => {
                 return client
                     .delete_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::ModifyAttribute(request) => {
                 return client
                     .modify_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SetAttribute(request) => {
                 return client
                     .set_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetAttributes(request) => {
                 return client
                     .get_attributes_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Encrypt(request) => {
                 return client
                     .encrypt_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Decrypt(request) => {
                 return client
                     .decrypt_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Certify(request) => {
                 return client
                     .certify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Check(request) => {
                 return client
                     .check_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::ObtainLease(request) => {
                 return client
                     .obtain_lease_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Recertify(request) => {
                 return client
                     .recertify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Rekey(request) => {
                 return client
                     .rekey_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::RekeyKeyPair(request) => {
                 return client
                     .rekey_key_pair_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::ReProvision(request) => {
                 return client
                     .reprovision_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Register(request) => {
                 return client
                     .register_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Revoke(request) => {
                 return client
                     .revoke_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Activate(request) => {
                 return client
                     .activate_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Archive(request) => {
                 return client
                     .archive_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Destroy(request) => {
                 return client
                     .destroy_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Recover(request) => {
                 return client
                     .recover_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Pkcs11(request) => {
                 return client
                     .pkcs11_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::DeriveKey(request) => {
                 return client
                     .derive_key_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Export(request) => {
                 return client
                     .export_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Import(request) => {
                 return client
                     .import_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::JoinSplitKey(request) => {
                 return client
                     .join_split_key_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Hash(request) => {
                 return client
                     .hash_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Mac(request) => {
                 return client
                     .mac_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::MacVerify(request) => {
                 return client
                     .mac_verify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Sign(request) => {
                 return client
                     .sign_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SignatureVerify(request) => {
                 return client
                     .signature_verify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetAttributeList(request) => {
                 return client
                     .get_attribute_list_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SetConstraints(request) => {
                 return client
                     .set_constraints_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SetDefaults(request) => {
                 return client
                     .set_defaults_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetUsageAllocation(request) => {
                 return client
                     .get_usage_allocation_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Validate(request) => {
                 return client
                     .validate_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::RngRetrieve(request) => {
                 return client
                     .rng_retrieve_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Log(request) => {
                 return client
                     .log_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Interop(request) => {
                 return client
                     .interop_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::RngSeed(request) => {
                 return client
                     .rng_seed_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Create(request) => {
                 return client
                     .create_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::CreateKeyPair(request) => {
                 return client
                     .create_key_pair_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::CreateSplitKey(request) => {
                 return client
                     .create_split_key_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetConstraints(_) => {
                 return client
                     .get_constraints_with_options(&limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             request => return execute_batch(client, connection, request, &options, &limits),
         }
     }
     execute_batch(client, connection, request, &options, &limits)
+}
+
+fn credential_error() -> kmipkit::ClientError {
+    kmipkit::ClientError::validation(
+        kmipkit::ClientCauseCategory::InvalidInput,
+        kmipkit::RequestDeliveryState::NotSent,
+        std::io::Error::other("credential unavailable"),
+    )
 }
 
 fn execute_batch(
@@ -528,13 +657,7 @@ fn execute_batch(
     options: &RequestOptions,
     limits: &kmipkit::ttlv::codec::CodecLimits,
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
-    let batch = authenticated_batch(connection, request).map_err(|_| {
-        kmipkit::ClientError::validation(
-            kmipkit::ClientCauseCategory::InvalidInput,
-            kmipkit::RequestDeliveryState::NotSent,
-            std::io::Error::other("credential unavailable"),
-        )
-    })?;
+    let batch = authenticated_batch(connection, request).map_err(|_| credential_error())?;
     let response = client.execute_with_options(batch, limits, options)?;
     response.get(0).map(observed).ok_or_else(|| {
         kmipkit::ClientError::validation(
@@ -621,12 +744,50 @@ pub(crate) fn asynchronous(
     }?;
     Ok(Observed {
         status: response.result().status().raw(),
+        used_high_level: false,
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
-        payload_tags: Vec::new(),
+        nonempty_structure_tags: Vec::new(),
+        usable_nonce: false,
+        query_operation_count: None,
+        fixture_attribute_returned: false,
         identifier: None,
-        identifiers: Vec::new(),
+        identifiers: response
+            .poll_response()
+            .and_then(|poll| poll.with_response_payload(|payload| poll_create_identifier(&payload)))
+            .flatten()
+            .into_iter()
+            .collect(),
         bytes: None,
+        authentication_tag: None,
+        key_block_shape: None,
+        validity: None,
         ticket: None,
-        correlation: None,
+        correlation: response.with_asynchronous_correlation_value(|value| {
+            kmipkit::protocol::SecretBytes::new(value.to_vec())
+        }),
+    })
+}
+
+// Poll returns the original Create payload, rather than a new operation payload.
+pub(crate) fn poll_create_identifier(
+    payload: &kmipkit::ttlv::StructureView<'_>,
+) -> Option<kmipkit::protocol::UniqueIdentifier> {
+    use kmipkit::protocol::UniqueIdentifier;
+    use kmipkit::ttlv::ValueView;
+
+    let [object_type, identifier] = payload.children() else {
+        return None;
+    };
+    if object_type.tag().raw() != 0x0042_0057
+        || !object_type.with_value(|value| matches!(value, ValueView::Enumeration(2)))
+        || identifier.tag().raw() != 0x0042_0094
+    {
+        return None;
+    }
+    identifier.with_value(|value| match value {
+        ValueView::TextString(text) if !text.is_empty() => Some(UniqueIdentifier::from(text)),
+        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
+        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
+        _ => None,
     })
 }

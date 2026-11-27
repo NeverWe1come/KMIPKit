@@ -2569,6 +2569,12 @@ int32_t kmipkit_client_batch_item_derive_key(uint32_t object_type, const kmipkit
 int32_t kmipkit_client_batch_item_destroy(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_discover_versions(kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_client_batch_item_discover_versions_with_versions(const kmipkit_protocol_version_v1_t * versions, uint64_t version_count, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_client_batch_build_request_message(kmipkit_client_batch_t ** inout_batch, kmipkit_protocol_version_v1_t protocol_version, kmipkit_codec_limits_t * limits, kmipkit_request_message_t ** out_message);
+/* Opt-in vendor attribute extension tags (Cosmian KMS interoperability). */
+#define KMIPKIT_VENDOR_TAG_ATTRIBUTE_INDEX 0x00420009u
+#define KMIPKIT_VENDOR_TAG_CRITICAL 0x00420026u
+#define KMIPKIT_VENDOR_TAG_OBJECT_GROUP_MEMBER 0x004200ACu
 /* Creates an opt-in KMIP 3.0 Working Draft Encapsulate route from ordered generic TTLV, citing §6.1.22, Table 317. This route preserves fields but does not validate operation-specific schema.
  */
 /* KMIPKIT-0053-FR-018 */
@@ -3243,6 +3249,8 @@ int32_t kmipkit_client_configuration_wire_encoding(kmipkit_client_configuration_
 int32_t kmipkit_client_configuration_with_protocol_version(kmipkit_client_configuration_t * configuration, int32_t major, int32_t minor, kmipkit_client_configuration_t ** out_configuration);
 /* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_configuration_with_wire_encoding(kmipkit_client_configuration_t * configuration, kmipkit_wire_encoding_t encoding, kmipkit_client_configuration_t ** out_configuration);
+int32_t kmipkit_client_configuration_with_codec_limits_v1(kmipkit_client_configuration_t * configuration, kmipkit_codec_limits_t * limits, kmipkit_client_configuration_t ** out_configuration);
+int32_t kmipkit_client_configuration_codec_limits_v1(kmipkit_client_configuration_t * configuration, kmipkit_codec_limits_t ** out_limits);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_create(kmipkit_client_configuration_t * configuration, kmipkit_transport_config_t ** transport_configuration, kmipkit_client_t ** out_client);
 /* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
@@ -3437,6 +3445,7 @@ int32_t kmipkit_create_key_pair_builder_set_private_usage_mask(kmipkit_create_ke
 int32_t kmipkit_create_key_pair_builder_set_public_name(kmipkit_create_key_pair_builder_t * builder, const uint8_t * name_data, uint64_t name_length);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
 int32_t kmipkit_create_key_pair_builder_set_public_usage_mask(kmipkit_create_key_pair_builder_t * builder, int32_t usage_mask);
+int32_t kmipkit_create_key_pair_builder_set_protocol_version(kmipkit_create_key_pair_builder_t * builder, int32_t major, int32_t minor);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
 int32_t kmipkit_create_key_pair_builder_validate(kmipkit_create_key_pair_builder_t * builder);
 /* Consumes and validates the outer Credential Type and Credential Value fields while preserving the original ordered TTLV without interpreting the payload.
@@ -3886,6 +3895,7 @@ int32_t kmipkit_symmetric_key_builder_set_length(kmipkit_symmetric_key_builder_t
 int32_t kmipkit_symmetric_key_builder_set_name(kmipkit_symmetric_key_builder_t * builder, const uint8_t * name_data, uint64_t name_length);
 /* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
 int32_t kmipkit_symmetric_key_builder_set_usage_mask(kmipkit_symmetric_key_builder_t * builder, int32_t usage_mask);
+int32_t kmipkit_symmetric_key_builder_set_protocol_version(kmipkit_symmetric_key_builder_t * builder, int32_t major, int32_t minor);
 /* Builds and validates a SymmetricKey from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.

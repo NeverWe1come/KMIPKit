@@ -3,10 +3,11 @@ package org.kmipkit.fluent;
 import org.kmipkit.protocol.KeyUsage;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
-import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.FluentBatchItemAdapter;
+import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
@@ -42,6 +43,20 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
         handle = NativeHandle.owned(
                 NativeFluentRegistry.createKeyPairBuilderCreate(),
                 NativeFluentRegistry.CREATE_KEY_PAIR_BUILDER);
+        if (client != null) {
+            withProtocolVersion(client.protocolVersion());
+        }
+    }
+
+    /** Sets the target KMIP protocol version for attribute emission (`Name` vs `AlternativeName`). */
+    public CreateKeyPairBuilder withProtocolVersion(ProtocolVersion version) {
+        if (version == null) throw new InvalidInputException("protocol version is invalid");
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetProtocolVersion(
+                    builder, version.major(), version.minor());
+            return null;
+        });
+        return this;
     }
 
     public CreateKeyPairBuilder algorithm(long value) {
@@ -60,6 +75,14 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Configures asymmetric or KMIP 3.0 PQC algorithm and length from a curated {@link KeySpec}. */
+    public CreateKeyPairBuilder withKeySpec(KeySpec spec) {
+        if (spec == null || !spec.isAsymmetric()) {
+            throw new InvalidInputException("an asymmetric KeySpec is required");
+        }
+        return algorithm(spec.algorithm()).length(spec.length());
+    }
+
     /** Selects named KMIP key usage flags. */
     public CreateKeyPairBuilder privateUsageMask(KeyUsage... flags) {
         return privateUsageMask(KeyUsage.mask(flags));
@@ -73,6 +96,14 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Selects exact 32-bit private Cryptographic Usage Mask bits. */
+    public CreateKeyPairBuilder privateUsageMask(long mask) {
+        if (mask < Integer.MIN_VALUE || mask > 0xffff_ffffL) {
+            throw new InvalidInputException("cryptographic usage mask is outside 32-bit range");
+        }
+        return privateUsageMask((int) mask);
+    }
+
     /** Selects named KMIP key usage flags. */
     public CreateKeyPairBuilder publicUsageMask(KeyUsage... flags) {
         return publicUsageMask(KeyUsage.mask(flags));
@@ -84,6 +115,14 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
             return null;
         });
         return this;
+    }
+
+    /** Selects exact 32-bit public Cryptographic Usage Mask bits. */
+    public CreateKeyPairBuilder publicUsageMask(long mask) {
+        if (mask < Integer.MIN_VALUE || mask > 0xffff_ffffL) {
+            throw new InvalidInputException("cryptographic usage mask is outside 32-bit range");
+        }
+        return publicUsageMask((int) mask);
     }
 
     public CreateKeyPairBuilder privateName(String value) {
@@ -209,14 +248,24 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
 
     public ClientBatchResponse execute(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
+        return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
+    }
+
+    /** Executes Create Key Pair with configured limits and throws on server error or Pending. */
+    public ClientBatchItemResult execute() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeResult(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes Create Key Pair with configured limits, returning rejection or Pending outcomes without throwing. */
+    public ClientBatchItemResult executeOutcome() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeOutcome(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes Create Key Pair with explicit limits, returning rejection or Pending outcomes without throwing. */
+    public ClientBatchItemResult executeOutcome(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
-        if (client == null) throw new InvalidInputException("client is required to execute this builder");
-        try (ClientBatch batch = ClientBatch.create()) {
-            batch.add(build());
-            if (asynchronousIndicator != null) batch.asynchronousIndicator(asynchronousIndicator);
-            return options == null ? client.execute(batch, limits)
-                    : client.executeWithOptions(batch, limits, options);
-        }
+        return BatchExecution.executeOutcome(client, build(), limits, options, asynchronousIndicator);
     }
 
     @Override public void close() { handle.close(); }

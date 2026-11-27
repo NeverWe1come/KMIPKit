@@ -17,17 +17,16 @@ public final class JavaRouteInventory {
     /** Returns a route classification for every operation found in the catalog. */
     public static Map<String, Route> classify(CatalogLoader.Catalog catalog) {
         var operations = new TreeSet<String>();
-        catalog.cases().forEach(testCase -> {
-            operations.add(testCase.operation());
-            routeFor(testCase);
-        });
-        var classified = new LinkedHashMap<String, Route>();
-        for (String operation : operations) {
-            Route route = ROUTES.get(operation);
-            if (route == null) {
+        for (var testCase : catalog.cases()) {
+            String operation = testCase.operation();
+            if ("server_exchange".equals(testCase.execution().mode()) && !ROUTES.containsKey(operation)) {
                 throw new IllegalArgumentException("Catalog operation has no Java route classification: " + operation);
             }
-            classified.put(operation, route);
+            operations.add(operation);
+        }
+        var classified = new LinkedHashMap<String, Route>();
+        for (String operation : operations) {
+            classified.put(operation, routeFor(operation));
         }
         return Map.copyOf(classified);
     }
@@ -42,20 +41,40 @@ public final class JavaRouteInventory {
         String workflow = testCase.requires().path("workflow_type").asText();
         if ("server_to_client".equals(workflow)) {
             return new Route(testCase.operation(), Status.WORKFLOW_UNAVAILABLE,
-                    "This catalog case requires a server-initiated workflow; the Java consumer has no server request listener.");
+                    "This catalog case requires the Java generic TTLV server-initiated listener and a peer trigger.");
         }
         if ("Set Endpoint Role".equals(testCase.operation())
                 && "mutating".equals(testCase.execution().mutation())) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The typed outbound role request requires explicit mutation opt-in.");
         }
+        if (JavaKmipDriver.registerOpaqueCase(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver registers, reads and destroys an isolated Opaque Object.");
+        }
+        if (JavaKmipDriver.createSplitKeyCase(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver creates two isolated split key parts and destroys the returned objects.");
+        }
         if (JavaKmipDriver.ownedObjectCase(testCase)) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The operation targets a newly created and isolated key.");
         }
+        if (JavaKmipDriver.multipartHash(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver checks the correlation and final digest across three exchanges.");
+        }
+        if (JavaKmipDriver.typedRngCase(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver checks the returned byte count for a bounded RNG request.");
+        }
         if (JavaKmipDriver.readOnlyProbe(testCase)) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The driver verifies the response to a bounded Locate or known-answer SHA-256 request.");
+        }
+        if (JavaKmipDriver.extendedTypedCase(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver executes the operation through the public Java typed or fluent route.");
         }
         return routeFor(testCase.operation());
     }

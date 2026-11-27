@@ -41,6 +41,18 @@ public final class Main {
             if (args.length == 1 && Set.of("--inspect-oasis-ttlv", "--construct-oasis-ttlv").contains(args[0])) {
                 return DraftCampaign.inspectTtlv(Path.of(DEFAULT_MANIFEST), "--construct-oasis-ttlv".equals(args[0]));
             }
+            if (args.length == 1 && "--inspect-table-key-material".equals(args[0])) {
+                return DraftCampaign.inspectTypedStructure(Path.of(DEFAULT_MANIFEST), false);
+            }
+            if (args.length == 1 && "--inspect-table-managed-objects".equals(args[0])) {
+                return DraftCampaign.inspectTypedStructure(Path.of(DEFAULT_MANIFEST), true);
+            }
+            if (args.length == 1 && "--inspect-table-typed-attributes".equals(args[0])) {
+                return DraftCampaign.inspectTypedAttributes(Path.of(DEFAULT_MANIFEST));
+            }
+            if (args.length == 1 && "--inspect-table-version".equals(args[0])) {
+                return DraftCampaign.inspectVersion(Path.of(DEFAULT_MANIFEST));
+            }
             if ("--plan".equals(args[0])) {
                 return DraftCampaign.run(args, Path.of(DEFAULT_MANIFEST));
             }
@@ -68,7 +80,8 @@ public final class Main {
         long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
         long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
         long apiUnavailable = countCases(applicable, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
-        long workflowUnavailable = countCases(applicable, JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE);
+        long workflowUnavailable = applicable.stream().filter(GenericIncoming::isIncoming)
+                .filter(testCase -> !GenericIncoming.supports(testCase, connection)).count();
         long mutation = applicable.stream().filter(testCase -> "mutating".equals(testCase.execution().mutation())).count();
         out.println("KMIPKit Java interoperability plan");
         out.println("Server ID: " + connection.serverId());
@@ -78,7 +91,7 @@ public final class Main {
         out.println("Server exchanges executable through selected Java API level: " + typed);
         out.println("Public typed constructors awaiting catalog recipes: " + recipePending);
         out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
-        out.println("Server-initiated workflows without a Java listener: " + workflowUnavailable);
+        out.println("Server-initiated workflows without a recipe for the selected API: " + workflowUnavailable);
         out.println("Cases requiring explicit mutation opt-in: " + mutation);
         out.println("Capability profiles are hypotheses and do not filter cases.");
         return 0;
@@ -104,25 +117,38 @@ public final class Main {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
         JavaRouteInventory.classify(catalog);
+        List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
+        String caseId = options.values().get("--case");
+        if (caseId != null) {
+            applicable = applicable.stream().filter(testCase -> caseId.equals(testCase.caseId())).toList();
+            if (applicable.size() != 1) {
+                out.println("No unique case for the selected protocol version.");
+                return 2;
+            }
+        }
         ArtifactProvenance artifact = ArtifactProvenance.loadForCheckout(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
         connection.requireTlsFilesExist();
-        List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         boolean enableMutations = options.flag("--enable-mutations");
         List<RunReport.CaseEvidence> evidence = new ArrayList<>(applicable.size());
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
                 "server_exchange".equals(testCase.execution().mode())
+                        && !GenericIncoming.isIncoming(testCase)
                         && supportsRoute(testCase, connection)
                         && (!"mutating".equals(testCase.execution().mutation())
                                 || (connection.allowMutations() && enableMutations)));
         JavaKmipDriver driver = hasPotentialLiveRoute && !"generic-ttlv".equals(connection.apiLevel()) ? JavaKmipDriver.connect(connection) : null;
-        try {
+        boolean nativeIncoming = TypedIncoming.supportsConnection(connection) && options.values().containsKey("--listen");
+        try (var incoming = nativeIncoming ? null : GenericIncoming.open(connection, options.values());
+                var typedIncoming = nativeIncoming ? TypedIncoming.open(connection, options.values()) : null) {
             for (CatalogLoader.CatalogCase testCase : applicable) {
-                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection, enableMutations, driver);
+                JavaKmipDriver.CaseOutcome outcome = executeCase(
+                        testCase, connection, enableMutations, driver, incoming, typedIncoming);
                 evidence.add(new RunReport.CaseEvidence(testCase.caseId(), outcome.status(),
                         outcome.libraryCorrectness(), outcome.serverCompatibility(), outcome.parity(),
                         outcome.durationMs(), outcome.resultStatusCode(), outcome.resultReasonCode(),
-                        outcome.diagnostic()));
+                        outcome.diagnostic(), "high-level".equals(connection.apiLevel())
+                                && outcome.resultStatusCode() != null ? "high-level" : null));
             }
         } finally {
             if (driver != null) driver.close();
@@ -145,13 +171,18 @@ public final class Main {
     }
 
     private static JavaKmipDriver.CaseOutcome executeCase(CatalogLoader.CatalogCase testCase,
-            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver) {
+            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver, GenericIncoming incoming,
+            TypedIncoming typedIncoming) {
         long start = System.nanoTime();
         if ("not_applicable".equals(testCase.execution().status())) {
             return JavaKmipDriver.CaseOutcome.notRun("Catalog case is not applicable: "
                     + testCase.execution().notApplicableReason(), elapsedMillis(start));
         }
         if ("local_model".equals(testCase.execution().mode())) {
+            if (!TtlvModelChecks.supports(testCase)) {
+                return JavaKmipDriver.CaseOutcome.notRun(
+                        "No Java local model recipe implements the selected assertions.", elapsedMillis(start));
+            }
             TtlvModelChecks.ModelCheck model = TtlvModelChecks.verifyLocalCase(testCase);
             return model.passed()
                     ? JavaKmipDriver.CaseOutcome.localModelPassed(elapsedMillis(start))
@@ -173,6 +204,16 @@ public final class Main {
                         "not_compared", elapsedMillis(start), null, null,
                         "State-changing operation was withheld locally; configuration and --enable-mutations are required.");
             }
+        }
+        if (TypedIncoming.supports(testCase, connection)) {
+            return typedIncoming == null
+                    ? JavaKmipDriver.CaseOutcome.notRun("Incoming exchange requires --listen and a peer trigger.", elapsedMillis(start))
+                    : typedIncoming.exchange(testCase);
+        }
+        if (GenericIncoming.supports(testCase, connection)) {
+            return incoming == null
+                    ? JavaKmipDriver.CaseOutcome.notRun("Incoming exchange requires --listen and a peer trigger.", elapsedMillis(start))
+                    : incoming.exchange(testCase);
         }
         if ("generic-ttlv".equals(connection.apiLevel())) {
             return GenericExchange.run(testCase, connection);
@@ -211,7 +252,17 @@ public final class Main {
 
     private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         String apiLevel = connection.apiLevel();
-        if ("generic-ttlv".equals(apiLevel)) return GenericExchange.supports(testCase, connection);
+        if (JavaKmipDriver.queryCredentialCase(testCase) && connection.usernamePassword() == null) return false;
+        if ("generic-ttlv".equals(apiLevel)) {
+            return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
+        }
+        if ("high-level".equals(apiLevel)) {
+            return hasTypedRoute(testCase) && ("test-op-query".equals(testCase.caseId())
+                    || JavaKmipDriver.queryFieldCase(testCase) || JavaKmipDriver.queryNonceCase(testCase)
+                    || JavaKmipDriver.queryCredentialCase(testCase)
+                    || ("test-op-discover-versions".equals(testCase.caseId()) && connection.usernamePassword() == null));
+        }
+        if (TypedIncoming.supports(testCase, connection)) return true;
         return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)
                 || "fluent".equals(apiLevel) && JavaKmipDriver.supportsFluent(testCase));
     }
@@ -232,13 +283,14 @@ public final class Main {
     private static void help(PrintStream output) {
         output.println("KMIPKit Java interoperability validator");
         output.println("Usage: <plan|preflight|run> --connection FILE [--catalog FILE]");
-        output.println("Run also accepts --artifact-manifest FILE --output-dir DIR --enable-mutations.");
+        output.println("Run also accepts --case ID --artifact-manifest FILE --output-dir DIR --enable-mutations.");
+        output.println("Incoming cases accept --listen ADDRESS:PORT --listener-cert FILE --listener-key FILE --listener-ready-file FILE.");
         output.println("plan and preflight do not resolve DNS or open sockets.");
     }
 
-    private record Arguments(Map<String, String> paths, Set<String> flags) {
+    private record Arguments(Map<String, String> values, Set<String> flags) {
         static Arguments parse(String[] args) {
-            Map<String, String> paths = new HashMap<>();
+            Map<String, String> values = new HashMap<>();
             Set<String> flags = new HashSet<>();
             Set<String> knownFlags = Set.of("--enable-mutations");
             for (int index = 1; index < args.length; index++) {
@@ -247,22 +299,26 @@ public final class Main {
                     flags.add(option);
                 } else if (Set.of("--connection", "--catalog", "--artifact-manifest", "--output-dir")
                         .contains(option) && index + 1 < args.length) {
-                    paths.put(option, args[++index]);
+                    values.put(option, args[++index]);
+                } else if ("run".equals(args[0]) && Set.of("--case", "--listen", "--listener-cert",
+                        "--listener-key", "--listener-ready-file").contains(option)
+                        && !values.containsKey(option) && index + 1 < args.length) {
+                    values.put(option, args[++index]);
                 } else {
                     throw new IllegalArgumentException("Unknown or incomplete command option");
                 }
             }
-            return new Arguments(Map.copyOf(paths), Set.copyOf(flags));
+            return new Arguments(Map.copyOf(values), Set.copyOf(flags));
         }
 
         Path path(String key) {
-            String value = paths.get(key);
+            String value = values.get(key);
             if (value == null || value.isBlank()) throw new IllegalArgumentException(key + " is required");
             return Path.of(value);
         }
 
         Path pathOr(String key, String fallback) {
-            return Path.of(paths.getOrDefault(key, fallback));
+            return Path.of(values.getOrDefault(key, fallback));
         }
 
         boolean flag(String key) {

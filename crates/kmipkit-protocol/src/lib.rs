@@ -50,6 +50,7 @@ mod get_attributes;
 mod get_constraints;
 mod get_usage_allocation;
 mod hash;
+pub mod high_level;
 mod import;
 mod interop;
 mod join_split_key;
@@ -193,6 +194,10 @@ pub use get_usage_allocation::{
     GetUsageAllocationError, GetUsageAllocationRequest, GetUsageAllocationResponse,
 };
 pub use hash::{HashError, HashRequest, HashResponse};
+pub use high_level::{
+    AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,
+    PresetError, SignatureSpec, decode_pem, decode_pem_der,
+};
 pub use import::{ImportError, ImportRequest, ImportResponse};
 pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
@@ -678,6 +683,9 @@ mod link_normalizer_tests;
 #[path = "../tests/unit/kmip30_operations_tests.rs"]
 mod kmip30_operations_tests;
 
+#[cfg(test)]
+#[path = "../tests/unit/high_level_tests.rs"]
+mod high_level_tests;
 #[cfg(test)]
 #[path = "../tests/unit/kem_tests.rs"]
 mod kem_tests;

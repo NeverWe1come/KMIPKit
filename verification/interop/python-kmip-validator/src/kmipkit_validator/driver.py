@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
+
+import hashlib
 import re
 import uuid
 from dataclasses import dataclass
@@ -133,11 +136,15 @@ class PythonKmipDriver:
 
     _HIGH_LEVEL_OPERATIONS = {
         "Add Attribute", "Adjust Attribute", "Delete Attribute", "Get Attributes",
-        "Get Attribute List", "Modify Attribute", "Set Attribute",
-        "Query Asynchronous Requests",
+        "Discover Versions", "Get Attribute List", "Modify Attribute", "Set Attribute",
+        "Query", "Query Asynchronous Requests",
     }
     _FLUENT_OPERATIONS = _DRAFT | {
-        "Create", "Create Key Pair", "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
+        "Create", "Create Key Pair", "Create Split Key", "Register", "Re-certify", "Certify",
+        "Discover Versions", "Query", "Ping", "Check", "Export", "Import",
+        "RNG Retrieve", "RNG Seed", "Derive Key", "Validate", "Join Split Key",
+        "Obtain Lease", "Get Usage Allocation", "Modify Attribute",
+        "Get", "Get Attributes", "Get Attribute List", "Locate",
         "Activate", "Archive", "Recover", "Destroy", "Revoke", "Re-key", "Re-key Key Pair",
         "Add Attribute", "Set Attribute", "Delete Attribute",
         "Encrypt", "Decrypt", "Hash", "MAC", "MAC Verify", "Sign", "Signature Verify",
@@ -218,6 +225,13 @@ class PythonKmipDriver:
         )
         self._client = client.Client.create(configuration, transport)
 
+    def _execute_query(self, functions: list[int], limits: Any) -> Any:
+        authentication = self._authentication()
+        if authentication is None:
+            return self._client.query(functions, limits)
+        with authentication:
+            return self._client.query(functions, limits, authentication=authentication)
+
     def _authentication(self) -> Any | None:
         from kmipkit import credentials
         import os
@@ -268,16 +282,24 @@ class PythonKmipDriver:
         if case["execution"]["mode"] != "server_exchange":
             return False
         workflow = case.get("requires", {}).get("workflow_type")
-        if workflow in {"server_to_client", "multipart_streaming", "batch_id_placeholder"}:
+        if workflow == "multipart_streaming":
+            return case["case_id"] == "test-multipart-hash-sha256" and api_level in {"typed-protocol", "fluent"}
+        if workflow in {"server_to_client", "batch_id_placeholder"}:
             return False
         if api_level == "fluent":
             return (
                 workflow != "async_poll" and case["operation"] in cls._FLUENT_OPERATIONS
                 and (case["operation"] != "Create" or case.get("requires", {}).get("object_type")
-                     in (None, "Symmetric Key", "Private Key", "Public Key"))
+                     in (None, "Symmetric Key", "Private Key", "Public Key", "Split Key"))
             )
         if api_level == "typed-protocol":
             return case["operation"] in cls._OPERATIONS
+        if api_level == "high-level" and case["operation"] == "Discover Versions":
+            return case["case_id"] == "test-op-discover-versions"
+        if api_level == "high-level" and case["operation"] == "Query":
+            return (case["case_id"] in {"test-op-query", "test-query-attestation-nonce",
+                                        "test-query-username-password-credential"}
+                    or "query_function" in case.get("requires", {}))
         return (
             api_level == "high-level"
             and workflow != "async_poll"
@@ -288,8 +310,6 @@ class PythonKmipDriver:
     def route_limitation(cls, case: dict[str, Any], api_level: str) -> str:
         workflow = case.get("requires", {}).get("workflow_type")
         if api_level == "fluent":
-            if case.get("operation") == "Create Split Key":
-                return "the pinned Fluent Split Key builder cannot copy attributes from a public AttributeSet"
             return "the installed Python Fluent API has no equivalent recipe for this catalog case"
         if api_level == "high-level":
             if case.get("operation") in cls._HIGH_LEVEL_OPERATIONS:
@@ -309,13 +329,15 @@ class PythonKmipDriver:
 
     def _attribute_references(self, case: dict[str, Any]) -> list[Any]:
         reference = self._extensions.AttributeReference
-        name = case.get("requires", {}).get("attribute")
+        requires = case.get("requires", {})
+        name = requires.get("attribute")
         if not name:
             return [reference.tag(0x0042_0053)]
         if name == "Certificate Attributes":
             return [reference.tag(0x0042_001D), reference.tag(0x0042_00AD)]
         if name == "Vendor Attribute":
-            return [reference.name("KMIPKit.Interop", "probe")]
+            return [reference.name(requires.get("attribute_vendor_identification", "KMIPKit.Interop"),
+                                   requires.get("attribute_reference_name", "probe"))]
         tag = self._attribute_tag(name)
         if tag is None:
             raise LocalRecipeUnavailable("standard Attribute Reference tag is unavailable")
@@ -382,9 +404,20 @@ class PythonKmipDriver:
         ]) as common:
             return self._extensions.client_batch_item_create_key_pair(common_attributes=common)
 
+    def _rotate_locate_attributes(self, case: dict[str, Any]) -> Any:
+        from kmipkit import ttlv
+
+        wire = bytes.fromhex(case["requires"]["rotate_attribute_ttlv"])
+        tag = int.from_bytes(wire[:3], "big")
+        if tag not in {0x42016A, 0x42016B, 0x42016C, 0x42016D, 0x42016E, 0x42016F, 0x420172}:
+            raise LocalRecipeUnavailable("Rotate fixture has an unexpected tag")
+        with ttlv.ttlv_decode(wire) as attribute:
+            return self._structure([attribute])
+
     def _build_fluent_item(
         self, case: dict[str, Any], identifier: Any, *, name: str,
         data: bytes = b"A" * 16, auxiliary: bytes | None = None,
+        related_identifiers: list[Any] | None = None,
     ) -> Any:
         from kmipkit import attribute_operations
         from kmipkit.fluent import Request
@@ -395,10 +428,92 @@ class PythonKmipDriver:
             return self._build_draft_item(operation, identifier, name, fluent=True, ciphertext=auxiliary)
         if operation == "Ping":
             return request.ping().build()
+        if operation == "Discover Versions":
+            ver = tuple(int(p) for p in self._connection["protocol_version"].split("."))
+            with request.discover_versions() as builder:
+                return builder.protocol_version(ver).build()
+        if operation == "Query":
+            from kmipkit import protocol_values
+            with request.query() as builder:
+                return builder.functions([protocol_values.QueryFunction.QUERY_OPERATIONS, protocol_values.QueryFunction.QUERY_OBJECTS]).build()
+        if operation == "RNG Retrieve":
+            with request.rng_retrieve(32) as builder:
+                return builder.build()
+        if operation == "RNG Seed":
+            with request.rng_seed(bytes(32)) as builder:
+                return builder.build()
+        if operation == "Check":
+            with request.check(identifier) as builder:
+                return builder.cryptographic_usage_mask(4).build()
+        if operation == "Export":
+            with request.export(identifier) as builder:
+                return builder.build()
+        if operation == "Obtain Lease":
+            with request.obtain_lease(identifier) as builder:
+                return builder.build()
+        if operation == "Get Usage Allocation":
+            with request.get_usage_allocation(identifier, 1) as builder:
+                return builder.build()
+        if operation == "Certify":
+            with request.certify() as builder:
+                return builder.certificate_request_type(1).certificate_request_value(self._certificate_request()).build()
+        if operation == "Derive Key":
+            with (
+                self._fixture_attributes(name) as attrs,
+                self._structure([
+                    self._item(0x0042_0084, "bytes", b"KMIPKit-PBKDF2-Salt"),
+                    self._item(0x0042_003C, "integer", 1000),
+                ]) as params,
+                request.derive_key() as builder,
+            ):
+                return builder.object_type(2).unique_identifier(identifier).derivation_method(1).derivation_parameters(params).attributes(attrs).build()
+        if operation == "Validate":
+            from pathlib import Path
+            certificate_bytes = (
+                Path(__file__).resolve().parents[5]
+                / "verification/interop/rust-kmip-validator/tests/fixtures/certificate.der"
+            ).read_bytes()
+            with (
+                self._structure([
+                    self._item(0x0042_001D, "enumeration", 1),
+                    self._item(0x0042_001E, "bytes", certificate_bytes),
+                ]) as cert,
+                request.validate() as builder,
+            ):
+                return builder.certificate(cert).build()
+        if operation == "Import":
+            key_material = self._item(0x0042_0043, "bytes", bytes([0x41] * 32))
+            key_value = self._structure_item(0x0042_0045, [key_material])
+            key_block = self._structure_item(0x0042_0040, [
+                self._item(0x0042_0042, "enumeration", 1),
+                key_value,
+                self._item(0x0042_0028, "enumeration", 3),
+                self._item(0x0042_002A, "integer", 256),
+            ])
+            sym_key = self._structure_item(0x0042_008F, [key_block])
+            with self._fixture_attributes(name) as attrs, self._structure([sym_key]) as any_obj, request.import_object() as builder:
+                return builder.unique_identifier(name).object_type(2).attributes(attrs).object(any_obj).replace_existing(False).build()
+        if operation == "Modify Attribute":
+            tag, kind = 0x0042_00FD, "text"
+            current_value = "old test value" if case["case_id"] == "test-neg-modify-attribute-current-mismatch" else "KMIPKit interop test"
+            with self._legacy_attribute_item(current_value, tag=tag, kind=kind) as cur, self._legacy_attribute_item("new test value", tag=tag, kind=kind) as upd, request.modify_attribute(identifier) as builder:
+                return builder.current_attribute(cur).new_attribute(upd).build()
         if operation == "Create Key Pair" or (
             operation == "Create" and case.get("requires", {}).get("object_type") in {"Private Key", "Public Key"}
         ):
             return self._build_key_pair(case, fluent=True)
+        if operation == "Create Split Key" or (
+            operation == "Create" and case.get("requires", {}).get("object_type") == "Split Key"
+        ):
+            with (self._fixture_attributes(name) as source,
+                  attribute_operations.AttributeSet.try_new(source) as attributes,
+                  request.create_split_key(2, 2, 2, 1) as builder):
+                return builder.attributes(attributes).build()
+        if operation == "Register":
+            return self._register_item(case, name, fluent_request=request)
+        if operation == "Re-certify":
+            with request.recertify(identifier) as builder:
+                return builder.certificate_request_type(1).certificate_request_value(self._certificate_request()).build()
         if operation == "Get Attributes":
             return request.get_attributes(identifier, self._attribute_references(case)).build()
         if operation == "Get Attribute List":
@@ -417,18 +532,27 @@ class PythonKmipDriver:
                 if operation != "Hash" and identifier is not None:
                     builder.unique_identifier(identifier)
                 if operation in {"Encrypt", "Decrypt"}:
-                    builder.iv_counter_nonce(bytes(16))
+                    gcm = case.get("requires", {}).get("block_cipher_mode") == "GCM"
+                    builder.iv_counter_nonce(bytes(12 if gcm else 16))
+                    if gcm:
+                        builder.authenticated_encryption_additional_data(b"kmipkit authenticated data")
+                        if operation == "Decrypt":
+                            builder.authenticated_encryption_tag(auxiliary)
                 if operation == "MAC Verify":
                     builder.mac_data(auxiliary or bytes(32))
                 if operation == "Signature Verify":
                     builder.signature_data(auxiliary or bytes(256))
                 return builder.build()
         if operation in {"Create", "Locate"}:
-            with self._fixture_attributes(name) as source, attribute_operations.AttributeSet.try_new(source) as attrs:
+            rotate = operation == "Locate" and "rotate_attribute_ttlv" in case.get("requires", {})
+            fixture = self._rotate_locate_attributes(case) if rotate else self._fixture_attributes(name)
+            with fixture as source, attribute_operations.AttributeSet.try_new(source) as attrs:
                 if operation == "Create":
                     with request.create() as builder:
                         return builder.object_type(2).attributes(attrs).build()
                 with request.locate(attrs) as builder:
+                    if rotate:
+                        builder.offset_items(0)
                     return builder.maximum_items(1).build()
         if operation in {"Add Attribute", "Set Attribute", "Delete Attribute"}:
             if identifier is None or identifier.kind != self._extensions.UniqueIdentifierKind.TEXT_STRING:
@@ -447,6 +571,19 @@ class PythonKmipDriver:
             return request.destroy(identifier).build()
         if operation == "Revoke":
             return request.revoke(identifier, 1).build()
+        if operation == "Join Split Key":
+            split_identifiers = related_identifiers or [identifier, identifier]
+            if len(split_identifiers) < 2:
+                raise LocalRecipeUnavailable("Create Split Key did not return two part identifiers")
+            references = [self._extensions.SplitKeyReference(value, 2) for value in split_identifiers[:2]]
+            attrs = self._fixture_attributes(name)
+            try:
+                with request.join_split_key() as builder:
+                    return builder.object_type(2).references(references).attributes(attrs).build()
+            finally:
+                attrs.close()
+                for reference in references:
+                    reference.close()
         builders = {
             "Activate": request.activate, "Archive": request.archive, "Recover": request.recover,
             "Re-key": request.rekey, "Re-key Key Pair": request.rekey_key_pair,
@@ -541,20 +678,7 @@ class PythonKmipDriver:
             )
         scenario = case.get("requires", {}).get("protocol_scenario", {})
         scenario_id = scenario.get("scenario_id")
-        limitations = {
-            "test-batch-count-zero-rejected": (
-                "API gap: Batch exposes no offline request validation or serialization result for an empty batch"
-            ),
-            "test-batch-single-item-options-omitted": (
-                "API gap: Batch exposes no encoded Request Header view to assert omission of default options"
-            ),
-            "test-batch-placeholder-forward-reference-rejected": (
-                "API gap: ClientBatchItem has no public ID Placeholder value or batch-reference builder"
-            ),
-            "test-batch-placeholder-without-producer-rejected": (
-                "API gap: ClientBatchItem has no public ID Placeholder value or batch-reference builder"
-            ),
-        }
+        limitations: dict[str, str] = {}
         return limitations.get(scenario_id)
 
     @staticmethod
@@ -656,15 +780,93 @@ class PythonKmipDriver:
 
     @staticmethod
     def _execute_local_batch_case(test_case: dict[str, Any], scenario: dict[str, Any]) -> None:
-        from kmipkit import client, extensions
+        from kmipkit import client, errors, extensions, ttlv
 
         scenario_id = scenario["scenario_id"]
+        if scenario_id == "test-batch-count-zero-rejected":
+            batch = client.Batch.create()
+            try:
+                try:
+                    msg = batch.build_request_message((2, 1))
+                except errors.KmipKitError:
+                    return
+                msg.close()
+                raise ValueError("empty batch was not rejected by build_request_message")
+            finally:
+                batch.close()
+
+        if scenario_id == "test-batch-single-item-options-omitted":
+            batch = client.Batch.create()
+            item = extensions.client_batch_item_discover_versions([(2, 1)])
+            try:
+                batch.add_item(item)
+                msg = batch.build_request_message((2, 1))
+                try:
+                    hdr = msg.header()
+                    try:
+                        struct = hdr.to_ttlv()
+                        try:
+                            view = ttlv.ttlv_structure_view(struct)
+                            try:
+                                tags = {
+                                    ttlv.ttlv_item_view_tag(
+                                        ttlv.ttlv_structure_view_item_at(view, idx)
+                                    )
+                                    for idx in range(ttlv.ttlv_structure_view_item_count(view))
+                                }
+                                if 0x0042_0010 in tags or 0x0042_000E in tags:
+                                    raise ValueError("default batch options were not omitted from header")
+                            finally:
+                                view.close()
+                        finally:
+                            struct.close()
+                    finally:
+                        hdr.close()
+                finally:
+                    msg.close()
+            finally:
+                batch.close()
+                item.close()
+            return
+
+        if scenario_id in (
+            "test-batch-placeholder-forward-reference-rejected",
+            "test-batch-placeholder-without-producer-rejected",
+        ):
+            batch = client.Batch.create()
+            placeholder = extensions.UniqueIdentifier.id_placeholder()
+            items = [extensions.client_batch_item_activate(placeholder)]
+            if scenario_id == "test-batch-placeholder-forward-reference-rejected":
+                attrs = ttlv.ttlv_structure_create()
+                try:
+                    items.append(extensions.client_batch_item_create(2, attrs))
+                finally:
+                    attrs.close()
+            try:
+                for idx, it in enumerate(items):
+                    tagged = extensions.with_unique_batch_item_id(it, idx.to_bytes(4, "big"))
+                    it.close()
+                    items[idx] = tagged
+                    batch.add_item(tagged)
+                batch.set_ordered(True)
+                try:
+                    msg = batch.build_request_message((2, 1))
+                except errors.KmipKitError:
+                    return
+                msg.close()
+                raise ValueError(f"{scenario_id} was not rejected offline")
+            finally:
+                batch.close()
+                for it in items:
+                    it.close()
+
         if scenario_id != "test-batch-count-mismatch-rejected":
             raise ValueError(f"unsupported local batch scenario {scenario_id}")
 
         identifier = extensions.UniqueIdentifier.text_string("local-batch-count-fixture")
         driver = object.__new__(PythonKmipDriver)
         driver._extensions = extensions
+        driver._connection = {"protocol_version": "2.1"}
         batch = client.Batch.create()
         items = []
         try:
@@ -1130,7 +1332,7 @@ class PythonKmipDriver:
             cls._item(
                 0x0042_002C,
                 "integer",
-                0x20 if algorithm in (4, 6) else 0x180 if algorithm == 9 else 0x0C,
+                0x03 if algorithm in (4, 6) else 0x180 if algorithm == 9 else 0x0C,
             ),
             name_value,
         ]
@@ -1145,13 +1347,19 @@ class PythonKmipDriver:
 
         algorithm = case.get("requires", {}).get("algorithm", "AES")
         builder = CryptographicParameters.builder()
-        if operation in {"Encrypt", "Decrypt"}:
+        if operation in {"Encrypt", "Decrypt"} and case.get("requires", {}).get("block_cipher_mode") == "GCM":
+            builder.cryptographic_algorithm(3).block_cipher_mode(9).padding_method(1).iv_length(96).tag_length(16)
+        elif operation in {"Encrypt", "Decrypt"}:
             # The catalog's AES-CBC recipes use CBC with PKCS5 padding.
             builder.cryptographic_algorithm(3).block_cipher_mode(1).padding_method(3)
         elif operation in {"MAC", "MAC Verify"}:
-            builder.cryptographic_algorithm(9)
+            builder.hashing_algorithm(6)
         elif operation in {"Sign", "Signature Verify"}:
-            builder.cryptographic_algorithm({"RSA": 4, "ECDSA": 6}.get(algorithm, 4))
+            alg_code = {"RSA": 4, "ECDSA": 6}.get(algorithm, 4)
+            if alg_code == 4:
+                builder.padding_method(8).hashing_algorithm(6)
+            else:
+                builder.cryptographic_algorithm(alg_code).hashing_algorithm(6).digital_signature_algorithm(14)
         elif operation == "Hash":
             builder.hashing_algorithm(6)
         return builder.build().into_ttlv()
@@ -1172,6 +1380,129 @@ class PythonKmipDriver:
                     return int(match.group(1), 16)
         return None
 
+    @staticmethod
+    def _certificate_request() -> bytes:
+        root = Path(__file__).resolve().parents[5]
+        return (root / "verification/interop/rust-kmip-validator/tests/fixtures/certificate-request.der").read_bytes()
+
+    def _register_fixture(self, case: dict[str, Any], name: str) -> tuple[int, Any, Any]:
+        from kmipkit import ttlv
+
+        requires = case.get("requires", {})
+        if "register_object_ttlv" in requires:
+            with (ttlv.ttlv_decode(bytes.fromhex(requires["register_attributes_ttlv"])) as attr_item,
+                  ttlv.ttlv_item_view_from_item(attr_item) as attr_view,
+                  ttlv.ttlv_item_view_value(attr_view) as attr_value,
+                  ttlv.ttlv_value_view_structure(attr_value) as attrs):
+                from .generic import _fields
+
+                attributes = self._structure([field.copy() for field in _fields(attrs)])
+            with attributes, ttlv.ttlv_decode(bytes.fromhex(requires["register_object_ttlv"])) as object_item:
+                return int(requires["register_object_type"]), ttlv.ttlv_structure_copy(attributes), object_item.copy()
+
+        default_type = "Symmetric Key" if case.get("case_id") == "test-op-register" else "Opaque Object"
+        object_type = case.get("requires", {}).get("object_type", default_type)
+        fixture_root = Path(__file__).resolve().parents[5] / "verification/interop/rust-kmip-validator/tests/fixtures"
+        if object_type == "Symmetric Key":
+            key_material = self._item(0x0042_0043, "bytes", bytes([0x41] * 32))
+            key_value = self._structure_item(0x0042_0045, [key_material])
+            key_block = self._structure_item(
+                0x0042_0040,
+                [
+                    self._item(0x0042_0042, "enumeration", 1),
+                    key_value,
+                    self._item(0x0042_0028, "enumeration", 3),
+                    self._item(0x0042_002A, "integer", 256),
+                ],
+            )
+            object_item = self._structure_item(0x0042_008F, [key_block])
+            attrs = self._fixture_attributes(name)
+            raw_object_type = 2
+        elif object_type == "Certificate":
+            cert = (fixture_root / "certificate.der").read_bytes()
+            attrs = self._structure(
+                [
+                    self._item(0x0042_002C, "integer", 0x20),
+                    self._item(0x0042_0028, "enumeration", 6),
+                    self._item(0x0042_002A, "integer", 256),
+                    self._item(0x0042_00AD, "integer", len(cert) * 8),
+                ]
+            )
+            object_item = self._structure_item(
+                0x0042_0013,
+                [self._item(0x0042_001D, "enumeration", 1), self._item(0x0042_001E, "bytes", cert)],
+            )
+            raw_object_type = 1
+        elif object_type == "Certificate Request":
+            cert = self._certificate_request()
+            attrs = self._fixture_attributes(name, 6, 256)
+            object_item = self._structure_item(
+                0x0042_0018,
+                [self._item(0x0042_0019, "enumeration", 1), self._item(0x0042_0140, "bytes", cert)],
+            )
+            raw_object_type = 10
+        elif object_type == "Opaque Object":
+            attrs = ttlv.ttlv_structure_create()
+            object_item = self._structure_item(
+                0x0042_005B,
+                [self._item(0x0042_0059, "enumeration", 0x8000_0001), self._item(0x0042_005A, "bytes", b"KMIPKit dedicated opaque fixture")],
+            )
+            raw_object_type = 8
+        elif object_type in {"PGP Key", "Secret Data"}:
+            key_material = self._item(0x0042_0043, "bytes", bytes(range(32)))
+            key_value = self._structure_item(0x0042_0045, [key_material])
+            key_block_fields = [
+                self._item(0x0042_0042, "enumeration", 1),
+                key_value,
+            ]
+            if object_type == "PGP Key":
+                key_block_fields.extend(
+                    [
+                        self._item(0x0042_0028, "enumeration", 3),
+                        self._item(0x0042_002A, "integer", 256),
+                    ]
+                )
+            key_block = self._structure_item(
+                0x0042_0040,
+                key_block_fields,
+            )
+            if object_type == "PGP Key":
+                object_item = self._structure_item(
+                    0x0042_00BD,
+                    [self._item(0x0042_00BE, "integer", 4), key_block],
+                )
+                attrs = self._fixture_attributes(name)
+                raw_object_type = 9
+            else:
+                attrs = self._structure([self._item(0x0042_002C, "integer", 0x0C)])
+                object_item = self._structure_item(
+                    0x0042_0085,
+                    [self._item(0x0042_0086, "enumeration", 1), key_block],
+                )
+                raw_object_type = 7
+        else:
+            raise LocalRecipeUnavailable("Python Register fixture is unavailable for this object type")
+        return raw_object_type, attrs, object_item
+
+    def _register_item(self, case: dict[str, Any], name: str, *, fluent_request: Any = None) -> Any:
+        from kmipkit import attribute_operations
+
+        object_type, attributes, object_item = self._register_fixture(case, name)
+        with attributes, object_item:
+            if fluent_request is not None:
+                with (attribute_operations.AttributeSet.try_new(attributes) as values,
+                      fluent_request.register(object_item, object_type) as builder):
+                    if object_type == 8:
+                        builder.opaque_object_context(self._extensions.OpaqueObjectContext.GENERIC)
+                    return builder.attributes(values).build()
+            request = self._extensions.RegisterRequest.create(object_type, attributes, object_item)
+            if object_type == 8:
+                request = request.with_opaque_object_context(
+                    self._extensions.OpaqueObjectContext.GENERIC
+                )
+            with request:
+                return self._extensions.client_batch_item_register(request)
+
     def _build_item(
         self,
         case: dict[str, Any],
@@ -1190,6 +1521,8 @@ class PythonKmipDriver:
             return self._build_draft_item(operation, identifier, name, fluent=False, ciphertext=auxiliary)
         if operation == "Set Endpoint Role":
             return extension.client_batch_item_set_endpoint_role(1)
+        if operation == "Register":
+            return self._register_item(case, name)
         params = (
             self._cryptographic_parameters(case, operation)
             if operation in {"Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify", "Hash"}
@@ -1198,7 +1531,8 @@ class PythonKmipDriver:
         attrs = self._fixture_attributes(name)
         try:
             if operation == "Discover Versions":
-                return extension.client_batch_item_discover_versions()
+                ver = tuple(int(p) for p in self._connection["protocol_version"].split("."))
+                return extension.client_batch_item_discover_versions([ver])
             if operation == "Ping":
                 return extension.client_batch_item_ping()
             if operation == "Query":
@@ -1230,93 +1564,24 @@ class PythonKmipDriver:
                 return self._build_key_pair(case, fluent=False)
             if operation == "Create Split Key":
                 return extension.client_batch_item_create_split_key(2, 2, 2, 1, attrs)
-            if operation == "Register":
-                object_type = case.get("requires", {}).get("object_type", "Opaque Object")
-                fixture_root = Path(__file__).resolve().parents[5]
-                if object_type == "Certificate":
-                    cert = (fixture_root / "verification/interop/rust-kmip-validator/tests/fixtures/certificate.der").read_bytes()
-                    attrs.close()
-                    attrs = self._structure(
-                        [
-                            self._item(0x0042_002C, "integer", 0x20),
-                            self._item(0x0042_0028, "enumeration", 6),
-                            self._item(0x0042_002A, "integer", 256),
-                            self._item(0x0042_00AD, "integer", len(cert) * 8),
-                        ]
-                    )
-                    object_item = self._structure_item(
-                        0x0042_0013,
-                        [self._item(0x0042_001D, "enumeration", 1), self._item(0x0042_001E, "bytes", cert)],
-                    )
-                    raw_object_type = 1
-                elif object_type == "Certificate Request":
-                    cert = (fixture_root / "verification/interop/rust-kmip-validator/tests/fixtures/certificate-request.der").read_bytes()
-                    attrs.close()
-                    attrs = self._fixture_attributes(name, 6, 256)
-                    object_item = self._structure_item(
-                        0x0042_0018,
-                        [self._item(0x0042_0019, "enumeration", 1), self._item(0x0042_0140, "bytes", cert)],
-                    )
-                    raw_object_type = 10
-                elif object_type == "Opaque Object":
-                    attrs.close()
-                    attrs = ttlv.ttlv_structure_create()
-                    object_item = self._structure_item(
-                        0x0042_005B,
-                        [self._item(0x0042_0059, "enumeration", 1), self._item(0x0042_005A, "bytes", b"KMIPKit dedicated opaque fixture")],
-                    )
-                    raw_object_type = 8
-                elif object_type in {"PGP Key", "Secret Data"}:
-                    key_material = self._item(0x0042_0043, "bytes", bytes(range(32)))
-                    key_value = self._structure_item(0x0042_0045, [key_material])
-                    key_block_fields = [
+            if operation == "Import":
+                key_material = self._item(0x0042_0043, "bytes", bytes([0x41] * 32))
+                key_value = self._structure_item(0x0042_0045, [key_material])
+                key_block = self._structure_item(
+                    0x0042_0040,
+                    [
                         self._item(0x0042_0042, "enumeration", 1),
                         key_value,
-                    ]
-                    if object_type == "PGP Key":
-                        key_block_fields.extend(
-                            [
-                                self._item(0x0042_0028, "enumeration", 3),
-                                self._item(0x0042_002A, "integer", 256),
-                            ]
-                        )
-                    key_block = self._structure_item(
-                        0x0042_0040,
-                        key_block_fields,
-                    )
-                    if object_type == "PGP Key":
-                        object_item = self._structure_item(
-                            0x0042_00BD,
-                            [self._item(0x0042_00BE, "integer", 4), key_block],
-                        )
-                        raw_object_type = 9
-                    else:
-                        attrs.close()
-                        attrs = self._structure([self._item(0x0042_002C, "integer", 0x0C)])
-                        object_item = self._structure_item(
-                            0x0042_0085,
-                            [self._item(0x0042_0086, "enumeration", 1), key_block],
-                        )
-                        raw_object_type = 7
-                else:
-                    raise LocalRecipeUnavailable("Python Register fixture is unavailable for this object type")
-                request = extension.RegisterRequest.create(raw_object_type, attrs, object_item)
-                return extension.client_batch_item_register(request)
-            if operation == "Import":
-                attrs.close()
-                attrs = ttlv.ttlv_structure_create()
-                opaque = self._structure_item(
-                    0x0042_005B,
-                    [
-                        self._item(0x0042_0059, "enumeration", 1),
-                        self._item(0x0042_005A, "bytes", b"KMIPKit dedicated import fixture"),
+                        self._item(0x0042_0028, "enumeration", 3),
+                        self._item(0x0042_002A, "integer", 256),
                     ],
                 )
-                any_object = self._structure([opaque])
+                sym_key = self._structure_item(0x0042_008F, [key_block])
+                any_object = self._structure([sym_key])
                 try:
                     return extension.client_batch_item_import(
                         extensions.UniqueIdentifier.text_string(name),
-                        8,
+                        2,
                         attrs,
                         any_object,
                         replace_existing=False,
@@ -1331,6 +1596,9 @@ class PythonKmipDriver:
             if operation == "Get Attribute List":
                 return extension.client_batch_item_get_attribute_list(identifier)
             if operation == "Locate":
+                if "rotate_attribute_ttlv" in case.get("requires", {}):
+                    with self._rotate_locate_attributes(case) as rotate:
+                        return extension.client_batch_item_locate(rotate, maximum_items=1, offset_items=0)
                 return extension.client_batch_item_locate(attrs, maximum_items=1)
             if operation == "Get":
                 return extension.client_batch_item_get(identifier)
@@ -1433,10 +1701,18 @@ class PythonKmipDriver:
             if operation in {"Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"}:
                 with ttlv.codec_limits_defaults() as limits:
                     payload = ttlv.ttlv_value_byte_string(data, limits)
-                    if operation == "Encrypt":
-                        return extension.client_batch_item_encrypt(identifier, params, payload, bytes(16))
-                    if operation == "Decrypt":
-                        return extension.client_batch_item_decrypt(identifier, params, payload, bytes(16))
+                    if operation in {"Encrypt", "Decrypt"}:
+                        gcm = case.get("requires", {}).get("block_cipher_mode") == "GCM"
+                        iv = bytes(12 if gcm else 16)
+                        aad = b"kmipkit authenticated data" if gcm else None
+                        if operation == "Encrypt":
+                            return extension.client_batch_item_encrypt(
+                                identifier, params, payload, iv, authenticated_encryption_additional_data=aad,
+                            )
+                        return extension.client_batch_item_decrypt(
+                            identifier, params, payload, iv, auxiliary if gcm else None,
+                            authenticated_encryption_additional_data=aad,
+                        )
                     if operation == "MAC":
                         return extension.client_batch_item_mac(identifier, params, payload)
                     if operation == "MAC Verify":
@@ -1455,7 +1731,7 @@ class PythonKmipDriver:
             if operation == "Certify":
                 return extension.client_batch_item_certify(
                     certificate_request_type=1,
-                    certificate_request_value=(Path(__file__).resolve().parents[5] / "verification/interop/rust-kmip-validator/tests/fixtures/certificate-request.der").read_bytes(),
+                    certificate_request_value=self._certificate_request(),
                 )
             if operation == "Re-certify":
                 return extension.client_batch_item_recertify(
@@ -1511,22 +1787,34 @@ class PythonKmipDriver:
 
     def _exchange(
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
+        verify_hash: bool = False, verify_locate: bool = False,
+        query_field: int | None = None, discover_version: Any | None = None,
+        high_level_exchange: Callable[[Any], Any] | None = None, expect_nonce: bool = False,
+        key_block: tuple[Any, Any | None, int] | None = None,
+        register_readback: tuple[Any, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
-        batch = self._client_module.Batch.create()
+        batch = None
         authentication = None
         limits = ttlv.codec_limits_defaults()
         try:
-            if asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(asynchronous_indicator)
-            batch.add_item(item)
-            authentication = self._authentication()
-            if authentication is not None:
-                batch.set_authentication(authentication)
-                authentication = None
-            response = self._client.execute(batch, limits)
+            if high_level_exchange is not None:
+                response = high_level_exchange(limits)
+            else:
+                batch = self._client_module.Batch.create()
+                if asynchronous_indicator is not None:
+                    batch.set_asynchronous_indicator(asynchronous_indicator)
+                batch.add_item(item)
+                authentication = self._authentication()
+                if authentication is not None:
+                    batch.set_authentication(authentication)
+                    authentication = None
+                response = self._client.execute(batch, limits)
             try:
+                if (verify_hash or verify_query or query_field is not None or discover_version is not None
+                        ) and response.item_count() != 1:
+                    raise ValueError("Response batch count did not match the request")
                 observed = response.item_at(0)
                 status_code = int(observed.result_status)
                 reason_code = observed.result_reason
@@ -1539,11 +1827,26 @@ class PythonKmipDriver:
                         protocol_values.ResultReason.FEATURE_NOT_SUPPORTED,
                     )
                 )
+                policy_restricted = (
+                    status_code == protocol_values.ResultStatus.OPERATION_FAILED
+                    and reason_code == protocol_values.ResultReason.PERMISSION_DENIED
+                )
                 pending_correlation = observed.pending_correlation_value
                 result = {
-                    "status": "passed" if success else "pending" if pending else "server_unsupported" if unsupported else "failed",
+                    "status": (
+                        "passed" if success
+                        else "pending" if pending
+                        else "server_unsupported" if unsupported
+                        else "policy_restricted" if policy_restricted
+                        else "failed"
+                    ),
                     "library_correctness": "passed",
-                    "server_compatibility": "supported" if success else "unsupported" if unsupported else "unknown",
+                    "server_compatibility": (
+                        "supported" if success
+                        else "unsupported" if unsupported
+                        else "policy_restricted" if policy_restricted
+                        else "unknown"
+                    ),
                     "parity": "not_compared",
                     "result_status_code": status_code,
                     "result_reason_code": None if reason_code is None else int(reason_code),
@@ -1555,6 +1858,7 @@ class PythonKmipDriver:
                         *(payload.unique_identifier for payload in (
                             getattr(observed, "activate_response", None),
                             getattr(observed, "revoke_response", None),
+                            getattr(observed, "register_response", None),
                             getattr(observed, "create_group_response", None),
                             getattr(observed, "create_user_response", None),
                             getattr(observed, "create_credential_response", None),
@@ -1562,7 +1866,9 @@ class PythonKmipDriver:
                             getattr(observed, "decapsulate_response", None),
                         ) if payload is not None),
                     ) if value is not None],
-                    "_bytes": self._response_bytes(observed),
+                    "_bytes": None if verify_hash else self._response_bytes(observed),
+                    "_auth_tag": (observed.encrypt_response.authenticated_encryption_tag
+                                  if observed.encrypt_response is not None else None),
                     "_ticket_ttlv": (
                         observed.login_response.ticket_ttlv
                         if observed.login_response is not None
@@ -1570,17 +1876,96 @@ class PythonKmipDriver:
                     ),
                     "_pending_correlation": None if pending_correlation is None else bytearray(pending_correlation),
                 }
-                if verify_query:
+                if verify_hash:
+                    if observed.operation != protocol_values.Operation.HASH:
+                        raise ValueError("Hash response operation did not match the request")
+                    payload = observed.hash_response
+                    if success and payload is None:
+                        raise ValueError("Hash response payload is unavailable")
+                    result["_hash_correlation"] = None
+                    if payload is not None:
+                        with payload.response_ttlv:
+                            result["_bytes"] = payload.data
+                            result["_hash_correlation"] = payload.correlation_value
+                if verify_query or query_field is not None:
                     if observed.operation != protocol_values.Operation.QUERY:
                         raise ValueError("Query response operation does not match the request")
                     if success:
                         query = observed.typed_query_response()
                         if query is None:
-                            raise ValueError("Query response payload is unavailable")
-                        with query:
-                            # Exercise both decoded code lists without reporting any server data.
-                            _ = query.operations, query.object_types
+                            result.update(status="failed", server_compatibility="unknown",
+                                          diagnostic="Query response payload is unavailable")
+                        else:
+                            with query:
+                                # Exercise both decoded code lists without reporting any server data.
+                                operations, _ = query.operations, query.object_types
+                                if (query_field is None and not expect_nonce
+                                        and (not operations or not all(operations))):
+                                    result.update(
+                                        status="failed", server_compatibility="unknown",
+                                        diagnostic="Query did not advertise any operations",
+                                    )
+                                if query_field is not None:
+                                    from .generic import _has_query_structure
+
+                                    with query.raw_view() as fields:
+                                        if not _has_query_structure(fields, query_field):
+                                            result.update(
+                                                status="failed", server_compatibility="unknown",
+                                                diagnostic="Query did not return the requested nonempty structure",
+                                            )
+                if register_readback is not None and success:
+                    from .generic import matches_registered_attribute
+
+                    identifier, requires = register_readback
+                    payload = observed.get_attributes_response
+                    verified = False
+                    if payload is not None:
+                        try:
+                            if payload.attributes is not None and payload.unique_identifier == identifier.text:
+                                with ttlv.ttlv_structure_view(payload.attributes) as view:
+                                    verified = matches_registered_attribute(view, requires)
+                        finally:
+                            payload.close()
+                    if not verified:
+                        result.update(status="failed", server_compatibility="unknown",
+                                      diagnostic="Get Attributes did not return the registered vendor value")
+                if expect_nonce and success:
+                    from .generic import nonce_in_header
+
+                    with observed.response_header_ttlv() as header, ttlv.ttlv_structure_view(header) as view:
+                        if not nonce_in_header(view):
+                            result.update(status="failed", server_compatibility="unknown",
+                                          diagnostic="Query did not return a usable Nonce")
+                if discover_version is not None:
+                    if observed.operation != protocol_values.Operation.DISCOVER_VERSIONS:
+                        raise ValueError("Discover Versions response operation does not match the request")
+                    if success and observed.supported_versions != (discover_version,):
+                        result.update(status="failed", server_compatibility="unknown",
+                                      diagnostic="Discover Versions did not return exactly the offered version")
+                if high_level_exchange is not None:
+                    result["actual_api_level"] = "high-level"
+                if key_block is not None and success:
+                    from .generic import key_block_matches
+
+                    identifier, wrapping_key, format_code = key_block
+                    object_type = 2 if format_code == 7 else 3 if format_code in {11, 21} else 4
+                    get = observed.get_response()
+                    with ttlv.ttlv_structure_view(get.object) if get and get.object else nullcontext() as object_view:
+                        verified = (get is not None and get.object_type_raw == object_type and get.unique_identifier == identifier
+                                    and object_view is not None
+                                    and key_block_matches(object_view, None if wrapping_key is None else wrapping_key.text, format_code))
+                    if not verified:
+                        result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
+                                      diagnostic="Get did not return the expected Key Block")
                 locate_response = observed.locate_response()
+                if success and verify_locate and (locate_response is None or (
+                    len(locate_response.unique_identifiers) > 1 or (
+                        locate_response.located_items is not None
+                        and locate_response.located_items < len(locate_response.unique_identifiers)
+                    )
+                )):
+                    raise ValueError("Locate returned an invalid bounded result")
                 if locate_response is not None:
                     result["_identifiers"].extend(locate_response.unique_identifiers)
                 return result
@@ -1589,7 +1974,8 @@ class PythonKmipDriver:
         finally:
             if authentication is not None:
                 authentication.close()
-            batch.close()
+            if batch is not None:
+                batch.close()
             limits.close()
 
     def query_operations_and_objects(self) -> dict[str, Any]:
@@ -1692,7 +2078,8 @@ class PythonKmipDriver:
         if not identifiers:
             catalog, _ = load_catalog(DEFAULT_CATALOG)
             locate_case = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-locate")
-            locate = self._exchange(self._build_item(locate_case, None, name=name))
+            with self._build_item(locate_case, None, name=name) as item:
+                locate = self._exchange(item, verify_locate=True)
             if locate["status"] != "passed":
                 return False
             identifiers.extend(locate.get("_identifiers", []))
@@ -1700,7 +2087,7 @@ class PythonKmipDriver:
         for identifier in reversed(identifiers):
             try:
                 result = self._exchange(self._extensions.client_batch_item_destroy(identifier))
-                clean = clean and result["status"] in {"passed", "server_unsupported"}
+                clean = clean and result["status"] == "passed"
             except Exception:
                 clean = False
         return clean
@@ -1721,7 +2108,8 @@ class PythonKmipDriver:
                     response.close()
             else:
                 identifier = self._extensions.UniqueIdentifier.text_string("kmipkit-version-boundary")
-                with self._build_item(test_case, identifier, name="kmipkit-version-boundary") as item:
+                build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+                with build(test_case, identifier, name="kmipkit-version-boundary") as item:
                     self._exchange(item)
         except errors.ClientExecutionError as error:
             rejected_before_transport = error.delivery is errors.DeliveryState.NOT_SENT
@@ -1733,31 +2121,35 @@ class PythonKmipDriver:
             "parity": "not_compared",
         }
 
-    def _run_async_case(self, test_case: dict[str, Any], name: str) -> dict[str, Any]:
+    def _run_async_case(self, test_case: dict[str, Any], name: str, *, exchange=None) -> dict[str, Any]:
+        exchange = self._async_exchange if exchange is None else exchange
         operation = test_case["operation"]
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
         if operation == "Query Asynchronous Requests":
-            result = self._async_exchange(operation)
+            result = exchange(operation)
             result.pop("_pending", None)
             result.pop("_correlation", None)
             return result
         setup = self._start_async_create(name)
         identifiers = list(setup.get("_identifiers", []))
+        failure = "The prerequisite asynchronous Create request failed."
+        if setup.get("result_status_code") == 1 and not identifiers:
+            return self._blocked_prerequisite(failure)
         final: dict[str, Any]
         correlation = setup.get("_pending_correlation")
         try:
-            if setup["status"] == "server_unsupported" or setup["status"] == "failed":
-                final = setup
+            if setup["status"] in {"server_unsupported", "failed"}:
+                final = self._blocked_prerequisite(failure)
             elif setup["status"] != "pending" or not correlation:
                 final = {
                     "status": "not_run",
                     "library_correctness": "passed",
-                    "server_compatibility": "supported",
+                    "server_compatibility": "unknown",
                     "parity": "not_compared",
                     "diagnostic": "server completed the asynchronous Create inline; no correlation value was available",
                 }
-            elif test_case.get("requires", {}).get("workflow_type") == "async_poll":
+            elif operation == "Poll" or test_case.get("requires", {}).get("workflow_type") == "async_poll":
                 current = correlation
                 final = {
                     "status": "not_run",
@@ -1767,7 +2159,7 @@ class PythonKmipDriver:
                     "diagnostic": "server remained Pending after the bounded Poll sequence",
                 }
                 for _ in range(16):
-                    final = self._async_exchange("Poll", current)
+                    final = exchange("Poll", current)
                     if final["status"] != "passed" or not final["_pending"]:
                         final.pop("_pending", None)
                         final.pop("_correlation", None)
@@ -1795,7 +2187,7 @@ class PythonKmipDriver:
                 if isinstance(current, bytearray):
                     current[:] = bytes(len(current))
             else:
-                final = self._async_exchange(operation, correlation)
+                final = exchange(operation, correlation)
                 final.pop("_pending", None)
                 final.pop("_correlation", None)
         finally:
@@ -1819,12 +2211,221 @@ class PythonKmipDriver:
             "diagnostic": diagnostic,
         }
 
+    def _run_single_hash(self, test_case: dict[str, Any]) -> dict[str, Any]:
+        data = b"abc"
+        build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+        with build(test_case, None, name=self._fixture_name(test_case), data=data) as item:
+            outcome = self._exchange(item, verify_hash=True)
+        if outcome["status"] == "passed" and (
+            outcome["_bytes"] != hashlib.sha256(data).digest() or outcome["_hash_correlation"] is not None
+        ):
+            outcome.update(status="failed", library_correctness="failed", server_compatibility="unknown",
+                           diagnostic="Single-part Hash did not return the expected SHA-256 digest")
+        return outcome
+
+    def _run_multipart_hash(self, test_case: dict[str, Any]) -> dict[str, Any]:
+        from kmipkit import ttlv
+        from kmipkit.fluent import Request
+
+        chunks = (b"KMIP ", b"Hash", b"!")
+        correlation = None
+        for index, data in enumerate(chunks):
+            init = True if index == 0 else None
+            end = True if index == len(chunks) - 1 else None
+            with self._cryptographic_parameters(test_case, "Hash") as parameters:
+                if self._connection["api_level"] == "fluent":
+                    with Request(self._client).hash() as builder:
+                        builder.cryptographic_parameters_structure(parameters).data(data)
+                        if correlation is not None:
+                            builder.correlation_value(correlation)
+                        if init is not None:
+                            builder.init_indicator(init)
+                        if end is not None:
+                            builder.final_indicator(end)
+                        item = builder.build()
+                else:
+                    with ttlv.codec_limits_defaults() as limits, ttlv.ttlv_value_byte_string(data, limits) as payload:
+                        item = self._extensions.client_batch_item_hash(
+                            parameters, payload, correlation_value=correlation,
+                            init_indicator=init, final_indicator=end,
+                        )
+            with item:
+                outcome = self._exchange(item, verify_hash=True)
+            returned = outcome.pop("_hash_correlation")
+            if outcome["status"] != "passed":
+                return outcome
+            expected_digest = hashlib.sha256(b"".join(chunks)).digest() if end else None
+            valid_correlation = bool(returned) if init else returned is None
+            if not valid_correlation or outcome["_bytes"] != expected_digest:
+                return {**outcome, "status": "failed", "library_correctness": "failed",
+                        "server_compatibility": "unknown", "diagnostic": "Multipart Hash response fields did not match the stage"}
+            if init:
+                correlation = returned
+        return outcome
+
+    @staticmethod
+    def _fixture_name(test_case: dict[str, Any]) -> str:
+        return f"kmipkit-python-{test_case['case_id']}-{uuid.uuid4()}"
+
+    def _execute_asymmetric_key(self, format_code: int) -> dict[str, Any]:
+        from .generic import pair_key_attributes
+
+        common, private, public = pair_key_attributes(self, format_code)
+        with (self._structure(common) as common_attributes,
+              self._structure(private) as private_attributes,
+              self._structure(public) as public_attributes):
+            with self._extensions.client_batch_item_create_key_pair(
+                common_attributes=common_attributes, private_key_attributes=private_attributes,
+                public_key_attributes=public_attributes,
+            ) as request:
+                created = self._exchange(request)
+        owned = created.get("_identifiers", ())
+        outcome = self._blocked_prerequisite("Create Key Pair did not return both owned identifiers")
+        try:
+            if created["status"] == "passed" and len(owned) == 2 and owned[0] != owned[1]:
+                identifier = owned[int(format_code in {11, 21})]
+                if self._api_level == "fluent":
+                    with self._client.request().get_request() as builder:
+                        request = builder.unique_identifier(identifier).key_format_type(format_code).build()
+                else:
+                    request = self._extensions.client_batch_item_get(identifier, key_format_type=format_code)
+                with request:
+                    result = self._exchange(request, key_block=(identifier, None, format_code))
+                outcome = {key: value for key, value in result.items() if not key.startswith("_")}
+        finally:
+            for identifier in reversed(owned):
+                with self._extensions.client_batch_item_destroy(identifier) as destroy:
+                    cleanup = self._exchange(destroy)
+                if cleanup["status"] != "passed":
+                    outcome.update(status="failed", library_correctness="not_checked", server_compatibility="unknown",
+                                   diagnostic="Cleanup Destroy failed for an asymmetric key fixture")
+        return outcome
+
+    def _execute_key_block(self, wrapped: bool) -> dict[str, Any]:
+        from .generic import key_block_attributes, wrapping_specification_fields
+
+        owned = []
+        active = None
+
+        def create(for_wrapping):
+            with self._structure(key_block_attributes(self, for_wrapping)) as attributes:
+                result = self._exchange(self._extensions.client_batch_item_create(2, attributes))
+            identifiers = result.get("_identifiers", [])
+            owned.extend(identifiers)
+            if result["status"] == "passed" and len(identifiers) == 1:
+                return identifiers[0]
+            return None
+
+        outcome = self._blocked_prerequisite("Create did not return an owned AES fixture")
+        try:
+            identifier = create(False)
+            if identifier is None:
+                return outcome
+            wrapping = create(True) if wrapped else None
+            if wrapped:
+                if wrapping is None:
+                    return outcome
+                activated = self._exchange(self._extensions.client_batch_item_activate(wrapping))
+                if activated["status"] != "passed" or wrapping not in activated.get("_identifiers", ()):
+                    outcome = self._blocked_prerequisite("Activate did not confirm the wrapping key")
+                    return outcome
+                active = wrapping
+            spec = self._structure(wrapping_specification_fields(self, wrapping.text)) if wrapped else None
+            with spec or nullcontext():
+                if self._api_level == "fluent":
+                    with self._client.request().get_request() as builder:
+                        builder.unique_identifier(identifier)
+                        if spec is None:
+                            builder.key_format_type(7)
+                        else:
+                            builder.key_wrapping_specification(spec)
+                        request = builder.build()
+                else:
+                    request = self._extensions.client_batch_item_get(
+                        identifier, key_format_type=None if wrapped else 7, key_wrapping_specification=spec,
+                    )
+                with request:
+                    result = self._exchange(request, key_block=(identifier, wrapping, 7))
+                    outcome = {key: value for key, value in result.items() if not key.startswith("_")}
+            return outcome
+        finally:
+            if active is not None:
+                revoke_case = {"operation": "Revoke", "requires": {}}
+                with self._build_item(revoke_case, active, name="kmipkit-key-block") as revoke:
+                    self._exchange(revoke)
+            for identifier in reversed(owned):
+                with self._extensions.client_batch_item_destroy(identifier) as destroy:
+                    cleanup = self._exchange(destroy)
+                if cleanup["status"] != "passed":
+                    outcome.update(status="failed", library_correctness="not_checked", server_compatibility="unknown",
+                                   diagnostic="Cleanup Destroy failed for a Key Block fixture")
+
     def execute_case(self, test_case: dict[str, Any]) -> dict[str, Any]:
         case_id = test_case["case_id"]
         operation = test_case["operation"]
-        unique_name = f"kmipkit-python-{case_id}-{uuid.uuid4()}"
+        if operation == "Hash":
+            return (self._run_multipart_hash(test_case) if case_id == "test-multipart-hash-sha256"
+                    else self._run_single_hash(test_case))
+        unique_name = self._fixture_name(test_case)
+        key_block_shape = test_case.get("requires", {}).get("key_block_shape")
+        key_material_format = test_case.get("requires", {}).get("key_material_format")
+        if operation == "Get" and key_material_format in {"10", "11", "20", "21"}:
+            return self._execute_asymmetric_key(int(key_material_format))
+        if operation == "Get" and key_block_shape in {"wrapped", "transparent"}:
+            return self._execute_key_block(key_block_shape == "wrapped")
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
+        if (self._api_level == "high-level" and operation == "Discover Versions"
+                and self._connection.get("authentication", {}).get("username_password")):
+            return {
+                "status": "not_run", "library_correctness": "not_checked",
+                "server_compatibility": "unknown", "parity": "not_compared",
+                "diagnostic": "The high-level Discover Versions method cannot set a KMIP batch credential",
+            }
+        if case_id == "test-op-discover-versions":
+            offered = self._extensions.ProtocolVersion(*(int(v) for v in self._connection["protocol_version"].split(".")))
+            if self._api_level == "high-level":
+                outcome = self._exchange(
+                    None, discover_version=offered,
+                    high_level_exchange=lambda limits: self._client.discover_versions(
+                        limits, protocol_versions=[offered]),
+                )
+            elif self._api_level == "fluent":
+                with self._client.request().discover_versions() as builder, builder.protocol_version(offered).build() as item:
+                    outcome = self._exchange(item, discover_version=offered)
+            else:
+                with self._extensions.client_batch_item_discover_versions([offered]) as item:
+                    outcome = self._exchange(item, discover_version=offered)
+            return {key: value for key, value in outcome.items() if not key.startswith("_")}
+        if operation == "Query":
+            parameters = test_case.get("requires", {})
+            query_field = int(parameters["query_result_tag"]) if "query_result_tag" in parameters else None
+            expect_nonce = case_id == "test-query-attestation-nonce"
+            if "query_function" in parameters:
+                functions = [int(parameters["query_function"])]
+            elif expect_nonce:
+                functions = [7]
+            elif case_id == "test-query-username-password-credential":
+                functions = [1]
+            else:
+                functions = [1, 2]
+            if self._api_level == "high-level":
+                outcome = self._exchange(
+                    None, verify_query=True, query_field=query_field, expect_nonce=expect_nonce,
+                    high_level_exchange=lambda limits: self._execute_query(functions, limits),
+                )
+            elif self._api_level == "fluent":
+                with self._client.request().query() as builder, builder.functions(functions).build() as item:
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field, expect_nonce=expect_nonce)
+            else:
+                with self._extensions.client_batch_item_query(functions) as item:
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field, expect_nonce=expect_nonce)
+            return {key: value for key, value in outcome.items() if not key.startswith("_")}
+        if operation == "Locate" and "rotate_attribute_ttlv" in test_case.get("requires", {}):
+            build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+            with build(test_case, None, name=unique_name) as item:
+                outcome = self._exchange(item, verify_locate=True)
+            return {key: value for key, value in outcome.items() if not key.startswith("_")}
         if operation in {"Poll", "Process", "Cancel", "Query Asynchronous Requests"} or test_case.get("requires", {}).get("workflow_type") == "async_poll":
             return self._run_async_case(test_case, unique_name)
         identifiers: list[Any] = []
@@ -1833,8 +2434,9 @@ class PythonKmipDriver:
         algorithm_name = test_case.get("requires", {}).get("algorithm", "AES")
         algorithm = {"AES": 3, "RSA": 4, "ECDSA": 6, "HMAC_SHA256": 9}.get(algorithm_name, 3)
         bits = int(test_case.get("requires", {}).get("key_length", 256))
+        gcm = test_case.get("requires", {}).get("block_cipher_mode") == "GCM"
         outcome: dict[str, Any] | None = None
-        activation_attempted = False
+        activated_ids: list[Any] = []
         try:
             if setup_required:
                 attributes = self._fixture_attributes(
@@ -1867,16 +2469,18 @@ class PythonKmipDriver:
                 if operation in {"Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"} and case_id != "test-neg-encrypt-preactive-key":
                     for key_identifier in created_ids:
                         activated = self._exchange(self._extensions.client_batch_item_activate(key_identifier))
+                        if activated.get("result_status_code") in (None, 0):
+                            activated_ids.append(key_identifier)
                         if activated["status"] != "passed":
                             outcome = self._blocked_prerequisite("server did not activate the owned key fixture")
                             return outcome
                 if operation == "Signature Verify" and len(created_ids) > 1:
                     target_identifier = created_ids[1]
             if operation == "Revoke":
-                activation_attempted = True
                 activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
+                if activated.get("result_status_code") in (None, 0):
+                    activated_ids.append(target_identifier)
                 if activated["status"] != "passed":
-                    activation_attempted = activated.get("result_status_code") in (None, 0)
                     outcome = self._blocked_prerequisite("server rejected activation of the owned fixture")
                     return outcome
                 if target_identifier not in activated.get("_identifiers", ()):
@@ -1886,6 +2490,8 @@ class PythonKmipDriver:
                     return outcome
             if operation in {"Deactivate", "Obliterate"}:
                 activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
+                if activated.get("result_status_code") in (None, 0):
+                    activated_ids.append(target_identifier)
                 if activated["status"] != "passed":
                     outcome = self._blocked_prerequisite("server rejected activation of the owned fixture")
                     return outcome
@@ -1938,6 +2544,7 @@ class PythonKmipDriver:
                 if outcome["status"] == "passed":
                     self._own_kem_fixture(identifiers, outcome)
                 return outcome
+            built_high_level = False
             if operation == "Logout":
                 login = self._exchange(self._extensions.client_batch_item_login(request_count=2))
                 if login["status"] != "passed":
@@ -1961,21 +2568,35 @@ class PythonKmipDriver:
                     for reference in references:
                         reference.close()
             elif operation == "Decrypt":
-                encrypted = self._exchange(self._build_item(test_case | {"operation": "Encrypt"}, target_identifier, name=unique_name))
-                if encrypted["status"] != "passed" or encrypted.get("_bytes") is None:
+                source = test_case | {"operation": "Encrypt"}
+                with self._build_item(source, target_identifier, name=unique_name) as request:
+                    encrypted = self._exchange(request)
+                data = encrypted.get("_bytes")
+                tag = encrypted.get("_auth_tag") if gcm else None
+                if encrypted["status"] != "passed" or data is None:
+                    if gcm:
+                        outcome = self._blocked_prerequisite("server did not complete the Encrypt setup")
+                        return outcome
                     return encrypted
+                if gcm:
+                    if len(data) != 16 or not tag or len(tag) != 16:
+                        outcome = self._blocked_prerequisite("Encrypt setup omitted the AES-GCM data or tag")
+                        return outcome
+                    if test_case["requires"].get("expected_status") == "OperationFailed":
+                        tag = bytes([tag[0] ^ 1]) + tag[1:]
                 if self._api_level == "fluent":
                     target = self._build_fluent_item(
-                        test_case, target_identifier, name=unique_name, data=encrypted["_bytes"]
+                        test_case, target_identifier, name=unique_name, data=data, auxiliary=tag,
                     )
                 else:
                     target = self._build_item(
-                        test_case, target_identifier, name=unique_name, data=encrypted["_bytes"],
+                        test_case, target_identifier, name=unique_name, data=data, auxiliary=tag,
                         related_identifiers=identifiers,
                     )
             elif operation in {"MAC Verify", "Signature Verify"}:
                 source_case = test_case | {"operation": "MAC" if operation == "MAC Verify" else "Sign"}
-                signature = self._exchange(self._build_item(source_case, target_identifier, name=unique_name))
+                sign_identifier = identifiers[0] if operation == "Signature Verify" and identifiers else target_identifier
+                signature = self._exchange(self._build_item(source_case, sign_identifier, name=unique_name))
                 if signature["status"] != "passed" or signature.get("_bytes") is None:
                     return signature
                 if self._api_level == "fluent":
@@ -1989,13 +2610,21 @@ class PythonKmipDriver:
                     )
             else:
                 if self._api_level == "fluent":
-                    target = self._build_fluent_item(test_case, target_identifier, name=unique_name)
+                    target = self._build_fluent_item(
+                        test_case, target_identifier, name=unique_name, related_identifiers=identifiers
+                    )
                 elif self._api_level == "high-level":
                     target = self._build_high_level_item(test_case, target_identifier, name=unique_name)
+                    built_high_level = True
                 else:
                     target = self._build_item(test_case, target_identifier, name=unique_name, related_identifiers=identifiers)
-            activation_attempted = operation == "Activate"
             result = self._exchange(target)
+            if operation == "Activate" and result.get("result_status_code") in (None, 0) and target_identifier is not None:
+                activated_ids.append(target_identifier)
+            if operation == "Revoke" and result["status"] == "passed" and target_identifier in activated_ids:
+                activated_ids.remove(target_identifier)
+            if built_high_level:
+                result["actual_api_level"] = "high-level"
             if (operation in {"Activate", "Revoke"} and result["status"] == "passed"
                     and target_identifier not in result.get("_identifiers", ())):
                 result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
@@ -2004,18 +2633,34 @@ class PythonKmipDriver:
                 for identifier in result.get("_identifiers", []):
                     if identifier not in identifiers:
                         identifiers.append(identifier)
-            if operation == "Decrypt" and result["status"] == "passed" and result.get("_bytes") != b"A" * 16:
+            if operation == "Decrypt" and result["status"] == "passed" and (
+                result.get("_bytes") != b"A" * 16
+                or gcm and test_case["requires"].get("expected_status") == "OperationFailed"
+            ):
                 result.update(status="failed", library_correctness="failed", server_compatibility="unknown")
+            if operation == "Encrypt" and gcm and result["status"] == "passed":
+                if len(result.get("_bytes") or b"") != 16 or len(result.get("_auth_tag") or b"") != 16:
+                    result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
+                                  diagnostic="Encrypt omitted the AES-GCM ciphertext or authentication tag")
             outcome = result
+            if operation == "Register" and "register_attribute_value" in test_case.get("requires", {}) and result["status"] == "passed":
+                owned = result.get("_identifiers", [])
+                if len(owned) != 1:
+                    result.update(status="failed", diagnostic="Register omitted the fixture identifier")
+                else:
+                    read_case = test_case | {"operation": "Get Attributes"}
+                    build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+                    with build(read_case, owned[0], name=unique_name) as readback:
+                        outcome = self._exchange(readback, register_readback=(owned[0], test_case["requires"]))
             if operation in {"Destroy", "Obliterate"} and result["status"] == "passed" and target_identifier in identifiers:
                 identifiers.remove(target_identifier)
         finally:
-            if activation_attempted and (outcome is None or outcome.get("result_status_code") in (None, 0)):
+            for active_id in reversed(activated_ids):
                 try:
-                    with self._build_item(test_case | {"operation": "Revoke"}, target_identifier, name=unique_name) as revoke:
+                    with self._build_item(test_case | {"operation": "Revoke"}, active_id, name=unique_name) as revoke:
                         cleanup = self._exchange(revoke)
                     revoked = (cleanup["status"] == "passed"
-                               and target_identifier in cleanup.get("_identifiers", ()))
+                               and active_id in cleanup.get("_identifiers", ()))
                 except Exception:
                     revoked = False
                 if not revoked and outcome is not None:

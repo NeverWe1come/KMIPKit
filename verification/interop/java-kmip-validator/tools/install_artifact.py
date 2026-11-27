@@ -89,7 +89,7 @@ def extract_git_archive(repository: Path, commit: str, destination: Path) -> Non
 
 
 def install(repository: Path, maven_repository: Path, manifest_path: Path) -> dict[str, object]:
-    commit = subprocess.check_output(
+    commit = os.environ.get("KMIPKIT_INTEROP_LIBRARY_COMMIT") or subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True,
     ).strip()
 

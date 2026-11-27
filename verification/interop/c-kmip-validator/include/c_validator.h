@@ -34,8 +34,15 @@ typedef struct {
     char attribute_response_tag[16];
     char attribute_response_type[8];
     char attribute_response_fields[KMIP_MAX_NAME_LEN];
+    char rotate_attribute_ttlv[513];
+    char query_function[12];
+    char query_result_tag[12];
     char certificate_object_path[KMIP_MAX_NAME_LEN];
     char register_object_path[KMIP_MAX_NAME_LEN];
+    char register_object_ttlv[1537];
+    char register_attributes_ttlv[513];
+    char register_object_type[4];
+    char register_attribute_value[KMIP_MAX_NAME_LEN];
     char category[KMIP_MAX_NAME_LEN];
     char mode[32];
     char mutation[32];
@@ -64,6 +71,7 @@ typedef struct {
     char client_cert_path[KMIP_MAX_NAME_LEN];
     char client_key_path[KMIP_MAX_NAME_LEN];
     char server_name_override[KMIP_MAX_NAME_LEN];
+    uint32_t read_timeout_seconds;
     char username_env[KMIP_MAX_NAME_LEN];
     char password_env[KMIP_MAX_NAME_LEN];
     bool dedicated_test_environment_confirmed;
@@ -96,6 +104,7 @@ typedef struct {
     bool library_failed;
     bool server_unsupported;
     bool policy_restricted;
+    bool used_high_level;
     bool has_result_status_code;
     bool has_result_reason_code;
     uint32_t result_status_code;
@@ -117,6 +126,7 @@ typedef struct {
     char operation[KMIP_MAX_NAME_LEN];
     kmip_case_status_t status;
     char library_correctness[16];
+    bool used_high_level;
     bool has_result_status_code;
     bool has_result_reason_code;
     uint32_t result_status_code;
@@ -154,6 +164,8 @@ typedef struct {
 bool kmip_load_capabilities(const char *json_path, kmip_server_capabilities_t *out_caps);
 bool kmip_load_connection(const char *json_path, kmip_connection_config_t *out_connection);
 bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_t *out_count);
+bool kmip_load_catalog_with_digest(const char *json_path, kmip_test_case_t *out_cases,
+                                  size_t *out_count, char digest[65]);
 bool kmip_is_case_supported(const kmip_server_capabilities_t *caps, const kmip_test_case_t *test_case, char out_reasons[KMIP_MAX_REASONS][KMIP_MAX_NAME_LEN], size_t *out_reasons_count);
 void kmip_init_attempt_context(kmip_attempt_context_t *ctx, const char *run_id, const char *lang, const char *enc, const char *level, const char *prefix);
 

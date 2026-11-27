@@ -273,7 +273,7 @@ fn register_certificate(
         .register()
         .object(object)
         .attributes(attributes)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     if let ClientBatchOutcome::Register(response) = result.outcome() {
         let _server_assigned_identifier = response.unique_identifier();
     }
@@ -457,7 +457,7 @@ fn revoke_fluido(
         .unique_identifier(UniqueIdentifier::TextString("certificate-id".to_owned()))
         .revocation_message("retirada aprobada")
         .compromise_occurrence_date(1_700_000_000)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     let outcome = item.outcome();
     assert_eq!(outcome.operation(), ClientOperation::Revoke);
     let _typed_response = outcome.revoke_response();

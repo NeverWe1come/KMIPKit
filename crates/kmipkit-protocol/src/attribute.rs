@@ -387,6 +387,28 @@ impl AttributeSet {
         Ok(set)
     }
 
+    pub(crate) fn try_new_from_response(
+        items: impl IntoIterator<Item = Item>,
+    ) -> Result<Self, AttributeSetError> {
+        let mut set = Self::new();
+        for item in items {
+            // Cosmian KMS encodes Short Unique Identifier (0x420136) as TextString in GetAttributes responses.
+            let is_cosmian_short_uid = item.tag().raw() == 0x0042_0136
+                && item.item_type() == kmipkit_ttlv::ItemType::TextString;
+            if !is_cosmian_short_uid {
+                validate_catalogued_item_type(&item)?;
+            }
+            if item.tag().raw() == VENDOR_ATTRIBUTE_TAG {
+                item.with_value(|value| match value {
+                    ValueView::Structure(structure) => validate_vendor_attribute(&structure),
+                    _ => Err(AttributeSetError::VendorAttributeMustBeStructure),
+                })?;
+            }
+            set.items.push(item);
+        }
+        Ok(set)
+    }
+
     /// Appends one direct attribute item while preserving its original tag.
     ///
     /// # Errors
@@ -595,9 +617,16 @@ fn enumeration_value(items: &[Item], tag: u32) -> Option<u32> {
 }
 
 pub(crate) fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
-    if crate::attribute_types_generated::expected_types(item.tag().raw())
-        .is_some_and(|expected| !expected.contains(&item.item_type()))
-    {
+    if crate::attribute_types_generated::expected_types(item.tag().raw()).is_some_and(|expected| {
+        !(expected.contains(&item.item_type())
+            || crate::LinkType::from_v3_tag(item.tag().raw()).is_some()
+                && matches!(
+                    item.item_type(),
+                    kmipkit_ttlv::ItemType::Identifier
+                        | kmipkit_ttlv::ItemType::Reference
+                        | kmipkit_ttlv::ItemType::NameReference
+                ))
+    }) {
         Err(AttributeSetError::AttributeTtlvTypeMismatch)
     } else {
         Ok(())

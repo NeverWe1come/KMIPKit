@@ -3,6 +3,7 @@ package org.kmipkit.fluent;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.ttlv.CodecLimits;
@@ -62,6 +63,23 @@ public abstract class Kmip30BuilderBase<T extends Kmip30BuilderBase<T>> implemen
             throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
         return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
+    }
+
+    /** Executes one KMIP 3.0 exchange with client limits and throws on server error or Pending. */
+    public final ClientBatchItemResult execute() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeResult(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes one KMIP 3.0 exchange with client limits, preserving server failure and Pending outcomes. */
+    public final ClientBatchItemResult executeOutcome() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeOutcome(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes one KMIP 3.0 exchange with explicit limits, preserving server failure and Pending outcomes. */
+    public final ClientBatchItemResult executeOutcome(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
+        if (limits == null) throw new InvalidInputException("codec limits are invalid");
+        return BatchExecution.executeOutcome(client, build(), limits, options, asynchronousIndicator);
     }
 
     @Override public final void close() { handle.close(); }

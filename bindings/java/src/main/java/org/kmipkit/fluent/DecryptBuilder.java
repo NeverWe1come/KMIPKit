@@ -8,4 +8,12 @@ public final class DecryptBuilder extends CryptoOperationBuilder<DecryptBuilder>
     DecryptBuilder(KmipClient client) {
         super(client, NATIVE_OPERATION_DECRYPT);
     }
+
+    /** Configures cipher parameters from a curated {@link CipherSpec}. */
+    public DecryptBuilder withCipherSpec(CipherSpec spec) {
+        if (spec == null) throw new org.kmipkit.InvalidInputException("CipherSpec is required");
+        try (org.kmipkit.protocol.CryptographicParameters params = spec.toCryptographicParameters()) {
+            return cryptographicParameters(params);
+        }
+    }
 }

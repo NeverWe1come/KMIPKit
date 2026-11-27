@@ -63,6 +63,69 @@ The 3.0 XML corpus contains 617. In total, 288 XML cases contribute 1,773
 exchanges and 1,880 planned rows to the 320,446-row matrix. The 28 additional 3.0 normative rows are
 constructor routes for the seven draft operations mapped across the four languages.
 
+## Cosmian/Eviden KMIP 2.x table coverage
+
+Generate the version-specific catalog and table obligations before running the
+validators. Pass that same catalog to the campaign when importing its evidence.
+
+```sh
+python3 verification/interop/shared/tools/cosmian_minimum.py --version 2.1 \
+  --catalog-output /tmp/cosmian-2.1-catalog.json --inventory-output /tmp/cosmian-2.1-inventory.json
+python3 verification/interop/shared/tools/campaign.py --version 2.1 --cosmian-minimum \
+  --catalog-source /tmp/cosmian-2.1-catalog.json --controlled-report /tmp/kmip/results.json \
+  --output-dir /tmp/cosmian-campaign
+```
+
+The campaign writes `cosmian-2.1.json` with the table expectations and matching
+case results by language and construction API. A row can have several case
+results with distinct assertions. Cases requiring a provider fixture or a
+runtime version boundary remain visible in the inventory.
+
+The four installed-package CI jobs run `table_ttlv.py` and upload the local
+fixture reports. Each report records construction, decoding, and the public
+version gate with the package digest. The fixtures exercise the eight
+applicable managed objects, nine transparent key formats, 22 applicable
+base objects, and 56 standard attributes at 2.0 or 63 at 2.1. Additional
+messages cover the operation variants absent from the OASIS profile
+scenarios. The version gate checks the seven Rotate tags in both versions.
+The legacy fixtures check the reserved Template tags and the former Object
+Type and Key Format Type values. Import each language's report with a separate
+`--table-ttlv-report` argument alongside `--cosmian-minimum`. The table
+report keeps local fixture checks and deployed KMS observations in distinct
+fields. When importing `--oasis-construction-report` or `--oasis-ttlv-report`,
+each applicable operation row includes the matching OASIS case, step and
+batch item. Repeat the argument to import reports from separate languages.
+
+The same CI jobs publish `table-key-material.json` for the format-aware
+constructors and readers of the nine transparent key formats. They compare
+the complete output and reject missing, duplicate, and mistyped material
+fields. Pass `--table-key-material-report` to import these checks into the
+typed-protocol cells.
+
+CI also publishes `table-typed-attributes.json` for 54 direct typed
+attributes in KMIP 2.0 and 61 in KMIP 2.1. The tests compare the complete
+encoded value, reject a mismatched tag on read, and exercise wrong TTLV
+types where the constructor accepts a generic Value. Rust's constructor
+takes the marker's native value type and its reader rejects mistyped items.
+Pass `--table-typed-attributes-report` to attach these local results to the
+typed-protocol cells. Certificate Attributes and Protection Storage Masks
+use their dedicated certificate and operation contexts.
+
+The managed object fixture tests reconstruct the eight applicable table
+objects from their fields, check the full encoding and exercise missing,
+duplicate, and mistyped fields. The typed readers validate every negative
+fixture. Pass `--table-managed-objects-report` to import the
+`table-managed-objects.json` CI artifacts.
+
+The campaign writes `cosmian-table-summary.json` with counts by version,
+language and API. The per-cell `evidence_summary` records local fixture
+checks, controlled outcomes and live outcomes. Each cell also lists the
+server cases with matching and missing expected outcomes. A route can have
+observations without matching the table's expectation. The live expected-case counts
+exclude version rejections performed before sending. These counts
+cover selected workflows and leave local fixtures and vendor observations
+visible in their own fields.
+
 ## Campaign plans and evidence reports
 
 From the repository root, export the obligations and open the generated
@@ -140,8 +203,8 @@ receives a result when the consumer supplies evidence for its obligation ID.
 `tools/oasis_ttlv.py` converts the pinned XML request and response messages
 into generic TTLV vectors with deterministic bindings for fixture symbols.
 With `--runner LANGUAGE EXECUTABLE`, the installed library decodes the vectors
-and the tool compares the ordered tag, type and child-count sequence for each
-message. The output retains fixture digests and artifact provenance.
+and the tool compares the ordered tags, types, child counts and scalar values
+for each message. The output retains fixture digests and artifact provenance.
 
 Supply the Rust `kmip30-campaign` binary, the C `kmip30_c_constructors` binary,
 the Java `tools/run_draft_campaign.sh` script, or the Python
@@ -160,8 +223,10 @@ python3 verification/interop/shared/tools/campaign.py \
 Use `--construct --version 2.0 --version 2.1` with the same installed runners
 to build each complete fixture from its raw tag numbers and scalar values
 through the language's public generic item constructors. The runner walks
-the constructed model and the tool checks its ordered tag, type and child
-counts. Import this output into the campaign using
+the constructed model and the tool checks its ordered tags, types, child
+counts and scalar values. Each runner also re-encodes the constructed message
+with the same serializer used for direct-tag exchanges and compares the bytes
+against the fixture. Import this output into the campaign using
 `--oasis-construction-report`. These checks exercise construction locally.
 
 Each XML scenario step shows its request and response codec outcomes.
@@ -177,6 +242,41 @@ identity on the returned evidence. The optional profile is passed with
 should write its evidence before exiting with a failure. Run a single
 language with one executable or repeat the option for multiple languages.
 
+### Receiving server-initiated operations
+
+For KMIP 2.0 or 2.1 with `api_level: generic-ttlv`, `transport: raw_tls` and
+`encoding: TTLV`, the four standalone validators can receive Discover Versions,
+Notify, Put, Query and Set Endpoint Role over a mutually authenticated TLS
+connection. The C listener uses the Unix OpenSSL build.
+
+Provide the following options on the validator's `run` command:
+
+```sh
+--listen 127.0.0.1:0 --listener-cert /path/to/listener-cert.pem \
+  --listener-key /path/to/listener-key.pem --listener-ready-file /path/to/address.txt
+```
+
+Select the incoming case ID with `--case` for one external trigger. When running
+several incoming cases, configure the peer to initiate the operations in catalog
+order. The readiness file reports the bound address. The configured CA must
+trust the certificate presented by the connecting peer. Incoming cases retain
+their mutation policy, so Java and Python also use `--enable-mutations` and C
+uses `--allow-mutations` for the applicable cases.
+
+The controlled peer suite exercises the installed executors, including reply
+fields, correlation and a malformed Put. It also checks the exact reference
+and returned value for Cryptographic Algorithm, Cryptographic Length,
+Cryptographic Usage Mask, Object Type, State, Sensitive, Always Sensitive,
+Extractable and Never Extractable on isolated keys. The multipart SHA-256
+case checks Init, Update and Final, including the server-provided correlation
+value and final digest, through direct tags, Typed Protocol and Fluent.
+Run the suite with the installed Python wheel available and the Rust, C
+and Java validators built:
+
+```sh
+python -m unittest verification.interop.shared.tests.test_incoming_validators -v
+```
+
 ## Operation variants and API comparisons
 
 Export the request and response field obligations and the managed-object
@@ -191,8 +291,9 @@ stable ID. These rows describe cases to implement. The distinct
 `requiredness_review` branch identifies a rule requiring manual review.
 
 Run the validator twice with the same connection settings and catalog,
-selecting `api_level: typed-protocol` in one configuration and
-`api_level: fluent` in the other. Keep the artifact and server configuration
+selecting `api_level: generic-ttlv` in one configuration and
+`api_level: fluent` in the other. The report also compares `typed-protocol`
+with `fluent` when both runs are available. Keep the artifact and server configuration
 the same. Then combine their reports.
 
 ```sh
@@ -243,10 +344,51 @@ with `--case`. Both options are repeatable and take the union of matches.
 Operation selection retains every matching direction. Both
 `operation_catalog.py` and `run_all.py --all-operations` accept these
 selectors. The generated catalog can also be passed to a standalone
-validator through its `--catalog` option.
+validator through its `--catalog` option. Each standalone validator also
+accepts `run --case ID` to execute one case from that catalog. The result
+keeps the original catalog digest so that runs of the same case can be compared.
 
 Add `--require-complete` to a live `run_all.py --all-operations` run to
 require evidence for every applicable selected case in each run. An
 observed KMIP rejection for an unsupported operation accounts for the
 execution while retaining its server compatibility status. A missing
 case, a blocked case, or a failed local assertion fails the check.
+The `completion.json` report lists the missing case IDs for each validator and
+records reports whose catalog, server or execution route differs from the selection.
+
+## Cosmian and Eviden KMS support scope
+
+Select the KMIP 2.x cases associated with the published support table. The
+inventory records the declared support, specification targets, local model
+cases and planned server exchanges for each published row.
+[Cosmian and Eviden KMS support table](https://docs.cosmian.com/key_management_system/kmip_support/support.html)
+
+```sh
+python3 verification/interop/shared/tools/run_all.py --all-operations --cosmian-minimum \
+  --dry-run --connection /path/to/2.0.json --connection /path/to/2.1.json \
+  --output-dir /tmp/kmip-cosmian-scope
+```
+
+Remove `--dry-run` to execute against a dedicated endpoint. Pass one
+connection per protocol version and API level you plan to exercise. Use
+`--profile` with a capability profile whose server ID matches the connection.
+Use `--case` or `--operation` to run a subset. Use `--require-complete` for
+a live run to require exchange evidence and, for the entire selection,
+report published rows that lack any mapped server case. Inspect
+`catalogs/kmip-*-cosmian-scope.json` for local-only rows and vendor
+extensions that still require fixtures. Runtime reports identify cases
+without an executable route in the chosen binding.
+
+Use `--normative` with `--all-operations` to select the full KMIP 2.0 and
+2.1 normative matrix and the existing executable variants. This includes
+the attribute policies, protocol fields, object structures, enumerations
+and bitmasks defined in the specification catalog. A broader normative
+obligation sharing an identifier with an existing baseline case receives a
+`-normative` suffix and keeps its own assertions.
+
+To include incoming operations in a coordinated run, pass
+`--listen`, `--listener-cert` and `--listener-key` to `run_all.py`.
+Each validator publishes its bound address in `listener-address.txt` in
+its result directory for the peer trigger on KMIP 2.x raw TLS connections.
+For `Notify` and `Put`, select `typed-protocol` to exercise the installed
+listener and dispatcher or `generic-ttlv` to exercise the tag constructors.

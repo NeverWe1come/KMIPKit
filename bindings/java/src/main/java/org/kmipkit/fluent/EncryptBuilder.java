@@ -8,4 +8,12 @@ public final class EncryptBuilder extends CryptoOperationBuilder<EncryptBuilder>
     EncryptBuilder(KmipClient client) {
         super(client, NATIVE_OPERATION_ENCRYPT);
     }
+
+    /** Configures cipher parameters from a curated {@link CipherSpec}. */
+    public EncryptBuilder withCipherSpec(CipherSpec spec) {
+        if (spec == null) throw new org.kmipkit.InvalidInputException("CipherSpec is required");
+        try (org.kmipkit.protocol.CryptographicParameters params = spec.toCryptographicParameters()) {
+            return cryptographicParameters(params);
+        }
+    }
 }
