@@ -368,7 +368,10 @@ class DirectTagValidatorTests(unittest.TestCase):
                 with self.subTest(language=language, minor=minor):
                     if not available:
                         self.skipTest(f"Installed {language} validator required")
-                    self.owned_key_exchange(language, minor, "test-op-archive", 21, unsupported=True)
+                    self.owned_key_exchange(
+                        language, minor, "test-op-archive", 21,
+                        unsupported=True, route="generic-ttlv", normative=True,
+                    )
 
     def test_query_operations_and_message_envelopes_across_api_levels(self):
         for language, available in installed_validators():
