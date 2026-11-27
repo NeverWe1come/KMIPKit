@@ -16,7 +16,9 @@ import tempfile
 import time
 import unittest
 
-from verification.interop.shared.tools.operation_catalog import build_catalog, direction, with_cases
+from verification.interop.shared.tools.operation_catalog import (
+    build_catalog, build_normative_catalog, direction, with_cases,
+)
 from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
 from verification.interop.shared.tools.table_attribute_exchange import attribute_exchange
 from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
@@ -112,6 +114,12 @@ def only(items, tag, kind):
 @lru_cache(maxsize=2)
 def version_catalog(version):
     return build_catalog(ROOT, version)
+
+
+@lru_cache(maxsize=2)
+def normative_catalog(version):
+    catalog, _ = build_normative_catalog(ROOT, version)
+    return catalog
 
 
 def installed_validators():
@@ -362,13 +370,16 @@ class DirectTagValidatorTests(unittest.TestCase):
                         self.skipTest(f"Installed {language} validator required")
                     self.owned_key_exchange(language, minor, "test-op-archive", 21, unsupported=True)
 
-    def test_generic_query_checks_requested_operations_without_a_typed_decoder(self):
+    def test_query_operations_and_message_envelopes_across_api_levels(self):
         for language, available in installed_validators():
             for minor in (0, 1):
-                with self.subTest(language=language, minor=minor):
-                    if not available:
-                        self.skipTest(f"Installed {language} validator required")
-                    self.query_operations(language, minor)
+                for route in ("generic-ttlv", "typed-protocol", "fluent", "high-level"):
+                    for variant in ("valid", "missing-operations", "wrong-version"):
+                        with self.subTest(language=language, minor=minor, route=route, variant=variant):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.query_operations(language, minor, route=route, invalid=variant == "missing-operations",
+                                                  wrong_version=variant == "wrong-version")
 
     def test_query_fields_require_the_selected_structure(self):
         for language, available in installed_validators():
@@ -390,7 +401,7 @@ class DirectTagValidatorTests(unittest.TestCase):
                 self.query_operations("c", minor, fields=True, operation_omitted=True)
 
     def query_operations(self, language, minor, *, fields=False, invalid=False, route="generic-ttlv",
-                         operation_omitted=False):
+                         operation_omitted=False, wrong_version=False):
         with tempfile.TemporaryDirectory(prefix="kmipkit-query-operations-") as dirname:
             work = Path(dirname)
             catalog = version_catalog(f"2.{minor}")
@@ -408,6 +419,7 @@ class DirectTagValidatorTests(unittest.TestCase):
                 10: number(0x4200EC, 5, 1),
                 11: wire_item(0x4200EF, 6, struct.pack(">Q", 1)),
             }
+            failed = invalid or operation_omitted or wrong_version
             profile = work / "profile.json"
             profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"},
                                            "operations": {}}))
@@ -435,20 +447,31 @@ class DirectTagValidatorTests(unittest.TestCase):
                             raw.settimeout(5)
                             with raw, tls.wrap_socket(raw, server_side=True) as peer:
                                 request = only(read_message(peer), 0x420078, 1)
+                                header = only(request, 0x420077, 1)
+                                self.assertEqual(only(header, 0x420069, 1), parse_items(version(minor))[0][2])
+                                self.assertEqual(only(header, 0x42000D, 2), struct.pack(">I", 1))
                                 batch = only(request, 0x42000F, 1)
                                 self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", 0x18))
                                 payload = only(batch, 0x420079, 1)
-                                function = int.from_bytes(only(payload, 0x420074, 5), "big")
-                                self.assertEqual(len(payload), 1)
-                                self.assertIn(function, expected_functions)
-                                case = expected_functions.pop(function)
                                 if fields:
+                                    function = int.from_bytes(only(payload, 0x420074, 5), "big")
+                                    self.assertEqual(len(payload), 1)
+                                    self.assertIn(function, expected_functions)
+                                    case = expected_functions.pop(function)
                                     target = int(case["requires"]["query_result_tag"])
                                     field = (wire_item(target, 7, b"wrong-type") if invalid
                                              else structure(target, members[function]))
                                     returned = field + structure(0x42015F)
                                 else:
-                                    returned = number(0x42005C, 5, 1)
+                                    functions = (1,)
+                                    if route != "generic-ttlv":
+                                        functions = {"rust": (1, 2, 11), "python": (1, 2)}.get(language, (1,))
+                                    self.assertEqual(payload, [(0x420074, 5, struct.pack(">I", fn)) for fn in functions])
+                                    returned = b"" if invalid else number(0x42005C, 5, 1) + number(0x42005C, 5, 0x18)
+                                    if 2 in functions:
+                                        returned += number(0x420057, 5, 2)
+                                    if 11 in functions:
+                                        returned += structure(0x4200F7, members[11])
                                 batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
                                 if operation_omitted:
                                     result_fields = [number(0x42007F, 5, 1), number(0x42007E, 5, 4)]
@@ -457,12 +480,12 @@ class DirectTagValidatorTests(unittest.TestCase):
                                                      number(0x42007F, 5, 0), structure(0x42007C, returned)]
                                 peer.sendall(structure(
                                     0x42007B,
-                                    structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                    structure(0x42007A, version(1 - minor if wrong_version else minor), wire_item(0x420092, 9, bytes(8)),
                                               number(0x42000D, 2, 1)),
                                     structure(0x42000F, *result_fields),
                                 ))
                         _, stderr = process.communicate(timeout=15)
-                        self.assertEqual(process.returncode != 0, invalid or operation_omitted,
+                        self.assertEqual(process.returncode != 0, failed,
                                          stderr.decode(errors="replace"))
                     finally:
                         if process.poll() is None:
@@ -471,14 +494,14 @@ class DirectTagValidatorTests(unittest.TestCase):
             results = json.loads(report.read_text())["cases"]
             self.assertEqual({result["case_id"] for result in results}, {case["case_id"] for case in cases})
             for result in results:
-                self.assertEqual(result["status"], "failed" if invalid or operation_omitted else "passed")
+                self.assertEqual(result["status"], "failed" if failed else "passed")
                 if operation_omitted:
                     self.assertEqual((result["result_status_code"], result["result_reason_code"]), (1, 4))
-                elif not invalid:
+                elif not failed:
                     self.assertEqual(result["result_status_code"], 0)
                     if route == "high-level":
                         self.assertEqual(result["actual_api_level"], route)
-            if not invalid and not operation_omitted:
+            if not failed:
                 label = "query-fields" if fields else "query-operations"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{label}")
 
@@ -1068,24 +1091,45 @@ class DirectTagValidatorTests(unittest.TestCase):
                                                 invalid=verdict == "failed",
                                                 unsupported=verdict == "server_unsupported")
 
-    def test_multipart_hash_across_api_levels(self):
+    def test_single_and_multipart_hash_across_api_levels(self):
         for language, available in installed_validators():
+            routes = ("typed-protocol", "fluent", "generic-ttlv")
+            if language == "rust":
+                routes += ("high-level",)
             for minor in (0, 1):
-                for route in ("typed-protocol", "fluent", "generic-ttlv"):
+                for route in routes:
                     for invalid in (False, True):
                         with self.subTest(language=language, minor=minor, route=route, invalid=invalid):
                             if not available:
                                 self.skipTest(f"Installed {language} validator required")
-                            self.multipart_hash(language, minor, route, invalid)
+                            self.hash_exchange(language, minor, route, invalid)
 
-    def multipart_hash(self, language, minor, route, invalid):
+    def hash_exchange(self, language, minor, route, invalid):
         correlation = b"validator-peer-correlation"
-        digest = bytearray(hashlib.sha256(b"KMIP Hash!").digest())
-        if invalid:
-            digest[-1] ^= 1
-        with tempfile.TemporaryDirectory(prefix="kmipkit-multipart-hash-") as dirname:
+        multipart_id = "test-multipart-hash-sha256"
+        case_ids = {"test-op-hash", "test-crypto-hash-sha_256-0",
+                    "test-crypto-hash-sha_256-0-normative", multipart_id}
+
+        def digest_for(data):
+            digest = bytearray(hashlib.sha256(data).digest())
+            if invalid:
+                digest[-1] ^= 1
+            return wire_item(0x4200C2, 8, digest)
+
+        single = [(b"abc", b"", digest_for(b"abc"))]
+        continuation = wire_item(0x4200D6, 8, correlation)
+        multipart = [
+            (b"KMIP ", wire_item(0x4200D7, 6, struct.pack(">Q", 1)), continuation),
+            (b"Hash", continuation, b""),
+            (b"!", continuation + wire_item(0x4200D8, 6, struct.pack(">Q", 1)), digest_for(b"KMIP Hash!")),
+        ]
+        with tempfile.TemporaryDirectory(prefix="kmipkit-hash-") as dirname:
             work = Path(dirname)
-            catalog_path = INTEROP / "shared/catalog/kmipkit-1.0-test-catalog.json"
+            catalog = normative_catalog(f"2.{minor}")
+            cases = [case for case in catalog["test_cases"] if case["case_id"] in case_ids]
+            self.assertEqual({case["case_id"] for case in cases}, case_ids)
+            catalog_path = work / "catalog.json"
+            catalog_path.write_text(json.dumps(with_cases(catalog, cases)))
             profile = work / "profile.json"
             profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"}, "operations": {}}))
             report = work / "results.json"
@@ -1096,8 +1140,7 @@ class DirectTagValidatorTests(unittest.TestCase):
                 config = connection_config(minor, listener.getsockname()[1], incoming=False)
                 config["api_level"] = route
                 connection.write_text(json.dumps(config))
-                command += ["--catalog", str(catalog_path), "--connection", str(connection),
-                            "--case", "test-multipart-hash-sha256"]
+                command += ["--catalog", str(catalog_path), "--connection", str(connection)]
                 tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
                 tls.minimum_version = ssl.TLSVersion.TLSv1_3
                 tls.verify_mode = ssl.CERT_REQUIRED
@@ -1105,45 +1148,50 @@ class DirectTagValidatorTests(unittest.TestCase):
                 tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
                 with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
                     try:
-                        for stage, chunk in enumerate((b"KMIP ", b"Hash", b"!")):
-                            raw, _ = self.accept_request(listener, process, f"Hash stage {stage + 1}")
-                            raw.settimeout(5)
-                            with raw, tls.wrap_socket(raw, server_side=True) as channel:
-                                request = only(read_message(channel), 0x420078, 1)
-                                batch = only(request, 0x42000F, 1)
-                                operation = only(batch, 0x42005C, 5)
-                                self.assertEqual(operation, struct.pack(">I", 0x27))
-                                payload = only(batch, 0x420079, 1)
-                                self.assertEqual(only(payload, 0x4200C2, 8), chunk)
-                                parameters = only(payload, 0x42002B, 1)
-                                self.assertEqual(only(parameters, 0x420038, 5), struct.pack(">I", 6))
-                                framing = {tag: value for tag, _, value in payload if tag in (0x4200D6, 0x4200D7, 0x4200D8)}
-                                expected = ({0x4200D7: struct.pack(">Q", 1)} if stage == 0
-                                            else {0x4200D6: correlation} if stage == 1
-                                            else {0x4200D6: correlation, 0x4200D8: struct.pack(">Q", 1)})
-                                self.assertEqual(framing, expected)
-                                fields = ([wire_item(0x4200D6, 8, correlation)] if stage == 0
-                                          else [wire_item(0x4200C2, 8, digest)] if stage == 2 else [])
-                                batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
-                                channel.sendall(structure(
-                                    0x42007B,
-                                    structure(0x42007A, version(minor),
-                                              wire_item(0x420092, 9, struct.pack(">Q", 1)),
-                                              number(0x42000D, 2, 1)),
-                                    structure(0x42000F, wire_item(0x42005C, 5, operation), *batch_ids,
-                                              number(0x42007F, 5, 0), structure(0x42007C, *fields)),
-                                ))
+                        for case in cases:
+                            case_id = case["case_id"]
+                            steps = multipart if case_id == multipart_id else single
+                            for stage, (chunk, expected_framing, response_fields) in enumerate(steps, start=1):
+                                raw, _ = self.accept_request(listener, process, f"{case_id}, Hash stage {stage}")
+                                raw.settimeout(5)
+                                with raw, tls.wrap_socket(raw, server_side=True) as channel:
+                                    request = only(read_message(channel), 0x420078, 1)
+                                    batch = only(request, 0x42000F, 1)
+                                    operation = only(batch, 0x42005C, 5)
+                                    self.assertEqual(operation, struct.pack(">I", 0x27))
+                                    payload = only(batch, 0x420079, 1)
+                                    self.assertEqual(only(payload, 0x4200C2, 8), chunk)
+                                    parameters = only(payload, 0x42002B, 1)
+                                    self.assertEqual(only(parameters, 0x420038, 5), struct.pack(">I", 6))
+                                    framing = [(tag, kind, value) for tag, kind, value in payload
+                                               if tag in (0x4200D6, 0x4200D7, 0x4200D8)]
+                                    self.assertCountEqual(framing, parse_items(expected_framing))
+                                    batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch
+                                                 if tag == 0x420093]
+                                    channel.sendall(structure(
+                                        0x42007B,
+                                        structure(0x42007A, version(minor),
+                                                  wire_item(0x420092, 9, struct.pack(">Q", 1)),
+                                                  number(0x42000D, 2, 1)),
+                                        structure(0x42000F, wire_item(0x42005C, 5, operation), *batch_ids,
+                                                  number(0x42007F, 5, 0), structure(0x42007C, response_fields)),
+                                    ))
                         _, stderr = process.communicate(timeout=10)
                         self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
                     finally:
                         if process.poll() is None:
                             process.terminate()
                             process.communicate(timeout=5)
-            evidence, = json.loads(report.read_text())["cases"]
-            self.assertEqual(evidence["status"], "failed" if invalid else "passed")
+            results = json.loads(report.read_text())["cases"]
+            self.assertEqual({result["case_id"] for result in results}, case_ids)
+            for result in results:
+                self.assertEqual(result["status"], "failed" if invalid else "passed", result)
+                if not invalid:
+                    self.assertEqual(result["result_status_code"], 0)
+                    if route == "high-level":
+                        self.assertEqual(result["actual_api_level"], route)
             if not invalid:
-                self.assertEqual(evidence["result_status_code"], 0)
-                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-multipart-hash")
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-hash")
 
     def accept_request(self, listener, process, stage):
         try:

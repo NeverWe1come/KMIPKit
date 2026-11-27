@@ -103,7 +103,7 @@ final class GenericExchange {
                 && ((usesOwnedKey(operation) || usesExtendedOp(operation))
                         ? "mutating".equals(testCase.execution().mutation())
                         : ("read_only".equals(testCase.execution().mutation()) || operation == RNG_RETRIEVE || operation == RNG_SEED
-                            || JavaKmipDriver.multipartHash(testCase)))
+                            || operation == HASH))
                 && "raw_tls".equals(connection.transport()) && "TTLV".equals(connection.encoding())
                 && (JavaKmipDriver.queryCredentialCase(testCase)
                         ? connection.usernamePassword() != null : connection.usernamePassword() == null);
@@ -148,7 +148,8 @@ final class GenericExchange {
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
             case "test-op-rng-retrieve", "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
             case "test-op-rng-seed", "test-crypto-rng-seed-rng-32" -> RNG_SEED;
-            case "test-op-hash", "test-crypto-hash-sha_256-0", "test-multipart-hash-sha256" -> HASH;
+            case "test-op-hash", "test-crypto-hash-sha_256-0",
+                    "test-crypto-hash-sha_256-0-normative", "test-multipart-hash-sha256" -> HASH;
             case "test-op-encrypt", "test-crypto-encrypt-aes-256-cbc", "test-crypto-encrypt-aes-256-gcm" -> ENCRYPT;
             case "test-op-decrypt", "test-crypto-decrypt-aes-256-cbc", "test-crypto-decrypt-aes-256-gcm",
                     "test-crypto-decrypt-aes-256-gcm-invalid-tag" -> DECRYPT;

@@ -10,7 +10,7 @@ use kmipkit::ttlv::{Item, RawTag, Structure, Value};
 use kmipkit::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientRequest, RequestOptions,
 };
-use std::time::Duration;
+use std::{num::NonZeroUsize, time::Duration};
 
 pub(crate) fn item(tag: u32, value: Value) -> Result<Item> {
     Item::new(
@@ -169,6 +169,7 @@ pub(crate) struct Observed {
     pub reason: Option<u32>,
     pub nonempty_structure_tags: Vec<u32>,
     pub usable_nonce: bool,
+    pub query_operation_count: Option<NonZeroUsize>,
     pub fixture_attribute_returned: bool,
     pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
     pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
@@ -203,6 +204,35 @@ fn response_contains_usable_nonce(response: &ClientBatchItemResponse) -> bool {
     })
 }
 
+pub(crate) fn query_operation_count(
+    payload: &kmipkit::ttlv::StructureView<'_>,
+) -> Option<NonZeroUsize> {
+    use kmipkit::ttlv::ValueView;
+    let mut count = 0;
+    for field in payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == 0x0042_005c)
+    {
+        if !field.with_value(|value| matches!(value, ValueView::Enumeration(code) if *code != 0)) {
+            return None;
+        }
+        count += 1;
+    }
+    NonZeroUsize::new(count)
+}
+
+fn copy_secret_bytes(
+    value: &kmipkit::ttlv::ValueView<'_>,
+) -> Option<kmipkit::protocol::SecretBytes> {
+    match value {
+        kmipkit::ttlv::ValueView::ByteString(value) => {
+            Some(kmipkit::protocol::SecretBytes::new(value.to_vec()))
+        }
+        _ => None,
+    }
+}
+
 fn response_contains_fixture_attribute(response: &ClientBatchItemResponse) -> bool {
     response.raw().is_some_and(|payload| {
         payload.children().iter().any(|field| {
@@ -228,7 +258,8 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
     let mut ticket = None;
     let mut correlation = None;
     let mut nonempty_structure_tags = Vec::new();
-    if let Some(raw) = response.raw() {
+    let raw = response.raw();
+    if let Some(raw) = &raw {
         for value in raw.children() {
             if value
                 .as_structure()
@@ -255,12 +286,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                 }
             }
             if [0x0042_00c2, 0x0042_00c3, 0x0042_00c6].contains(&value.tag().raw()) {
-                bytes = value.with_value(|v| match v {
-                    ValueView::ByteString(v) => {
-                        Some(kmipkit::protocol::SecretBytes::new(v.to_vec()))
-                    }
-                    _ => None,
-                });
+                bytes = value.with_value(|value| copy_secret_bytes(&value));
             }
             if value.tag().raw() == 0x0042_009b {
                 validity = value.with_value(|v| match v {
@@ -275,12 +301,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                     .and_then(|v| kmipkit::protocol::Ticket::try_from_ttlv(v).ok());
             }
             if value.tag().raw() == 0x0042_00d6 {
-                correlation = value.with_value(|v| match v {
-                    ValueView::ByteString(v) => {
-                        Some(kmipkit::protocol::SecretBytes::new(v.to_vec()))
-                    }
-                    _ => None,
-                });
+                correlation = value.with_value(|value| copy_secret_bytes(&value));
             }
         }
     }
@@ -295,6 +316,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         reason: result.reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags,
         usable_nonce: response_contains_usable_nonce(response),
+        query_operation_count: raw.as_ref().and_then(query_operation_count),
         fixture_attribute_returned: response_contains_fixture_attribute(response),
         identifier,
         identifiers,
@@ -726,6 +748,7 @@ pub(crate) fn asynchronous(
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags: Vec::new(),
         usable_nonce: false,
+        query_operation_count: None,
         fixture_attribute_returned: false,
         identifier: None,
         identifiers: response

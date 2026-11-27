@@ -12394,7 +12394,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     const char *rotate = test_case->rotate_attribute_ttlv[0] && strcmp(test_case->operation, "Locate") == 0
         ? test_case->rotate_attribute_ttlv : NULL;
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
-        strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
+        strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-hash-sha_256-0-normative") == 0;
     bool locate_workflow = strcmp(test_case->case_id, "test-op-locate") == 0;
     bool create_key_pair_workflow = strcmp(test_case->case_id, "test-op-create-key-pair") == 0 ||
         strcmp(test_case->case_id, "test-obj-private-key") == 0 ||
@@ -12447,7 +12448,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (strcmp(test_case->operation, "Query") == 0 && (nonce_query || test_case->query_function[0]))
             return execute_single_versioned_diagnostic(
                 client, KMIPKIT_ENUMERATION_OPERATION_QUERY, fluent_route, NULL, test_case);
-        if (client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-query") == 0)
+        if (strcmp(test_case->case_id, "test-op-query") == 0)
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, fluent_route, NULL, NULL);
     }
     if (client->protocol_major == 3)
@@ -12519,7 +12520,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
             (credential_query || (!connection->username_env[0] && !connection->password_env[0])) &&
             strcmp(test_case->mode, "server_exchange") == 0 &&
-            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash || get_key_block || key_material_format) && client->allow_mutations))) {
+            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || hash_workflow || multipart_hash || get_key_block || key_material_format) && client->allow_mutations))) {
             if (key_material_format && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
                 return execute_generic_asymmetric_key(client, key_material_format);
             if (get_key_block && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)

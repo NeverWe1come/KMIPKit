@@ -1898,7 +1898,13 @@ class PythonKmipDriver:
                         else:
                             with query:
                                 # Exercise both decoded code lists without reporting any server data.
-                                _ = query.operations, query.object_types
+                                operations, _ = query.operations, query.object_types
+                                if (query_field is None and not expect_nonce
+                                        and (not operations or not all(operations))):
+                                    result.update(
+                                        status="failed", server_compatibility="unknown",
+                                        diagnostic="Query did not advertise any operations",
+                                    )
                                 if query_field is not None:
                                     from .generic import _has_query_structure
 
@@ -2205,6 +2211,18 @@ class PythonKmipDriver:
             "diagnostic": diagnostic,
         }
 
+    def _run_single_hash(self, test_case: dict[str, Any]) -> dict[str, Any]:
+        data = b"abc"
+        build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+        with build(test_case, None, name=self._fixture_name(test_case), data=data) as item:
+            outcome = self._exchange(item, verify_hash=True)
+        if outcome["status"] == "passed" and (
+            outcome["_bytes"] != hashlib.sha256(data).digest() or outcome["_hash_correlation"] is not None
+        ):
+            outcome.update(status="failed", library_correctness="failed", server_compatibility="unknown",
+                           diagnostic="Single-part Hash did not return the expected SHA-256 digest")
+        return outcome
+
     def _run_multipart_hash(self, test_case: dict[str, Any]) -> dict[str, Any]:
         from kmipkit import ttlv
         from kmipkit.fluent import Request
@@ -2345,8 +2363,9 @@ class PythonKmipDriver:
     def execute_case(self, test_case: dict[str, Any]) -> dict[str, Any]:
         case_id = test_case["case_id"]
         operation = test_case["operation"]
-        if case_id == "test-multipart-hash-sha256":
-            return self._run_multipart_hash(test_case)
+        if operation == "Hash":
+            return (self._run_multipart_hash(test_case) if case_id == "test-multipart-hash-sha256"
+                    else self._run_single_hash(test_case))
         unique_name = self._fixture_name(test_case)
         key_block_shape = test_case.get("requires", {}).get("key_block_shape")
         key_material_format = test_case.get("requires", {}).get("key_material_format")

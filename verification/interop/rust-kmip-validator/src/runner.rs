@@ -103,6 +103,14 @@ fn result_from_observation(
         result.server_compatibility = "unknown";
         "Query did not return a usable Nonce".clone_into(&mut result.diagnostic);
     }
+    if case.case_id == "test-op-query"
+        && observed.status == 0
+        && observed.query_operation_count.is_none()
+    {
+        result.status = "failed";
+        result.server_compatibility = "unknown";
+        "Query did not advertise any operations".clone_into(&mut result.diagnostic);
+    }
     if case.requires["base_object"] == "Attribute"
         && observed.status == 0
         && !observed.fixture_attribute_returned

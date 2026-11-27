@@ -218,8 +218,8 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
         if (queryFieldCase(testCase) || queryNonceCase(testCase) || queryCredentialCase(testCase)) return true;
-        return rotateLocateCase(testCase) || Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
-                .contains(testCase.caseId());
+        return rotateLocateCase(testCase) || Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0",
+                "test-crypto-hash-sha_256-0-normative").contains(testCase.caseId());
     }
 
     static boolean rotateLocateCase(CatalogLoader.CatalogCase testCase) {

@@ -160,6 +160,7 @@ def _operation(case, version):
             "test-op-rng-retrieve": 0x25, "test-crypto-rng-retrieve-rng-32": 0x25,
             "test-op-rng-seed": 0x26, "test-crypto-rng-seed-rng-32": 0x26,
             "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
+            "test-crypto-hash-sha_256-0-normative": 0x27,
             "test-op-encrypt": ENCRYPT, "test-crypto-encrypt-aes-256-cbc": ENCRYPT,
             "test-op-decrypt": DECRYPT, "test-crypto-decrypt-aes-256-cbc": DECRYPT,
             "test-op-sign": SIGN, "test-crypto-sign-rsa-2048-pkcs1_v1_5": SIGN,
@@ -183,8 +184,7 @@ def supports(case, connection):
     return (
         operation is not None
         and (mutation == "mutating" if operation in (OWNED_KEY_OPERATIONS | EXTENDED_OPERATIONS | {POLL, CANCEL})
-             else mutation == "read_only" or operation in (0x25, 0x26)
-             or case["case_id"] == "test-multipart-hash-sha256")
+             else mutation == "read_only" or operation in (0x25, 0x26, 0x27))
         and connection["encoding"] == "TTLV"
         and connection["transport"] == "raw_tls"
         and (bool(connection.get("authentication", {}).get("username_password"))

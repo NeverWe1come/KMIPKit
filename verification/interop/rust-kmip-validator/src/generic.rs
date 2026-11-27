@@ -121,9 +121,7 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
             if uses_owned_key(operation) || is_extended_mutating_op(operation) {
                 case.execution.mutation == "mutating"
             } else {
-                case.execution.mutation == "read_only"
-                    || matches!(operation, 0x25 | 0x26)
-                    || case.case_id == "test-multipart-hash-sha256"
+                case.execution.mutation == "read_only" || matches!(operation, 0x25..=0x27)
             }
         })
 }
@@ -180,7 +178,10 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         "test-op-discover-versions" => Some(0x1e),
         "test-op-rng-retrieve" | "test-crypto-rng-retrieve-rng-32" => Some(0x25),
         "test-op-rng-seed" | "test-crypto-rng-seed-rng-32" => Some(0x26),
-        "test-op-hash" | "test-crypto-hash-sha_256-0" | "test-multipart-hash-sha256" => Some(0x27),
+        "test-op-hash"
+        | "test-crypto-hash-sha_256-0"
+        | "test-crypto-hash-sha_256-0-normative"
+        | "test-multipart-hash-sha256" => Some(0x27),
         "test-op-encrypt"
         | "test-crypto-encrypt-aes-256-cbc"
         | "test-crypto-encrypt-aes-256-gcm" => Some(ENCRYPT),
@@ -1241,6 +1242,7 @@ pub(crate) fn asynchronous(
         used_high_level: false,
         nonempty_structure_tags: Vec::new(),
         usable_nonce: false,
+        query_operation_count: None,
         fixture_attribute_returned: false,
         identifier: None,
         identifiers,
@@ -1269,17 +1271,7 @@ fn check_probe(
     } else if operation == 0x18 {
         batch
             .with_response_payload(|payload| {
-                let mut operations = payload
-                    .children()
-                    .iter()
-                    .filter(|field| field.tag().raw() == 0x0042_005c)
-                    .peekable();
-                operations.peek().is_some()
-                    && operations.all(|field| {
-                        field.with_value(
-                            |value| matches!(value, ValueView::Enumeration(code) if *code != 0),
-                        )
-                    })
+                crate::driver::query_operation_count(&payload).is_some()
             })
             .unwrap_or(false)
     } else if operation == 0x1e {
