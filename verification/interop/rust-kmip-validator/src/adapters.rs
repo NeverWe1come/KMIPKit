@@ -18,7 +18,7 @@ use kmipkit::protocol::{
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, Ticket, TicketType,
     UniqueIdentifier, ValidateRequest,
 };
-use kmipkit::ttlv::{Value, ValueView};
+use kmipkit::ttlv::{Structure, Value, ValueView};
 use kmipkit::{ClientRequest, ProtocolVersion};
 
 pub(crate) fn generic_model_check() -> bool {
@@ -71,7 +71,49 @@ fn check_ttlv_roundtrip(entry: &kmipkit::ttlv::Item) -> bool {
     let Ok(decoded) = kmipkit::ttlv::codec::decode(&wire) else {
         return false;
     };
-    decoded.tag().raw() == entry.tag().raw()
+    matches_ttlv_wire(&wire, &decoded)
+}
+
+fn matches_ttlv_wire(wire: &[u8], decoded: &kmipkit::ttlv::Item) -> bool {
+    let mut reconstructed = Vec::new();
+    crate::generic_wire::encode(decoded, &mut reconstructed).is_ok() && reconstructed == wire
+}
+
+fn check_data_type_boundaries(case: &Case) -> bool {
+    use std::sync::OnceLock;
+    static FIXTURES: OnceLock<serde_json::Value> = OnceLock::new();
+    let fixtures = FIXTURES.get_or_init(|| {
+        serde_json::from_str(include_str!("../../shared/vectors/ttlv-boundaries.json"))
+            .expect("valid pinned TTLV boundary fixtures")
+    });
+    let kind = case.requires["wire_value"]
+        .as_str()
+        .and_then(parse_wire_hex);
+    let Some(samples) = fixtures["vectors"].as_array().and_then(|vectors| {
+        vectors.iter().find(|vector| {
+            kind.is_some() && kind == vector["type_code"].as_str().and_then(parse_wire_hex)
+        })?["samples"]
+            .as_array()
+    }) else {
+        return false;
+    };
+    !samples.is_empty()
+        && samples.iter().all(|sample| {
+            let Some(hex) = sample["hex"].as_str() else {
+                return false;
+            };
+            let Ok(bytes) = crate::generic_wire::decode_hex(hex) else {
+                return false;
+            };
+            match (
+                sample["valid"].as_bool(),
+                kmipkit::ttlv::codec::decode(&bytes),
+            ) {
+                (Some(true), Ok(decoded)) => matches_ttlv_wire(&bytes, &decoded),
+                (Some(false), Err(_)) => true,
+                _ => false,
+            }
+        })
 }
 
 fn check_sample_value_type(kind: &str) -> bool {
@@ -157,53 +199,51 @@ fn verify_local_batch(case: &Case, version: &str) -> bool {
             batch.build_request_message(proto, &limits).is_err()
         }
         "test-batch-count-mismatch-rejected" => {
-            let Ok(ver) = structure(
-                0x0042_0069,
-                vec![
-                    item(0x0042_006a, Value::integer(2)).ok(),
-                    item(0x0042_006b, Value::integer(1)).ok(),
-                ]
-                .into_iter()
-                .collect::<Option<Vec<_>>>()
-                .unwrap_or_default(),
-            ) else {
-                return false;
-            };
-            let Ok(ver_item) = item(0x0042_0069, Value::structure(ver)) else {
-                return false;
-            };
-            let Ok(cnt_item) = item(0x0042_000d, Value::integer(1)) else {
-                return false;
-            };
-            let Ok(hdr) = structure(0x0042_0077, vec![ver_item, cnt_item]) else {
-                return false;
-            };
-            let Ok(hdr_item) = item(0x0042_0077, Value::structure(hdr)) else {
-                return false;
-            };
-            let make_batch_item = || -> Option<kmipkit::ttlv::Item> {
-                let op = item(0x0042_005c, Value::enumeration(0x1e)).ok()?;
-                let pl = item(
-                    0x0042_0079,
-                    Value::structure(structure(0x0042_0079, vec![]).ok()?),
+            batch_count_mismatch(proto).is_ok_and(|tree| {
+                matches!(
+                    kmipkit::protocol::RequestMessage::try_from_ttlv(tree),
+                    Err(error) if error.kind() == kmipkit::protocol::MessageValidationErrorKind::BatchCountMismatch
                 )
-                .ok()?;
-                item(
-                    0x0042_000f,
-                    Value::structure(structure(0x0042_000f, vec![op, pl]).ok()?),
-                )
-                .ok()
-            };
-            let (Some(b1), Some(b2)) = (make_batch_item(), make_batch_item()) else {
-                return false;
-            };
-            let Ok(msg_tree) = structure(0x0042_0078, vec![hdr_item, b1, b2]) else {
-                return false;
-            };
-            kmipkit::protocol::RequestMessage::try_from_ttlv(msg_tree).is_err()
+            })
         }
         _ => false,
     }
+}
+
+fn batch_count_mismatch(version: ProtocolVersion) -> Result<Structure> {
+    let version = item(
+        0x0042_0069,
+        Value::structure(structure(
+            0x0042_0069,
+            vec![
+                item(0x0042_006a, Value::integer(version.major()))?,
+                item(0x0042_006b, Value::integer(version.minor()))?,
+            ],
+        )?),
+    )?;
+    let header = item(
+        0x0042_0077,
+        Value::structure(structure(
+            0x0042_0077,
+            vec![version, item(0x0042_000d, Value::integer(1))?],
+        )?),
+    )?;
+    let batch_item = || {
+        let payload = DiscoverVersionsRequest::new()
+            .to_ttlv_payload()
+            .map_err(|_| "invalid Discover Versions fixture")?;
+        item(
+            0x0042_000f,
+            Value::structure(structure(
+                0x0042_000f,
+                vec![
+                    item(0x0042_005c, Value::enumeration(0x1e))?,
+                    item(0x0042_0079, Value::structure(payload))?,
+                ],
+            )?),
+        )
+    };
+    structure(0x0042_0078, vec![header, batch_item()?, batch_item()?])
 }
 
 fn check_local_version_boundary(operation: &str) -> bool {
@@ -279,8 +319,8 @@ pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
                     .as_ref()
                     .is_ok_and(check_ttlv_roundtrip)
             }),
-        "data_type"
-        | "operation_payload_field"
+        "data_type" => check_data_type_boundaries(case),
+        "operation_payload_field"
         | "structure_member"
         | "operation_payload_value_variant"
         | "message_field"

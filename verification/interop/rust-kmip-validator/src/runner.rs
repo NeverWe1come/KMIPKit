@@ -23,6 +23,7 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
         ));
     }
     if connection.protocol_version == "2.0"
+        && case.execution.mode == "server_exchange"
         && [
             "Ping",
             "Process",
