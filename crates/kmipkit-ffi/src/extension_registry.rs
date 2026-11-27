@@ -4687,8 +4687,14 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
 /// Creates a Discover Versions request batch item offering the caller-specified
 /// ordered protocol versions. If `version_count == 0`, behaves identically to
 /// `kmipkit_client_batch_item_discover_versions`.
+///
+/// # Safety
+///
+/// If the count is nonzero and `versions` is non-null, it must address
+/// that many initialized, aligned versions for the duration of the call.
+/// A non-null `out_item` must address a writable handle slot.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
+pub unsafe extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
     versions: *const crate::kmipkit_protocol_version_v1_t,
     version_count: u64,
     out_item: *mut *mut kmipkit_client_batch_item_t,

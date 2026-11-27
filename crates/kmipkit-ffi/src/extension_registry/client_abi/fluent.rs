@@ -3931,8 +3931,14 @@ pub extern "C" fn kmipkit_discover_versions_builder_release(
 }
 
 /// High-level direct Discover Versions helper offering `versions` (or default 2.1 when empty).
+///
+/// # Safety
+///
+/// If the count is nonzero and `versions` is non-null, it must address
+/// that many initialized, aligned versions for the duration of the call.
+/// A non-null `out_response` must address a writable handle slot.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_discover_versions_v1(
+pub unsafe extern "C" fn kmipkit_client_discover_versions_v1(
     client: *mut kmipkit_client_t,
     versions: *const kmipkit_protocol_version_v1_t,
     version_count: u64,
@@ -4033,8 +4039,14 @@ pub extern "C" fn kmipkit_query_builder_release(builder: *mut kmipkit_query_buil
 }
 
 /// High-level direct Query helper for one or more KMIP Query Function enumerations.
+///
+/// # Safety
+///
+/// If the count is nonzero and `query_functions` is non-null, it must address
+/// that many initialized, aligned functions for the duration of the call.
+/// A non-null `out_response` must address a writable handle slot.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_query_v1(
+pub unsafe extern "C" fn kmipkit_client_query_v1(
     client: *mut kmipkit_client_t,
     query_functions: *const u32,
     query_function_count: u64,
