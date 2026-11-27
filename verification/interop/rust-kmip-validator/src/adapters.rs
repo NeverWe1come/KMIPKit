@@ -469,6 +469,8 @@ pub(crate) fn request(
         "Query" => {
             let functions = if case.case_id == "test-query-attestation-nonce" {
                 vec![QueryFunction::ATTESTATION_TYPES]
+            } else if case.case_id == "test-query-username-password-credential" {
+                vec![QueryFunction::OPERATIONS]
             } else if let Some(value) = case.requires["query_function"].as_str() {
                 vec![QueryFunction::from_raw(
                     value.parse().map_err(|_| "invalid Query function")?,

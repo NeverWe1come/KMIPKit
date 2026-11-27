@@ -153,6 +153,7 @@ def _operation(case, version):
             "test-op-cancel": CANCEL, "test-op-poll": POLL,
             "test-op-re-key-key-pair": RE_KEY_KEY_PAIR,
             "test-op-locate": 0x08, "test-op-query": 0x18, "test-query-attestation-nonce": 0x18,
+            "test-query-username-password-credential": 0x18,
             "test-op-discover-versions": 0x1E,
             "test-op-rng-retrieve": 0x25, "test-crypto-rng-retrieve-rng-32": 0x25,
             "test-op-rng-seed": 0x26, "test-crypto-rng-seed-rng-32": 0x26,
@@ -184,7 +185,9 @@ def supports(case, connection):
              or case["case_id"] == "test-multipart-hash-sha256")
         and connection["encoding"] == "TTLV"
         and connection["transport"] == "raw_tls"
-        and not connection.get("authentication")
+        and (bool(connection.get("authentication", {}).get("username_password"))
+             if case["case_id"] == "test-query-username-password-credential"
+             else not connection.get("authentication"))
     )
 
 
@@ -268,6 +271,8 @@ def run(driver, case):
         return _run_key_block(driver, case["requires"]["key_block_shape"] == "wrapped")
     if operation in OWNED_KEY_OPERATIONS:
         return _run_owned_key(driver, operation, case)
+    if case["case_id"] == "test-query-username-password-credential":
+        return _checked_exchange(driver, 0x18, use_credential=True)
     if case["case_id"] == "test-query-attestation-nonce":
         return _checked_exchange(
             driver, 0x18, expected=lambda _: True, expect_nonce=True,
@@ -533,12 +538,12 @@ def _multipart_hash(driver):
 
 
 def _checked_exchange(driver, operation, identifier=None, expected=None, attribute_reference=None, custom_payload=None,
-                      *, expect_nonce=False):
+                      *, expect_nonce=False, use_credential=False):
     from kmipkit.errors import KmipKitError
 
     try:
         return _execute(driver, operation, identifier, expected, attribute_reference, custom_payload=custom_payload,
-                        expect_nonce=expect_nonce)
+                        expect_nonce=expect_nonce, use_credential=use_credential)
     except (OSError, ValueError, RuntimeError, KmipKitError):
         return _failure("The generic TLS exchange or response validation failed.")
 
@@ -689,7 +694,7 @@ def _description_matches(payload, expected, attr_tag=DESCRIPTION):
 
 
 def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None,
-             custom_payload=None, locate_attributes=None, *, expect_nonce=False):
+             custom_payload=None, locate_attributes=None, *, expect_nonce=False, use_credential=False):
     from kmipkit import messages, ttlv
 
     connection = driver._connection
@@ -751,6 +756,18 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
     header_fields = [protocol()]
     if expect_nonce:
         header_fields.append(item(0x4200D3, "boolean", True))
+    if use_credential:
+        import os
+
+        names = connection["authentication"]["username_password"]
+        username = os.environ.get(names["username_env"])
+        password = os.environ.get(names["password_env"])
+        if not username or not password:
+            raise ValueError("Configured credential environment variables are unavailable")
+        header_fields.append(node(0x42000C, [node(0x420023, [
+            item(0x420024, "enumeration", 1),
+            node(0x420025, [item(0x420099, "text", username), item(0x4200A1, "text", password)]),
+        ])]))
     header_fields.append(item(0x42000D, "integer", 1))
     with node(0x420078, [
         node(0x420077, header_fields),

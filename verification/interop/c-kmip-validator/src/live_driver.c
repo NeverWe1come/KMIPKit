@@ -1307,10 +1307,10 @@ static bool cleanup_placeholder_chain_object(
     return valid;
 }
 
-static bool create_authentication(kmip_live_client_t *client,
-                                  kmipkit_authentication_t **out_authentication) {
-    const char *username = getenv(client->username_env);
-    const char *password = getenv(client->password_env);
+static bool build_authentication_ttlv(kmip_live_client_t *client, const char *username_name,
+                                      const char *password_name, kmipkit_ttlv_structure_t **out) {
+    const char *username = getenv(username_name);
+    const char *password = getenv(password_name);
     if (!username || username[0] == '\0' || !password) return false;
 
     kmipkit_ttlv_structure_t *credential_value = NULL;
@@ -1333,15 +1333,21 @@ static bool create_authentication(kmip_live_client_t *client,
             append_ttlv_value(client, &authentication, UINT32_C(0x420023), &value);
     }
     if (valid) {
-        status = kmipkit_authentication_from_ttlv(authentication, out_authentication);
+        *out = authentication;
         authentication = NULL;
-        valid = status == 0;
     }
     if (value) kmipkit_ttlv_value_release(value);
     if (credential_value) kmipkit_ttlv_structure_release(credential_value);
     if (credential) kmipkit_ttlv_structure_release(credential);
     if (authentication) kmipkit_ttlv_structure_release(authentication);
     return valid;
+}
+
+static bool create_authentication(kmip_live_client_t *client,
+                                  kmipkit_authentication_t **out_authentication) {
+    kmipkit_ttlv_structure_t *authentication = NULL;
+    return build_authentication_ttlv(client, client->username_env, client->password_env, &authentication) &&
+        kmipkit_authentication_from_ttlv(authentication, out_authentication) == 0;
 }
 
 static bool has_tls_material(const kmip_connection_config_t *configuration) {
@@ -10625,7 +10631,8 @@ static bool append_attestation_capable(kmip_live_client_t *client, kmipkit_ttlv_
 
 static kmip_execution_outcome_t execute_generic_custom_with_pending(
     kmip_live_client_t *client, uint32_t operation, kmipkit_ttlv_structure_t *payload_body,
-    generic_payload_check_fn check_fn, void *ctx, generic_correlation_t *pending, bool expect_nonce) {
+    generic_payload_check_fn check_fn, void *ctx, generic_correlation_t *pending, bool expect_nonce,
+    kmipkit_ttlv_structure_t *authentication) {
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_ttlv_structure_t *ver = make_ttlv_struct();
     kmipkit_ttlv_structure_t *hdr = make_ttlv_struct();
@@ -10637,11 +10644,13 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
         move_ttlv_struct(client, &hdr, 0x420069, &ver) &&
         (!pending || operation != 1 || append_ttlv_enum(client, &hdr, 0x420007, 1)) &&
         (!expect_nonce || append_attestation_capable(client, &hdr)) &&
+        (!authentication || move_ttlv_struct(client, &hdr, 0x42000C, &authentication)) &&
         append_ttlv_int(client, &hdr, 0x42000d, 1) &&
         append_ttlv_enum(client, &batch, 0x42005c, operation) &&
         move_ttlv_struct(client, &batch, 0x420079, &payload_body) &&
         move_ttlv_struct(client, &msg, 0x420077, &hdr) &&
         move_ttlv_struct(client, &msg, 0x42000f, &batch);
+    if (authentication) kmipkit_ttlv_structure_release(authentication);
     if (ver) kmipkit_ttlv_structure_release(ver);
     if (hdr) kmipkit_ttlv_structure_release(hdr);
     if (batch) kmipkit_ttlv_structure_release(batch);
@@ -10739,7 +10748,7 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
 static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *client, uint32_t operation,
                                                        kmipkit_ttlv_structure_t *payload_body,
                                                        generic_payload_check_fn check_fn, void *ctx) {
-    return execute_generic_custom_with_pending(client, operation, payload_body, check_fn, ctx, NULL, false);
+    return execute_generic_custom_with_pending(client, operation, payload_body, check_fn, ctx, NULL, false, NULL);
 }
 
 typedef struct {
@@ -11322,7 +11331,7 @@ static kmip_execution_outcome_t execute_generic_async_target(
     }
     return execute_generic_custom_with_pending(
         client, operation, body, operation == 0x19 ? check_generic_async_cancel : check_generic_async_create,
-        operation == 0x19 ? (void *)current : (void *)owned, operation == 0x1a ? next : NULL, false);
+        operation == 0x19 ? (void *)current : (void *)owned, operation == 0x1a ? next : NULL, false, NULL);
 }
 
 static kmip_execution_outcome_t execute_generic_async(
@@ -11353,7 +11362,7 @@ static kmip_execution_outcome_t execute_generic_async(
     generic_correlation_t current = {0}, next = {0};
     generic_ext_ctx_t owned = {0};
     const kmip_execution_outcome_t setup = execute_generic_custom_with_pending(
-        client, 1, body, check_generic_async_create, &owned, &current, false);
+        client, 1, body, check_generic_async_create, &owned, &current, false, NULL);
     kmip_execution_outcome_t result = outcome_not_run("The prerequisite Create returned no Pending correlation.");
     if (setup.library_validated && current.size != 0) {
         for (unsigned poll = 0; poll < 16; ++poll) {
@@ -11388,6 +11397,24 @@ static bool check_generic_query_field(kmipkit_ttlv_structure_view_t *payload, vo
     return valid;
 }
 
+static bool check_generic_credential_query(kmipkit_ttlv_structure_view_t *payload, void *context) {
+    (void)context;
+    uint32_t operation = 0;
+    return generic_enum_field(payload, 0x42005C, &operation) && operation != 0;
+}
+
+static kmip_execution_outcome_t execute_generic_credential_query(kmip_live_client_t *client) {
+    kmipkit_ttlv_structure_t *payload = make_ttlv_struct(), *authentication = NULL;
+    const kmip_connection_config_t *connection = client->configuration;
+    if (!payload || !append_ttlv_enum(client, &payload, 0x420074, 1) ||
+        !build_authentication_ttlv(client, connection->username_env, connection->password_env, &authentication)) {
+        if (payload) kmipkit_ttlv_structure_release(payload);
+        return generic_cleanup_failure("Could not build Query Operations with the configured Credential.");
+    }
+    return execute_generic_custom_with_pending(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, payload,
+                                                check_generic_credential_query, NULL, NULL, false, authentication);
+}
+
 static kmip_execution_outcome_t execute_generic_nonce_query(kmip_live_client_t *client) {
     kmipkit_ttlv_structure_t *payload = make_ttlv_struct();
     if (!payload || !append_ttlv_enum(client, &payload, 0x420074, 7)) {
@@ -11395,7 +11422,7 @@ static kmip_execution_outcome_t execute_generic_nonce_query(kmip_live_client_t *
         return generic_cleanup_failure("Could not build Query Attestation Types.");
     }
     return execute_generic_custom_with_pending(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, payload,
-                                                NULL, NULL, NULL, true);
+                                                NULL, NULL, NULL, true, NULL);
 }
 
 static kmip_execution_outcome_t execute_generic_query_field(
@@ -12033,13 +12060,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("server-initiated exchange requires a supported API, --listen and a peer trigger");
     }
     const bool nonce_query = strcmp(test_case->case_id, "test-query-attestation-nonce") == 0;
+    const bool credential_query = strcmp(test_case->case_id, "test-query-username-password-credential") == 0;
+    if (credential_query && (!client->configuration ||
+        !client->configuration->username_env[0] || !client->configuration->password_env[0]))
+        return outcome_not_run("the Credential recipe requires configured Username/Password environment names");
     if (strcmp(client->api_level, "high-level") == 0) {
         const bool discover = strcmp(test_case->case_id, "test-op-discover-versions") == 0;
         const bool query = strcmp(test_case->operation, "Query") == 0 &&
-            (nonce_query || test_case->query_function[0] || strcmp(test_case->case_id, "test-op-query") == 0);
+            (nonce_query || credential_query || test_case->query_function[0] || strcmp(test_case->case_id, "test-op-query") == 0);
         if (!discover && !query)
             return outcome_not_run("the C validator has no high-level recipe for this case");
-        if (client->username_env[0] != 0)
+        if (credential_query || client->username_env[0] != 0)
             return outcome_not_run("the high-level method cannot set a KMIP batch credential");
         const uint32_t operation = discover ? KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS
             : KMIPKIT_ENUMERATION_OPERATION_QUERY;
@@ -12102,6 +12133,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_HASH, fluent_route, NULL, NULL);
         if (draft_locate || rotate)
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route, rotate, NULL);
+        if (credential_query)
+            return execute_single_versioned_diagnostic(
+                client, KMIPKIT_ENUMERATION_OPERATION_QUERY, fluent_route, NULL, NULL);
         if (strcmp(test_case->operation, "Query") == 0 && (nonce_query || test_case->query_function[0]))
             return execute_single_versioned_diagnostic(
                 client, KMIPKIT_ENUMERATION_OPERATION_QUERY, fluent_route, NULL, test_case);
@@ -12175,7 +12209,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             rng = KMIPKIT_ENUMERATION_OPERATION_RNG_SEED;
         if (connection && client->protocol_major == 2 && client->wire_encoding == KMIPKIT_WIRE_ENCODING_TTLV &&
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
-            !connection->username_env[0] && !connection->password_env[0] &&
+            (credential_query || (!connection->username_env[0] && !connection->password_env[0])) &&
             strcmp(test_case->mode, "server_exchange") == 0 &&
             (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash || get_key_block || key_material_format) && client->allow_mutations))) {
             if (key_material_format && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
@@ -12195,6 +12229,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
             if (nonce_query)
                 return execute_generic_nonce_query(client);
+            if (credential_query)
+                return execute_generic_credential_query(client);
             if (strcmp(test_case->operation, "Query") == 0 && test_case->query_function[0])
                 return execute_generic_query_field(client, test_case);
             if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)

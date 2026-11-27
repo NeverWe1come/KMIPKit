@@ -195,6 +195,10 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    static boolean queryCredentialCase(CatalogLoader.CatalogCase testCase) {
+        return "test-query-username-password-credential".equals(testCase.caseId());
+    }
+
     static boolean queryNonceCase(CatalogLoader.CatalogCase testCase) {
         return "test-query-attestation-nonce".equals(testCase.caseId());
     }
@@ -204,7 +208,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
-        if (queryFieldCase(testCase) || queryNonceCase(testCase)) return true;
+        if (queryFieldCase(testCase) || queryNonceCase(testCase) || queryCredentialCase(testCase)) return true;
         return rotateLocateCase(testCase) || Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
                 .contains(testCase.caseId());
     }

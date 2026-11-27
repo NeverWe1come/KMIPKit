@@ -252,6 +252,7 @@ public final class Main {
 
     private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         String apiLevel = connection.apiLevel();
+        if (JavaKmipDriver.queryCredentialCase(testCase) && connection.usernamePassword() == null) return false;
         if ("generic-ttlv".equals(apiLevel)) {
             return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
         }

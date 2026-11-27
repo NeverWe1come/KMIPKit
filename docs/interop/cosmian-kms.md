@@ -204,6 +204,14 @@ Fluent and high-level routes in all four languages. The controlled TLS
 peer tests a valid Nonce, an omitted Nonce and an invalid Nonce Value type
 through the same routes.
 
+Query Operations with a synthetic Username and Password Credential in
+Request Header Authentication returned Success in all 24 exchanges across
+KMIP 2.0 and 2.1, four languages and generic TTLV, typed and Fluent routes.
+The deployment uses mTLS for client authentication. The controlled peer
+checks the exact credential fields on the wire and verifies handling of
+an Operation Not Supported result. The high-level Query methods still
+need a way to attach Request Header Authentication for this case.
+
 In both protocol versions, a Get with Key Format Type
 `TransparentSymmetricKey` returned 32 bytes inside a structured Key Value.
 A separate Get using Key Wrapping Specification without Key Format Type

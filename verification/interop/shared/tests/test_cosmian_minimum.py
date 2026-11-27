@@ -98,6 +98,13 @@ class CosmianMinimumTests(unittest.TestCase):
                     route["case_ids"] for route in row["obligations"]
                     if route["language"] == "rust" and route["api_level"] == "high-level"
                 ))
+            credential_id = "test-query-username-password-credential"
+            credential = reports[version]["base_object", "Credential"]
+            self.assertIn(credential_id, credential["server_cases"])
+            self.assertNotIn(credential_id, reports[version]["operation", "Query"]["server_cases"])
+            self.assertEqual({"verify_unsupported_response"}, {route["expectation"] for route in credential["obligations"]})
+            self.assertIn("request_contains_the_configured_username_and_password_credential",
+                          case_maps[version][credential_id]["execution"]["assertions"])
             for name in ("Lease Time", "Last Change Date"):
                 self.assertIn("test-op-obtain-lease", reports[version]["attribute", name]["server_cases"])
         self.assertTrue(reports["2.1"]["operation", "Notify"]["server_cases"])

@@ -2342,7 +2342,14 @@ class PythonKmipDriver:
             parameters = test_case.get("requires", {})
             query_field = int(parameters["query_result_tag"]) if "query_result_tag" in parameters else None
             expect_nonce = case_id == "test-query-attestation-nonce"
-            functions = [int(parameters["query_function"])] if "query_function" in parameters else [7] if expect_nonce else [1, 2]
+            if "query_function" in parameters:
+                functions = [int(parameters["query_function"])]
+            elif expect_nonce:
+                functions = [7]
+            elif case_id == "test-query-username-password-credential":
+                functions = [1]
+            else:
+                functions = [1, 2]
             if self._api_level == "high-level":
                 outcome = self._exchange(
                     None, verify_query=True, query_field=query_field, expect_nonce=expect_nonce,

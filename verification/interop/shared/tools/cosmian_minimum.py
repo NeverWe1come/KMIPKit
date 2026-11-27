@@ -21,7 +21,7 @@ from verification.interop.shared.tools.matrix.generator import LANGUAGES
 from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
 from verification.interop.shared.tools.table_authenticated_encryption import AAD_CASES, authenticated_encryption_cases
 from verification.interop.shared.tools.table_key_block_exchanges import TRANSPARENT_KEY, WRAPPED_KEY, key_block_cases
-from verification.interop.shared.tools.table_query_fields import nonce_case, query_cases
+from verification.interop.shared.tools.table_query_fields import credential_case, nonce_case, query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
 ALLOWED_VERSIONS = ("2.0", "2.1")
@@ -131,6 +131,8 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
     candidates.update({case["case_id"]: case for case in query_cases(version, candidates["test-op-query"])})
     nonce = nonce_case(version, candidates["test-op-query"])
     candidates[nonce["case_id"]] = nonce
+    credential = credential_case(version, candidates["test-op-query"])
+    candidates[credential["case_id"]] = credential
     contextual_operations = [
         *authenticated_encryption_cases(version, candidates),
         *key_block_cases(version, candidates["test-op-get"]),

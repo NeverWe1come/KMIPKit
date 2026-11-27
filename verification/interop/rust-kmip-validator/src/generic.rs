@@ -108,7 +108,15 @@ fn is_extended_mutating_op(operation: u32) -> bool {
 pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
     connection.transport == "raw_tls"
         && connection.encoding == "TTLV"
-        && connection.authentication.is_none()
+        && if case.case_id == "test-query-username-password-credential" {
+            connection
+                .authentication
+                .as_ref()
+                .and_then(|a| a.username_password.as_ref())
+                .is_some()
+        } else {
+            connection.authentication.is_none()
+        }
         && operation(case, connection).is_some_and(|operation| {
             if uses_owned_key(operation) || is_extended_mutating_op(operation) {
                 case.execution.mutation == "mutating"
@@ -122,7 +130,10 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
 
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
-        ("test-query-attestation-nonce", "2.0" | "2.1") => Some(0x18),
+        (
+            "test-query-attestation-nonce" | "test-query-username-password-credential",
+            "2.0" | "2.1",
+        ) => Some(0x18),
         (_, "2.0" | "2.1")
             if case.operation == "Query" && case.requires["query_function"].is_string() =>
         {
@@ -238,6 +249,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
         }
         Some(0x08) if case.requires["rotate_attribute_ttlv"].is_string() => {
             locate_rotate_attribute(case, connection, version)
+        }
+        Some(0x18) if case.case_id == "test-query-username-password-credential" => {
+            outcome(case, query_credential(connection, version))
         }
         Some(0x18) if case.case_id == "test-query-attestation-nonce" => {
             query_attestation_nonce(case, connection, version)
@@ -1055,6 +1069,38 @@ fn exchange_payload(
     )
 }
 
+fn query_credential(connection: &Connection, version: ProtocolVersion) -> ExchangeResult {
+    let names = connection
+        .authentication
+        .as_ref()
+        .and_then(|a| a.username_password.as_ref())
+        .ok_or("Credential fixture requires configured environment names")?;
+    let read = |name: &str| {
+        std::env::var(name)
+            .map(kmipkit::protocol::SecretText::new)
+            .map_err(|_| "credential environment unavailable")
+    };
+    let value = node(
+        0x0042_0025,
+        vec![
+            item(0x0042_0099, read(&names.username_env)?.into_ttlv_value())?,
+            item(0x0042_00a1, read(&names.password_env)?.into_ttlv_value())?,
+        ],
+    )?;
+    let credential = node(
+        0x0042_0023,
+        vec![item(0x0042_0024, Value::enumeration(1))?, value],
+    )?;
+    exchange_with_header(
+        connection,
+        version,
+        0x18,
+        vec![item(0x0042_0074, Value::enumeration(1))?],
+        Some(node(0x0042_000c, vec![credential])?),
+        |batch, _| check_probe(batch, 0x18, version),
+    )
+}
+
 fn query_attestation_nonce(
     case: &Case,
     connection: &Connection,
@@ -1122,7 +1168,7 @@ fn exchange_with_header(
     let mut transport = RawTlsTransport::new(transport_config(connection)?)
         .map_err(|_| "generic TLS configuration rejected")?;
     let limits = codec::CodecLimits::defaults();
-    let mut wire = Vec::new();
+    let mut wire = zeroize::Zeroizing::new(Vec::new());
     encode(&request, &mut wire)?;
     let response = transport
         .exchange_with_options(

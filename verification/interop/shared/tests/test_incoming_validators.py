@@ -20,7 +20,7 @@ from verification.interop.shared.tools.operation_catalog import build_catalog, d
 from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
 from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
 from verification.interop.shared.tools.table_key_block_exchanges import key_block_cases
-from verification.interop.shared.tools.table_query_fields import nonce_case, query_cases
+from verification.interop.shared.tools.table_query_fields import credential_case, nonce_case, query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -503,14 +503,27 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 self.skipTest(f"Installed {language} validator required")
                             self.header_fixture_exchange(language, minor, route, variant == "valid", nonce=variant)
 
-    def header_fixture_exchange(self, language, minor, route, valid, *, nonce=None):
+    def test_query_credential_is_sent_and_rejection_is_preserved(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                for route in ("generic-ttlv", "typed-protocol", "fluent"):
+                    for supported in (True, False):
+                        with self.subTest(language=language, minor=minor, route=route, supported=supported):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.header_fixture_exchange(language, minor, route, True,
+                                                         credential="accepted" if supported else "unsupported")
+
+    def header_fixture_exchange(self, language, minor, route, valid, *, nonce=None, credential=None):
         with tempfile.TemporaryDirectory(prefix="kmipkit-typed-header-") as dirname:
             work = Path(dirname)
             catalog = version_catalog(f"2.{minor}")
-            source_id = "test-op-query" if nonce else "test-op-discover-versions"
+            source_id = "test-op-query" if (nonce or credential) else "test-op-discover-versions"
             case = next(case for case in catalog["test_cases"] if case["case_id"] == source_id)
             if nonce:
                 case = nonce_case(f"2.{minor}", case)
+            if credential:
+                case = credential_case(f"2.{minor}", case)
             catalog_path = work / "catalog.json"
             catalog_path.write_text(json.dumps(with_cases(catalog, [case])))
             profile = work / "profile.json"
@@ -528,6 +541,13 @@ class DirectTagValidatorTests(unittest.TestCase):
                 connection = work / "connection.json"
                 config = connection_config(minor, listener.getsockname()[1], incoming=False)
                 config["api_level"] = route
+                if credential:
+                    config["authentication"] = {"username_password": {
+                        "username_env": "KMIPKIT_INTEROP_TEST_USERNAME",
+                        "password_env": "KMIPKIT_INTEROP_TEST_PASSWORD",
+                    }}
+                    env["KMIPKIT_INTEROP_TEST_USERNAME"] = "public-fixture-user"
+                    env["KMIPKIT_INTEROP_TEST_PASSWORD"] = "public-fixture-input"
                 connection.write_text(json.dumps(config))
                 command += ["--catalog", str(catalog_path), "--connection", str(connection)]
                 with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
@@ -539,7 +559,7 @@ class DirectTagValidatorTests(unittest.TestCase):
                             header = only(request, 0x420077, 1)
                             self.assertEqual(only(header, 0x420069, 1), parse_items(version(minor))[0][2])
                             batch = only(request, 0x42000F, 1)
-                            operation = 0x18 if nonce else 0x1E
+                            operation = 0x18 if (nonce or credential) else 0x1E
                             self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", operation))
                             extra_header = []
                             if nonce:
@@ -552,16 +572,28 @@ class DirectTagValidatorTests(unittest.TestCase):
                                         wire_item(0x4200CA, 8 if valid else 7, b"nonce-value"),
                                     ))
                                 payload = number(0x4200C7, 5, 1)
+                            elif credential:
+                                authentication = only(header, 0x42000C, 1)
+                                body = only(authentication, 0x420023, 1)
+                                self.assertTrue(only(body, 0x420024, 5) == struct.pack(">I", 1))
+                                values = only(body, 0x420025, 1)
+                                self.assertTrue(only(values, 0x420099, 7) == b"public-fixture-user")
+                                self.assertTrue(only(values, 0x4200A1, 7) == b"public-fixture-input")
+                                self.assertEqual(only(batch, 0x420079, 1), parse_items(number(0x420074, 5, 1)))
+                                payload = number(0x42005C, 5, 0x18)
                             else:
                                 self.assertEqual(only(batch, 0x420079, 1), parse_items(version(minor)))
                                 payload = version(minor if valid else 1 - minor)
                             batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                            result = ([number(0x42007F, 5, 1), number(0x42007E, 5, 5)]
+                                      if credential == "unsupported"
+                                      else [number(0x42007F, 5, 0), structure(0x42007C, payload)])
                             peer.sendall(structure(
                                 0x42007B,
                                 structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
                                           *extra_header, number(0x42000D, 2, 1)),
                                 structure(0x42000F, number(0x42005C, 5, operation), *batch_ids,
-                                          number(0x42007F, 5, 0), structure(0x42007C, payload)),
+                                          *result),
                             ))
                         _, stderr = process.communicate(timeout=15)
                         self.assertEqual(process.returncode == 0, valid, stderr.decode(errors="replace"))
@@ -570,13 +602,21 @@ class DirectTagValidatorTests(unittest.TestCase):
                             process.terminate()
                             process.communicate(timeout=5)
             observed, = json.loads(report.read_text())["cases"]
+            if credential == "unsupported":
+                self.assertEqual(observed["status"], "server_unsupported")
+                self.assertEqual((observed["result_status_code"], observed["result_reason_code"]), (1, 5))
+                self.assertNotIn("public-fixture-input", report.read_text())
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-credential-unsupported")
+                return
+            if credential:
+                self.assertNotIn("public-fixture-input", report.read_text())
             self.assertEqual(observed["status"], "passed" if valid else "failed")
             if valid or nonce == "absent":
                 self.assertEqual(observed["result_status_code"], 0)
                 if route == "high-level":
                     self.assertEqual(observed["actual_api_level"], route)
             if valid:
-                fixture = "attestation-nonce" if nonce else "discover-versions"
+                fixture = "attestation-nonce" if nonce else "credential" if credential else "discover-versions"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{fixture}")
 
     def test_authenticated_encryption_round_trip_and_invalid_tag(self):

@@ -44,6 +44,20 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             "mutations require explicit opt-in".to_owned(),
         ));
     }
+    if case.case_id == "test-query-username-password-credential"
+        && (connection.api_level == "high-level"
+            || connection
+                .authentication
+                .as_ref()
+                .and_then(|a| a.username_password.as_ref())
+                .is_none())
+    {
+        return Some(CaseResult::non_run(
+            case,
+            "not_run",
+            "the recipe requires a route with configured Request Header Authentication".to_owned(),
+        ));
+    }
     if case.requires["workflow_type"] == "server_to_client" {
         return (!crate::incoming::route_available(connection)).then(|| {
             CaseResult::non_run(

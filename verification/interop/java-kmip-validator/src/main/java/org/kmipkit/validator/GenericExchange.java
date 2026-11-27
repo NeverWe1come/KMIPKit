@@ -105,7 +105,8 @@ final class GenericExchange {
                         : ("read_only".equals(testCase.execution().mutation()) || operation == RNG_RETRIEVE || operation == RNG_SEED
                             || JavaKmipDriver.multipartHash(testCase)))
                 && "raw_tls".equals(connection.transport()) && "TTLV".equals(connection.encoding())
-                && connection.usernamePassword() == null;
+                && (JavaKmipDriver.queryCredentialCase(testCase)
+                        ? connection.usernamePassword() != null : connection.usernamePassword() == null);
     }
 
     private static int operation(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
@@ -142,7 +143,7 @@ final class GenericExchange {
             case "test-op-poll" -> POLL;
             case "test-op-re-key-key-pair" -> RE_KEY_KEY_PAIR;
             case "test-op-locate" -> LOCATE;
-            case "test-op-query", "test-query-attestation-nonce" -> QUERY;
+            case "test-op-query", "test-query-attestation-nonce", "test-query-username-password-credential" -> QUERY;
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
             case "test-op-rng-retrieve", "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
             case "test-op-rng-seed", "test-crypto-rng-seed-rng-32" -> RNG_SEED;
@@ -170,6 +171,15 @@ final class GenericExchange {
         if (JavaKmipDriver.multipartHash(testCase)) return multipartHash(connection, minor, start);
         if (JavaKmipDriver.rotateLocateCase(testCase)) return locateRotateAttribute(testCase, connection, minor, start);
         int operation = operation(testCase, connection);
+        if (JavaKmipDriver.queryCredentialCase(testCase)) {
+            try (var authentication = credentialHeader(connection.usernamePassword());
+                    var payload = structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(1)))) {
+                return executePayload(connection, QUERY, minor, payload, p -> matches(p, QUERY, minor),
+                        start, null, false, authentication);
+            } catch (IllegalArgumentException error) {
+                return JavaKmipDriver.CaseOutcome.failed("Could not construct the configured Credential.", elapsed(start));
+            }
+        }
         if ("test-query-attestation-nonce".equals(testCase.caseId())) {
             try (var payload = structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(7)))) {
                 return executePayload(connection, QUERY, minor, payload, response -> true, start, null, true);
@@ -1292,16 +1302,37 @@ final class GenericExchange {
         return executePayload(connection, operation, minor, customPayload, expected, start, pending, false);
     }
 
+    private static TtlvItem credentialHeader(ConnectionConfig.UsernamePassword names) {
+        String username = System.getenv(names.usernameEnvironmentName());
+        String password = System.getenv(names.passwordEnvironmentName());
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            throw new IllegalArgumentException("Configured credential environment variables are unavailable");
+        }
+        try (var user = org.kmipkit.credentials.SecretText.fromString(username);
+                var pass = org.kmipkit.credentials.SecretText.fromString(password)) {
+            return structureItem(0x42000C, structureItem(0x420023,
+                    item(0x420024, TtlvValue.Enumeration(1)),
+                    structureItem(0x420025, item(0x420099, user.intoTtlvValue()),
+                            item(0x4200A1, pass.intoTtlvValue()))));
+        }
+    }
+
     private static JavaKmipDriver.CaseOutcome executePayload(ConnectionConfig connection, int operation, int minor,
             TtlvItem customPayload, Predicate<TtlvStructureView> expected, long start,
             AtomicReference<byte[]> pending, boolean expectNonce) {
+        return executePayload(connection, operation, minor, customPayload, expected, start, pending, expectNonce, null);
+    }
+
+    private static JavaKmipDriver.CaseOutcome executePayload(ConnectionConfig connection, int operation, int minor,
+            TtlvItem customPayload, Predicate<TtlvStructureView> expected, long start,
+            AtomicReference<byte[]> pending, boolean expectNonce, TtlvItem authentication) {
         try (var version = version(minor);
                 var count = item(0x42000d, TtlvValue.Integer(1));
-                var header = expectNonce
-                        ? structureItem(0x420077, version, item(0x4200D3, TtlvValue.Boolean(true)), count)
-                        : pending != null && operation == CREATE
-                                ? structureItem(0x420077, version, item(0x420007, TtlvValue.Enumeration(1)), count)
-                                : structureItem(0x420077, version, count);
+                var headerOption = authentication != null ? authentication : expectNonce
+                        ? item(0x4200D3, TtlvValue.Boolean(true))
+                        : pending != null && operation == CREATE ? item(0x420007, TtlvValue.Enumeration(1)) : null;
+                var header = headerOption == null ? structureItem(0x420077, version, count)
+                        : structureItem(0x420077, version, headerOption, count);
                 var identifier = item(0x42005c, TtlvValue.Enumeration(operation));
                 var batch = structureItem(0x42000f, identifier, customPayload);
                 var req = structureItem(0x420078, header, batch);
