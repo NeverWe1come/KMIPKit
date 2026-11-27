@@ -227,7 +227,7 @@ def write_jsonl(path, records):
             output.write(canonical(record) + "\n")
 
 
-def write_report(destination, result, catalog_runs=()):
+def write_report(destination, result, catalog_runs=(), table_summaries=()):
     rows = result["rows"]
     overview = {key: value for key, value in result.items() if key != "rows"}
     if catalog_runs:
@@ -252,6 +252,15 @@ def write_report(destination, result, catalog_runs=()):
     for language, counts in overview.get("oasis_ttlv_construction", {}).get("message_checks", {}).items():
         lines.append(f"- {language} constructed OASIS TTLV messages: "
                      + ", ".join(f"{count} {status}" for status, count in counts.items()))
+    if table_summaries:
+        overview["cosmian_table"] = table_summaries
+        lines.extend(("", "## Cosmian support table", "",
+                      "| KMIP | Rows | Cell status | Count |",
+                      "| --- | ---: | --- | ---: |"))
+        for table in table_summaries:
+            version = table["protocol_version"]
+            for state, count in table["completion"]["cells_by_status"].items():
+                lines.append(f"| [{version}](cosmian-{version}.json) | {table['rows']} | {state.replace('_', ' ')} | {count} |")
     if catalog_runs:
         lines.extend(("", "## Installed-validator execution catalog", "",
                       "| Language | KMIP | Scope | Encoding | Transport | API | Passed | Failed | Unsupported | Policy restricted | Not run |",
@@ -459,7 +468,7 @@ def main():
             (args.output_dir / "cosmian-table-summary.json").write_text(
                 json.dumps(table_summaries, indent=2) + "\n", encoding="utf-8",
             )
-        write_report(args.output_dir, result, catalog_runs)
+        write_report(args.output_dir, result, catalog_runs, table_summaries)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"Campaign failed: {exc}\n")
     console_summary = {k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}

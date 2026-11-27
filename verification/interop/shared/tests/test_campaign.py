@@ -105,10 +105,16 @@ class CampaignTests(unittest.TestCase):
         result = campaign.report(matrix, digest, [], ("rust",))
         with tempfile.TemporaryDirectory() as tmpdir:
             output = Path(tmpdir)
-            campaign.write_report(output, result)
+            tables = [{"protocol_version": "2.1", "rows": 159,
+                       "completion": {"cells_by_status": {"provider_behavior_differs": 1}}}]
+            campaign.write_report(output, result, table_summaries=tables)
             page = (output / "index.html").read_text(encoding="utf-8")
             self.assertIn("\\u003c/script>", page)
-            self.assertIn("1", (output / "summary.md").read_text(encoding="utf-8"))
+            self.assertIn('"cosmian_table":', page)
+            self.assertIn("| [2.1](cosmian-2.1.json) | 159 | provider behavior differs | 1 |",
+                          (output / "summary.md").read_text(encoding="utf-8"))
+            overview = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(overview["cosmian_table"], tables)
             self.assertEqual(json.loads((output / "checks.jsonl").read_text(encoding="utf-8"))["case_id"], "</script>")
 
     def test_live_schema_requires_server_identity(self):
