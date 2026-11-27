@@ -103,6 +103,15 @@ fn result_from_observation(
         result.server_compatibility = "unknown";
         "Query did not return a usable Nonce".clone_into(&mut result.diagnostic);
     }
+    if case.requires["base_object"] == "Attribute"
+        && observed.status == 0
+        && !observed.fixture_attribute_returned
+    {
+        result.status = "failed";
+        result.server_compatibility = "unknown";
+        "Get Attributes did not return the registered vendor value"
+            .clone_into(&mut result.diagnostic);
+    }
     if connection.api_level == "generic-ttlv" {
         "generic TTLV asynchronous target request and response validated"
             .clone_into(&mut result.diagnostic);

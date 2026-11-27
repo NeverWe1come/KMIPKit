@@ -99,7 +99,7 @@ pub(crate) fn register(name: &str, version: &str) -> Result<kmipkit::ClientReque
     ))
 }
 
-pub(crate) fn transparent_registration(case: &Case) -> Result<(ObjectType, Item, Item)> {
+pub(crate) fn registration_fields(case: &Case) -> Result<(ObjectType, Item, Item)> {
     let decode = |field: &str| {
         let input = case.requires[field]
             .as_str()
@@ -108,6 +108,7 @@ pub(crate) fn transparent_registration(case: &Case) -> Result<(ObjectType, Item,
         codec::decode(&wire).map_err(|_| "invalid transparent Register fixture TTLV")
     };
     let (kind, object_tag) = match case.requires["register_object_type"].as_str() {
+        Some("2") => (2, 0x0042_008f),
         Some("3") => (3, 0x0042_006d),
         Some("4") => (4, 0x0042_0064),
         _ => return Err("invalid transparent Register fixture object type"),
@@ -120,8 +121,8 @@ pub(crate) fn transparent_registration(case: &Case) -> Result<(ObjectType, Item,
     Ok((ObjectType::from_raw(kind), object, attributes))
 }
 
-pub(crate) fn register_transparent(case: &Case) -> Result<kmipkit::ClientRequest> {
-    let (kind, object, attrs) = transparent_registration(case)?;
+pub(crate) fn register_with_fixture(case: &Case) -> Result<kmipkit::ClientRequest> {
+    let (kind, object, attrs) = registration_fields(case)?;
     let fields = attrs.with_value(|value| {
         let ValueView::Structure(structure) = value else {
             return Err("Register fixture Attributes must be a structure");
@@ -137,6 +138,26 @@ pub(crate) fn register_transparent(case: &Case) -> Result<kmipkit::ClientRequest
     Ok(kmipkit::ClientRequest::Register(RegisterRequest::new(
         kind, attrs, object,
     )))
+}
+
+pub(crate) fn matches_attribute_fixture(field: &Item) -> bool {
+    let expected = [
+        (0x0042_009d, "org.kmipkit.fixture"),
+        (0x0042_000a, "Fixture Attribute"),
+        (0x0042_000b, "vendor value"),
+    ];
+    field.tag().raw() == 0x0042_0008
+        && field.as_structure().is_some_and(|attr| {
+            attr.children().len() == expected.len()
+                && expected.iter().all(|(tag, text)| {
+                    attr.children().iter().any(|field| {
+                        field.tag().raw() == *tag
+                            && field.with_value(|value| {
+                                matches!(value, ValueView::TextString(actual) if actual == *text)
+                            })
+                    })
+                })
+        })
 }
 
 pub(crate) fn certificate_structure() -> Result<kmipkit::ttlv::Structure> {

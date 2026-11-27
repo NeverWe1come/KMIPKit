@@ -319,6 +319,37 @@ impl Attempt<'_> {
         {
             self.own(&response);
         }
+        if case.requires["base_object"] == "Attribute" && response.status == 0 {
+            let identifier = response
+                .identifier
+                .as_ref()
+                .and_then(|id| id.as_str())
+                .ok_or(Failure::Assertion(
+                    "Register omitted the fixture identifier",
+                ))?;
+            let request = ClientRequest::GetAttributes(
+                kmipkit::protocol::GetAttributesRequest::try_new(
+                    Some(identifier.to_owned()),
+                    vec![kmipkit::protocol::AttributeReference::name(
+                        case.requires["attribute_vendor_identification"]
+                            .as_str()
+                            .ok_or("fixture vendor missing")?,
+                        case.requires["attribute_reference_name"]
+                            .as_str()
+                            .ok_or("fixture attribute name missing")?,
+                    )],
+                )
+                .map_err(|_| Failure::Assertion("invalid Get Attributes readback request"))?,
+            );
+            let request = if self.connection.api_level == "fluent" {
+                crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+            } else {
+                request
+            };
+            let mut readback = self.exchange(request)?;
+            readback.fixture_attribute_returned &= readback.identifier == response.identifier;
+            return Ok(readback);
+        }
         Ok(response)
     }
     fn asynchronous(&mut self, operation: &str) -> std::result::Result<Observed, Failure> {

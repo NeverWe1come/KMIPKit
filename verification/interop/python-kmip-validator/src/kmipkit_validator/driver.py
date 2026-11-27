@@ -329,13 +329,15 @@ class PythonKmipDriver:
 
     def _attribute_references(self, case: dict[str, Any]) -> list[Any]:
         reference = self._extensions.AttributeReference
-        name = case.get("requires", {}).get("attribute")
+        requires = case.get("requires", {})
+        name = requires.get("attribute")
         if not name:
             return [reference.tag(0x0042_0053)]
         if name == "Certificate Attributes":
             return [reference.tag(0x0042_001D), reference.tag(0x0042_00AD)]
         if name == "Vendor Attribute":
-            return [reference.name("KMIPKit.Interop", "probe")]
+            return [reference.name(requires.get("attribute_vendor_identification", "KMIPKit.Interop"),
+                                   requires.get("attribute_reference_name", "probe"))]
         tag = self._attribute_tag(name)
         if tag is None:
             raise LocalRecipeUnavailable("standard Attribute Reference tag is unavailable")
@@ -1789,6 +1791,7 @@ class PythonKmipDriver:
         query_field: int | None = None, discover_version: Any | None = None,
         high_level_exchange: Callable[[Any], Any] | None = None, expect_nonce: bool = False,
         key_block: tuple[Any, Any | None, int] | None = None,
+        register_readback: tuple[Any, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
@@ -1905,6 +1908,22 @@ class PythonKmipDriver:
                                                 status="failed", server_compatibility="unknown",
                                                 diagnostic="Query did not return the requested nonempty structure",
                                             )
+                if register_readback is not None and success:
+                    from .generic import matches_registered_attribute
+
+                    identifier, requires = register_readback
+                    payload = observed.get_attributes_response
+                    verified = False
+                    if payload is not None:
+                        try:
+                            if payload.attributes is not None and payload.unique_identifier == identifier.text:
+                                with ttlv.ttlv_structure_view(payload.attributes) as view:
+                                    verified = matches_registered_attribute(view, requires)
+                        finally:
+                            payload.close()
+                    if not verified:
+                        result.update(status="failed", server_compatibility="unknown",
+                                      diagnostic="Get Attributes did not return the registered vendor value")
                 if expect_nonce and success:
                     from .generic import nonce_in_header
 
@@ -2605,6 +2624,15 @@ class PythonKmipDriver:
                     result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
                                   diagnostic="Encrypt omitted the AES-GCM ciphertext or authentication tag")
             outcome = result
+            if operation == "Register" and "register_attribute_value" in test_case.get("requires", {}) and result["status"] == "passed":
+                owned = result.get("_identifiers", [])
+                if len(owned) != 1:
+                    result.update(status="failed", diagnostic="Register omitted the fixture identifier")
+                else:
+                    read_case = test_case | {"operation": "Get Attributes"}
+                    build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+                    with build(read_case, owned[0], name=unique_name) as readback:
+                        outcome = self._exchange(readback, register_readback=(owned[0], test_case["requires"]))
             if operation in {"Destroy", "Obliterate"} and result["status"] == "passed" and target_identifier in identifiers:
                 identifiers.remove(target_identifier)
         finally:

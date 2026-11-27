@@ -40,8 +40,9 @@ typedef struct {
     char certificate_object_path[KMIP_MAX_NAME_LEN];
     char register_object_path[KMIP_MAX_NAME_LEN];
     char register_object_ttlv[1537];
-    char register_attributes_ttlv[257];
+    char register_attributes_ttlv[513];
     char register_object_type[4];
+    char register_attribute_value[KMIP_MAX_NAME_LEN];
     char category[KMIP_MAX_NAME_LEN];
     char mode[32];
     char mutation[32];

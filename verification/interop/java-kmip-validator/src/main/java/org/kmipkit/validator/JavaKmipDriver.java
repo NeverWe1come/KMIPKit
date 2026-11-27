@@ -549,13 +549,45 @@ public final class JavaKmipDriver implements AutoCloseable {
                         identifier.set(payload.uniqueIdentifier());
                         return identifier.get() != null;
                     }).orElse(false), start);
-            if (identifier.get() != null && !"passed".equals(destroyTarget(testCase, identifier.get(), start).status())) {
-                return CaseOutcome.failed("Could not destroy the transparent Register fixture.", elapsedMillis(start));
+            var owned = identifier.get();
+            if (owned == null) return result;
+            CaseOutcome cleanup;
+            try {
+                if (requires.has("register_attribute_value")) {
+                    result = readRegisteredAttribute(testCase, owned, start);
+                }
+            } finally {
+                cleanup = destroyTarget(testCase, owned, start);
             }
-            return result;
+            return "passed".equals(cleanup.status()) ? result
+                    : CaseOutcome.failed("Could not destroy the Register fixture.", elapsedMillis(start));
         } catch (RuntimeException exception) {
             return exchangeFailure(exception, start);
         }
+    }
+
+    private CaseOutcome readRegisteredAttribute(CatalogLoader.CatalogCase testCase, UniqueIdentifier identifier,
+            long start) {
+        var requires = testCase.requires();
+        var reference = AttributeReference.name(requires.path("attribute_vendor_identification").asText(),
+                requires.path("attribute_reference_name").asText());
+        ClientBatchItem request;
+        if ("fluent".equals(connection.apiLevel())) {
+            request = client.request().getAttributes(identifier, List.of(reference)).build();
+        } else {
+            request = ClientBatchItem.getAttributes(identifier, List.of(reference));
+        }
+        return executeRequest(testCase, withBatchId(request), result -> {
+            var response = result.getAttributesResponse().orElse(null);
+            if (response == null) return false;
+            try (response) {
+                var attributes = response.attributes().orElse(null);
+                if (attributes == null || !identifier.text().equals(response.uniqueIdentifier())) return false;
+                try (var view = attributes.view()) {
+                    return GenericExchange.matchesRegisteredAttribute(view, testCase);
+                }
+            }
+        }, start);
     }
 
     static int asymmetricFormat(CatalogLoader.CatalogCase testCase) {

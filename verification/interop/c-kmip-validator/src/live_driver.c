@@ -9124,6 +9124,7 @@ static int32_t decode_register_fixture(const char *hex, kmip_live_client_t *clie
 }
 
 static uint32_t transparent_register_type(const kmip_test_case_t *test_case) {
+    if (strcmp(test_case->register_object_type, "2") == 0) return 2;
     if (strcmp(test_case->register_object_type, "3") == 0) return 3;
     if (strcmp(test_case->register_object_type, "4") == 0) return 4;
     return 0;
@@ -9159,6 +9160,76 @@ static int32_t register_attributes_from_item(kmip_live_client_t *client, kmipkit
     kmipkit_ttlv_value_view_release(value);
     kmipkit_ttlv_item_view_release(source);
     return status;
+}
+
+static bool matches_registered_attribute(kmipkit_ttlv_structure_view_t *attrs,
+                                         const kmip_test_case_t *test_case) {
+    const char *expected[] = {test_case->attribute_vendor_identification,
+                             test_case->attribute_reference_name, test_case->register_attribute_value};
+    const uint32_t tags[] = {0x42009d, 0x42000a, 0x42000b};
+    uint64_t count = 0;
+    if (!attrs || kmipkit_ttlv_structure_view_item_count(attrs, &count) != 0) return false;
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *item = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        kmipkit_ttlv_structure_view_t *fields = NULL;
+        uint64_t field_count = 0;
+        bool match = kmipkit_ttlv_structure_view_item_at(attrs, index, &item) == 0 &&
+            item_view_has_tag(item, 0x420008, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value) &&
+            kmipkit_ttlv_value_view_structure(value, &fields) == 0 &&
+            kmipkit_ttlv_structure_view_item_count(fields, &field_count) == 0 && field_count == 3;
+        for (size_t i = 0; match && i < 3; ++i) {
+            match = structure_view_has_text(fields, tags[i], (const uint8_t *)expected[i], strlen(expected[i]));
+        }
+        kmipkit_ttlv_structure_view_release(fields);
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_ttlv_item_view_release(item);
+        if (match) return true;
+    }
+    return false;
+}
+
+static kmip_execution_outcome_t read_registered_attribute(
+    kmip_live_client_t *client, const kmip_test_case_t *test_case,
+    const kmipkit_unique_identifier_v1_t *id, bool fluent) {
+    kmip_execution_outcome_t outcome = {.executed = true, .library_failed = true};
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_client_batch_item_response_t *response = NULL;
+    kmipkit_ttlv_structure_t *attrs = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    const kmipkit_attribute_reference_v1_t reference = KMIPKIT_ATTR_REF_CUSTOM(
+        test_case->attribute_vendor_identification, test_case->attribute_reference_name);
+    int32_t status;
+    if (fluent) {
+        kmipkit_fluent_get_attributes_params_t params = KMIPKIT_FLUENT_GET_ATTRIBUTES_PARAMS_INIT;
+        params.has_unique_identifier = 1;
+        params.unique_identifier = *id;
+        params.attribute_references = &reference;
+        params.attribute_reference_count = 1;
+        status = kmipkit_fluent_item_get_attributes(&params, &request);
+    } else {
+        status = kmipkit_client_batch_item_get_attributes(id, &reference, 1, &request);
+    }
+    if (status == 0) {
+        outcome = execute_typed_single_item(client, &request, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES, &response);
+    }
+    if (outcome.success) {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t observed = {.struct_size = sizeof(observed), .abi_version = 1};
+        status = kmipkit_client_batch_item_response_get_attributes(response, &present, &observed, &attrs);
+        if (status != 0 || !present || !same_text_identifier(id, &observed) || !attrs ||
+            kmipkit_ttlv_structure_view(attrs, &view) != 0 || !matches_registered_attribute(view, test_case)) {
+            outcome.success = false;
+        }
+    }
+    if (!outcome.success && !outcome.result_reason[0])
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Get Attributes did not return the registered vendor value.");
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(attrs);
+    kmipkit_client_batch_item_response_release(response);
+    kmipkit_client_batch_item_release(request);
+    return outcome;
 }
 
 static kmip_execution_outcome_t execute_typed_transparent_register(
@@ -9214,6 +9285,8 @@ static kmip_execution_outcome_t execute_typed_transparent_register(
         kmipkit_unique_identifier_v1_t id = {.struct_size = sizeof(id), .abi_version = 1};
         kmipkit_client_batch_item_response_t *registered = response ? response : result.item;
         status = kmipkit_client_batch_item_response_register(registered, &present, &id);
+        if (status == 0 && present && test_case->register_attribute_value[0])
+            outcome = read_registered_attribute(client, test_case, &id, fluent);
         if (status == 0 && present) status = kmipkit_client_batch_item_destroy(&id, &request);
         if (status == 0 && present) {
             const kmip_execution_outcome_t cleanup = execute_typed_single_item(
@@ -11001,6 +11074,46 @@ static bool append_register_fixture(kmip_live_client_t *client, kmipkit_ttlv_str
     return kmipkit_ttlv_structure_with_item(previous, item, client->limits, payload) == 0;
 }
 
+typedef struct {
+    const kmip_test_case_t *test_case;
+    const char *identifier;
+    bool matched;
+} generic_attribute_readback_t;
+
+static bool check_generic_registered_attribute(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    generic_attribute_readback_t *context = raw;
+    kmipkit_ttlv_structure_view_t *attrs = NULL;
+    context->matched = structure_view_has_text(payload, 0x420094, (const uint8_t *)context->identifier,
+        strlen(context->identifier)) && generic_structure_field(payload, 0x420125, &attrs) &&
+        matches_registered_attribute(attrs, context->test_case);
+    kmipkit_ttlv_structure_view_release(attrs);
+    return true;
+}
+
+static kmip_execution_outcome_t read_generic_registered_attribute(
+    kmip_live_client_t *client, const kmip_test_case_t *test_case, const char *identifier) {
+    kmipkit_ttlv_structure_t *payload = make_ttlv_struct();
+    kmipkit_ttlv_structure_t *reference = make_ttlv_struct();
+    const bool built = payload && reference && append_ttlv_text(client, &payload, 0x420094, identifier) &&
+        append_ttlv_text(client, &reference, 0x42009d, test_case->attribute_vendor_identification) &&
+        append_ttlv_text(client, &reference, 0x42000a, test_case->attribute_reference_name) &&
+        move_ttlv_struct(client, &payload, 0x42013b, &reference);
+    kmipkit_ttlv_structure_release(reference);
+    if (!built) {
+        kmipkit_ttlv_structure_release(payload);
+        return (kmip_execution_outcome_t){.executed = true, .library_failed = true};
+    }
+    generic_attribute_readback_t context = {.test_case = test_case, .identifier = identifier};
+    kmip_execution_outcome_t result = execute_generic_custom(client, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES,
+        payload, check_generic_registered_attribute, &context);
+    if (result.success && !context.matched) {
+        result.success = false;
+        snprintf(result.result_reason, sizeof(result.result_reason),
+                 "Get Attributes did not return the registered vendor value.");
+    }
+    return result;
+}
+
 static kmip_execution_outcome_t execute_generic_transparent_register(
     kmip_live_client_t *client, const kmip_test_case_t *test_case) {
     const uint32_t object_type = transparent_register_type(test_case);
@@ -11016,7 +11129,9 @@ static kmip_execution_outcome_t execute_generic_transparent_register(
     generic_ext_ctx_t owned = {0};
     kmip_execution_outcome_t outcome = execute_generic_custom(
         client, KMIPKIT_ENUMERATION_OPERATION_REGISTER, payload, check_ext_single_id, &owned);
-    if (outcome.success &&
+    if (outcome.success && test_case->register_attribute_value[0])
+        outcome = read_generic_registered_attribute(client, test_case, owned.ids[0]);
+    if (owned.count &&
         !generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_DESTROY, owned.ids[0]).success) {
         outcome.success = false;
         outcome.library_failed = true;

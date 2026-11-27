@@ -1077,6 +1077,52 @@ def _destroy_all(driver, ids):
             _checked_exchange(driver, DESTROY, custom_payload=[item(0x420094, "text", obj_id)])
 
 
+def matches_registered_attribute(attributes, requires):
+    from kmipkit import ttlv
+
+    fields = {0x42009D: "attribute_vendor_identification",
+              0x42000A: "attribute_reference_name", 0x42000B: "register_attribute_value"}
+    for attribute in _fields(attributes):
+        with ttlv.ttlv_item_view_tag(attribute) as tag:
+            if ttlv.tag_value(tag) != 0x420008 or ttlv.ttlv_item_view_type(attribute) != ttlv.ItemType.Structure:
+                continue
+        with (ttlv.ttlv_item_view_value(attribute) as value,
+              ttlv.ttlv_value_view_structure(value) as members):
+            if (ttlv.ttlv_structure_view_item_count(members) == len(fields)
+                    and all(_field_text(members, raw) == requires[key] for raw, key in fields.items())):
+                return True
+    return False
+
+
+def _read_registered_attribute(driver, identifier, requires):
+    from kmipkit import ttlv
+
+    matched = False
+
+    def check(payload):
+        nonlocal matched
+        if _text_identifier(payload) == identifier:
+            for field in _fields(payload):
+                with ttlv.ttlv_item_view_tag(field) as tag:
+                    if ttlv.tag_value(tag) != 0x420125 or ttlv.ttlv_item_view_type(field) != ttlv.ItemType.Structure:
+                        continue
+                with (ttlv.ttlv_item_view_value(field) as value,
+                      ttlv.ttlv_value_view_structure(value) as attributes):
+                    matched = matches_registered_attribute(attributes, requires)
+        return True
+
+    item, node = driver._item, driver._structure_item
+    result = _checked_exchange(driver, GET_ATTRIBUTES, expected=check, custom_payload=[
+        item(0x420094, "text", identifier),
+        node(0x42013B, [item(0x42009D, "text", requires["attribute_vendor_identification"]),
+                       item(0x42000A, "text", requires["attribute_reference_name"])]),
+    ])
+    if result["status"] == "passed" and not matched:
+        result.update(status="failed", server_compatibility="unknown",
+                      diagnostic="Get Attributes did not return the registered vendor value")
+    return result
+
+
 def _register_transparent(driver, requires):
     from kmipkit import ttlv
 
@@ -1092,6 +1138,8 @@ def _register_transparent(driver, requires):
           ttlv.ttlv_decode(bytes.fromhex(requires["register_object_ttlv"])) as obj):
         result = _checked_exchange(driver, REGISTER, expected=check, custom_payload=[kind, attrs, obj])
     if identifier is not None:
+        if "register_attribute_value" in requires:
+            result = _read_registered_attribute(driver, identifier, requires)
         cleanup = _checked_exchange(
             driver, DESTROY, identifier, expected=lambda payload: _text_identifier(payload) == identifier,
         )

@@ -18,6 +18,7 @@ import unittest
 
 from verification.interop.shared.tools.operation_catalog import build_catalog, direction, with_cases
 from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
+from verification.interop.shared.tools.table_attribute_exchange import attribute_exchange
 from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
 from verification.interop.shared.tools.table_key_block_exchanges import key_block_cases
 from verification.interop.shared.tools.table_query_fields import credential_case, nonce_case, query_cases
@@ -739,13 +740,28 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 self.skipTest(f"Installed {language} validator required")
                             self.transparent_registration(language, minor, route, supported)
 
-    def transparent_registration(self, language, minor, route, supported):
+    def test_registered_attribute_checks_exact_readback_and_cleans_up_on_rejection(self):
+        for language, available in installed_validators():
+            routes = ["generic-ttlv", "typed-protocol", "fluent"]
+            if language == "rust":
+                routes.append("high-level")
+            for minor in (0, 1):
+                for route in routes:
+                    for variant in ("valid", "wrong-value", "missing", "unsupported"):
+                        with self.subTest(language=language, minor=minor, route=route, variant=variant):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.transparent_registration(language, minor, route, variant != "unsupported", variant)
+
+    def transparent_registration(self, language, minor, route, supported, attribute_variant=None):
         with tempfile.TemporaryDirectory(prefix="kmipkit-transparent-register-") as dirname:
             work = Path(dirname)
             protocol = f"2.{minor}"
             catalog = version_catalog(protocol)
             base = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-register")
-            cases = list(transparent_registration_cases(ROOT, protocol, base))
+            cases = [attribute_exchange(ROOT, protocol, base)] if attribute_variant else list(
+                transparent_registration_cases(ROOT, protocol, base)
+            )
             selection = work / "catalog.json"
             selection.write_text(json.dumps(with_cases(catalog, cases)))
             profile = work / "profile.json"
@@ -792,6 +808,27 @@ class DirectTagValidatorTests(unittest.TestCase):
                             return number(0x42007F, 5, 1), number(0x42007E, 5, 5)
                         return number(0x42007F, 5, 0), structure(0x42007C, wire_item(0x420094, 7, identifier))
 
+                    def expect_readback(operation, request):
+                        self.assertEqual(operation, 0x0b)
+                        self.assertEqual(only(request, 0x420094, 7), identifier)
+                        reference = only(request, 0x42013b, 1)
+                        vendor = fields["attribute_vendor_identification"].encode()
+                        name = fields["attribute_reference_name"].encode()
+                        self.assertEqual(only(reference, 0x42009d, 7), vendor)
+                        self.assertEqual(only(reference, 0x42000a, 7), name)
+                        value = fields["register_attribute_value"].encode()
+                        if attribute_variant == "wrong-value":
+                            value = b"another value"
+                        attrs = [] if attribute_variant == "missing" else [
+                            structure(0x420125, structure(
+                                0x420008, wire_item(0x42009d, 7, vendor), wire_item(0x42000a, 7, name),
+                                wire_item(0x42000b, 7, value),
+                            )),
+                        ]
+                        return number(0x42007f, 5, 0), structure(
+                            0x42007c, wire_item(0x420094, 7, identifier), *attrs,
+                        )
+
                     def expect_cleanup(operation, request):
                         self.assertIn(operation, (0x13, 0x14))
                         self.assertEqual(only(request, 0x420094, 7), identifier)
@@ -806,11 +843,14 @@ class DirectTagValidatorTests(unittest.TestCase):
                             identifier = case["case_id"].encode("ascii")
                             receive(case["case_id"], expect_register)
                             if supported:
+                                if attribute_variant:
+                                    receive("Get Attributes for the registered fixture", expect_readback)
                                 stage = receive("Destroy the registered fixture", expect_cleanup)
                                 if stage == 0x13:
                                     self.assertEqual(receive("Destroy the revoked fixture", expect_cleanup), 0x14)
                         _, stderr = process.communicate(timeout=20)
-                        self.assertEqual(process.returncode, 0, stderr.decode(errors="replace"))
+                        invalid_attribute = attribute_variant in {"wrong-value", "missing"}
+                        self.assertEqual(process.returncode != 0, invalid_attribute, stderr.decode(errors="replace"))
                     finally:
                         if process.poll() is None:
                             process.terminate()
@@ -818,14 +858,16 @@ class DirectTagValidatorTests(unittest.TestCase):
             observations = json.loads(report.read_text())["cases"]
             self.assertEqual({result["case_id"] for result in observations}, {case["case_id"] for case in cases})
             for result in observations:
-                self.assertEqual(result["status"], "passed" if supported else "server_unsupported")
+                expected_status = "server_unsupported" if not supported else "failed" if invalid_attribute else "passed"
+                self.assertEqual(result["status"], expected_status)
                 self.assertEqual(result["result_status_code"], 0 if supported else 1)
                 if not supported:
                     self.assertEqual(result["result_reason_code"], 5)
                 if route == "high-level":
                     self.assertEqual(result["actual_api_level"], route)
             suffix = "" if supported else "-unsupported"
-            save_evidence(report, selection, f"{language}-{protocol}-{route}-transparent-register{suffix}")
+            label = f"attribute-register-{attribute_variant}" if attribute_variant else f"transparent-register{suffix}"
+            save_evidence(report, selection, f"{language}-{protocol}-{route}-{label}")
 
     def test_key_block_get_checks_wrapping_and_transparent_material(self):
         for language, available in installed_validators():

@@ -169,6 +169,7 @@ pub(crate) struct Observed {
     pub reason: Option<u32>,
     pub nonempty_structure_tags: Vec<u32>,
     pub usable_nonce: bool,
+    pub fixture_attribute_returned: bool,
     pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
     pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
@@ -198,6 +199,20 @@ fn response_contains_usable_nonce(response: &ClientBatchItemResponse) -> bool {
                 && field
                     .as_structure()
                     .is_some_and(|nonce| nonce_fields_present(&nonce))
+        })
+    })
+}
+
+fn response_contains_fixture_attribute(response: &ClientBatchItemResponse) -> bool {
+    response.raw().is_some_and(|payload| {
+        payload.children().iter().any(|field| {
+            field.tag().raw() == 0x0042_0125
+                && field.as_structure().is_some_and(|attrs| {
+                    attrs
+                        .children()
+                        .iter()
+                        .any(crate::fixtures::matches_attribute_fixture)
+                })
         })
     })
 }
@@ -280,6 +295,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         reason: result.reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags,
         usable_nonce: response_contains_usable_nonce(response),
+        fixture_attribute_returned: response_contains_fixture_attribute(response),
         identifier,
         identifiers,
         correlation,
@@ -710,6 +726,7 @@ pub(crate) fn asynchronous(
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags: Vec::new(),
         usable_nonce: false,
+        fixture_attribute_returned: false,
         identifier: None,
         identifiers: response
             .poll_response()

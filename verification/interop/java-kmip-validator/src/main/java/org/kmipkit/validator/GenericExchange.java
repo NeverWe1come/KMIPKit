@@ -1534,6 +1534,44 @@ final class GenericExchange {
         }
     }
 
+    static boolean matchesRegisteredAttribute(TtlvStructureView attrs, CatalogLoader.CatalogCase testCase) {
+        var requires = testCase.requires();
+        for (long index = 0; index < attrs.itemCount(); index++) {
+            try (var item = attrs.itemAt(index); var tag = item.tag()) {
+                if (tag.raw() != 0x420008 || item.itemType() != TtlvItemType.Structure) continue;
+                try (var value = item.value(); var fields = value.structure()) {
+                    if (fields.itemCount() == 3
+                            && matchesFixtureText(fields, 0x42009d, requires.path("attribute_vendor_identification").asText())
+                            && matchesFixtureText(fields, 0x42000a, requires.path("attribute_reference_name").asText())
+                            && matchesFixtureText(fields, 0x42000b, requires.path("register_attribute_value").asText())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean matchesFixtureText(TtlvStructureView fields, int tag, String expected) {
+        return Arrays.equals(fieldText(fields, tag), expected.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static JavaKmipDriver.CaseOutcome readRegisteredAttribute(CatalogLoader.CatalogCase testCase,
+            ConnectionConfig connection, int minor, byte[] identifier, long start) {
+        var requires = testCase.requires();
+        try (var uid = item(0x420094, TtlvValue.TextString(identifier, LIMITS));
+                var vendor = item(0x42009d, TtlvValue.TextString(
+                        requires.path("attribute_vendor_identification").asText().getBytes(StandardCharsets.UTF_8), LIMITS));
+                var name = item(0x42000a, TtlvValue.TextString(
+                        requires.path("attribute_reference_name").asText().getBytes(StandardCharsets.UTF_8), LIMITS));
+                var reference = structureItem(0x42013b, vendor, name);
+                var payload = structureItem(0x420079, uid, reference)) {
+            return executePayload(connection, GET_ATTRIBUTES, minor, payload,
+                    fields -> Arrays.equals(identifier, textIdentifier(fields))
+                            && withStructure(fields, 0x420125, attrs -> matchesRegisteredAttribute(attrs, testCase)), start);
+        }
+    }
+
     private static JavaKmipDriver.CaseOutcome runTransparentRegister(CatalogLoader.CatalogCase testCase,
             ConnectionConfig connection, int minor, long start) {
         var requires = testCase.requires();
@@ -1549,11 +1587,18 @@ final class GenericExchange {
                 return identifier.get() != null;
             }, start);
             byte[] id = identifier.get();
-            if (id != null && !"passed".equals(execute(connection, DESTROY, minor, id,
-                    fields -> Arrays.equals(id, textIdentifier(fields)), start).status())) {
-                return JavaKmipDriver.CaseOutcome.failed("Could not destroy the transparent Register fixture.", elapsed(start));
+            if (id == null) return result;
+            JavaKmipDriver.CaseOutcome cleanup;
+            try {
+                if (requires.has("register_attribute_value")) {
+                    result = readRegisteredAttribute(testCase, connection, minor, id, start);
+                }
+            } finally {
+                cleanup = execute(connection, DESTROY, minor, id,
+                        fields -> Arrays.equals(id, textIdentifier(fields)), start);
             }
-            return result;
+            return "passed".equals(cleanup.status()) ? result
+                    : JavaKmipDriver.CaseOutcome.failed("Could not destroy the Register fixture.", elapsed(start));
         }
     }
 

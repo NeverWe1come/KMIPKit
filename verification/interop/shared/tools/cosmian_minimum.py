@@ -122,6 +122,7 @@ def operation_direction(name: str) -> str:
 def build_selection(root: Path, version: str) -> tuple[dict, dict]:
     if version not in ALLOWED_VERSIONS:
         raise ValueError(f"Cosmian minimum requires KMIP 2.x, got {version}")
+    from verification.interop.shared.tools.table_attribute_exchange import attribute_exchange
     from verification.interop.shared.tools.table_transparent_registration import transparent_registration_cases
 
     snapshot = json.loads((root / SUPPORT_TABLE).read_text(encoding="utf-8"))
@@ -143,6 +144,8 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
     candidates.update({case["case_id"]: case for case in contextual_operations})
     candidates.update((case["case_id"], case) for case in
                       transparent_registration_cases(root, version, candidates["test-op-register"]))
+    attribute = attribute_exchange(root, version, candidates["test-op-register"])
+    candidates[attribute["case_id"]] = attribute
     normative_by_target = defaultdict(set)
     used = set()
     for case in normative_cases:

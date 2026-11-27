@@ -19,6 +19,19 @@ from verification.interop.shared.tools.run_all import (
 
 
 class CosmianMinimumTests(unittest.TestCase):
+    def test_attribute_structure_requires_readback_in_both_versions(self):
+        case_id = "test-register-attribute-structure"
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                catalog, inventory = build_selection(ROOT, version)
+                rows = {(row["kind"], row["name"]): row for row in inventory["rows"]}
+                self.assertEqual(rows["base_object", "Attribute"]["server_cases"], [case_id])
+                self.assertIn(case_id, rows["attribute", "Vendor Attribute"]["server_cases"])
+                self.assertNotIn(case_id, rows["operation", "Register"]["server_cases"])
+                case = next(case for case in catalog["test_cases"] if case["case_id"] == case_id)
+                self.assertEqual(case["execution"]["mutation"], "mutating")
+                self.assertEqual(case["requires"]["controlled_expected_status"], "Success")
+
     def test_transparent_dsa_and_dh_registration_is_required_on_the_correct_rows(self):
         for version in ("2.0", "2.1"):
             with self.subTest(version=version):

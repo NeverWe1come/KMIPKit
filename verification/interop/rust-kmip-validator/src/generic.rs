@@ -221,7 +221,7 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
             run_owned_key(case, connection, version, operation)
         }
         Some(REGISTER) if case.requires["register_object_ttlv"].is_string() => {
-            outcome(case, register_transparent(case, connection, version))
+            register_fixture(case, connection, version)
         }
         Some(operation) if is_extended_mutating_op(operation) => {
             run_extended_operation(case, connection, version, operation)
@@ -1241,6 +1241,7 @@ pub(crate) fn asynchronous(
         used_high_level: false,
         nonempty_structure_tags: Vec::new(),
         usable_nonce: false,
+        fixture_attribute_returned: false,
         identifier: None,
         identifiers,
         correlation,
@@ -1494,14 +1495,31 @@ fn run_extended_inner(
     }
 }
 
-fn register_transparent(
+fn register_fixture(case: &Case, connection: &Connection, version: ProtocolVersion) -> CaseResult {
+    let mut attribute_returned = false;
+    let result = register_and_read_back(case, connection, version, &mut attribute_returned);
+    let mut observed = outcome(case, result);
+    if case.requires["base_object"] == "Attribute"
+        && observed.result_status_code == Some(0)
+        && !attribute_returned
+    {
+        observed.status = "failed";
+        observed.server_compatibility = "unknown";
+        "Get Attributes did not return the registered vendor value"
+            .clone_into(&mut observed.diagnostic);
+    }
+    observed
+}
+
+fn register_and_read_back(
     case: &Case,
     connection: &Connection,
     version: ProtocolVersion,
+    attribute_returned: &mut bool,
 ) -> ExchangeResult {
-    let (kind, object, attrs) = crate::fixtures::transparent_registration(case)?;
+    let (kind, object, attrs) = crate::fixtures::registration_fields(case)?;
     let mut identifier = None;
-    let response = exchange_payload(
+    let mut response = exchange_payload(
         connection,
         version,
         REGISTER,
@@ -1514,15 +1532,43 @@ fn register_transparent(
             identifier = text_identifier(batch);
             Ok(identifier.is_some())
         },
-    )?;
+    );
     if let Some(id) = identifier {
+        if case.requires["base_object"] == "Attribute" {
+            let request = (|| {
+                let text = |key: &str| {
+                    case.requires[key]
+                        .as_str()
+                        .map(|value| Value::text_string(value.to_owned()))
+                        .ok_or("invalid vendor Attribute fixture")
+                };
+                Ok(vec![
+                    item(0x0042_0094, Value::text_string(id.clone()))?,
+                    node(
+                        0x0042_013b,
+                        vec![
+                            item(0x0042_009d, text("attribute_vendor_identification")?)?,
+                            item(0x0042_000a, text("attribute_reference_name")?)?,
+                        ],
+                    )?,
+                ])
+            })();
+            response = request.and_then(|fields| exchange_payload(connection, version, GET_ATTRIBUTES, fields, |batch| {
+                *attribute_returned = text_identifier(batch).as_deref() == Some(id.as_str())
+                    && has_field(batch, 0x0042_0125, |value| {
+                        matches!(value, ValueView::Structure(attrs)
+                            if attrs.children().iter().any(crate::fixtures::matches_attribute_fixture))
+                    });
+                Ok(true)
+            }));
+        }
         let _ = exchange(connection, version, REVOKE, Some(&id), |_| Ok(true));
         let cleanup = exchange(connection, version, DESTROY, Some(&id), |_| Ok(true));
         if !matches!(cleanup, Ok((0, _) | (1, Some(1)))) {
             return Err("could not destroy the transparent Register fixture");
         }
     }
-    Ok(response)
+    response
 }
 
 fn extended_register_import(

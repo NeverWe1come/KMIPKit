@@ -244,6 +244,17 @@ exchanges per structure. The report records the actual reason code and
 keeps the DH rejection distinct from Operation Not Supported.
 [RFC 7919 Appendix A.1](https://www.rfc-editor.org/rfc/rfc7919#appendix-A.1)
 
+The Attribute structure workflow registers an isolated AES key with a
+vendor-qualified Attribute, then issues Get Attributes with the vendor
+identification and attribute name as an Attribute Reference. It verifies
+the returned object identifier, vendor, name and text value and destroys
+the object. The controlled peer exercises the exact value, a different
+value, an omitted Attribute and an Operation Not Supported response.
+Cosmian 5.29.0 returned the exact value in KMIP 2.0 and 2.1 through the
+generic TTLV, typed protocol and Fluent routes in all four languages and
+the direct Rust client. The campaign records this result as a difference
+from the published Attribute base-object row.
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its
