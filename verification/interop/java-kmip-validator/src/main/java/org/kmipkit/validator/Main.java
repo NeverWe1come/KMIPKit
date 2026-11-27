@@ -257,10 +257,10 @@ public final class Main {
             return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
         }
         if ("high-level".equals(apiLevel)) {
-            return (Set.of("test-op-query", "test-op-discover-versions").contains(testCase.caseId())
-                    || JavaKmipDriver.queryFieldCase(testCase) || JavaKmipDriver.queryNonceCase(testCase))
-                    && hasTypedRoute(testCase)
-                    && connection.usernamePassword() == null;
+            return hasTypedRoute(testCase) && ("test-op-query".equals(testCase.caseId())
+                    || JavaKmipDriver.queryFieldCase(testCase) || JavaKmipDriver.queryNonceCase(testCase)
+                    || JavaKmipDriver.queryCredentialCase(testCase)
+                    || ("test-op-discover-versions".equals(testCase.caseId()) && connection.usernamePassword() == null));
         }
         if (TypedIncoming.supports(testCase, connection)) return true;
         return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)

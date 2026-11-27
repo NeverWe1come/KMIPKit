@@ -154,7 +154,13 @@ public final class JavaKmipDriver implements AutoCloseable {
             Predicate<ClientBatchItemResult> verify, long start) {
         if ("high-level".equals(connection.apiLevel())) {
             return executeHighLevel(testCase, KmipValues.Operation.QUERY,
-                    () -> client.query(new int[]{function}, CODEC_LIMITS, null), verify, start);
+                    () -> {
+                        var names = connection.usernamePassword();
+                        if (names == null) return client.query(new int[]{function}, CODEC_LIMITS, null);
+                        try (var authentication = usernamePasswordAuthentication(names)) {
+                            return client.query(new int[]{function}, authentication, CODEC_LIMITS, null);
+                        }
+                    }, verify, start);
         }
         if ("fluent".equals(connection.apiLevel())) {
             try (var builder = client.request().query()) {

@@ -225,6 +225,13 @@ class PythonKmipDriver:
         )
         self._client = client.Client.create(configuration, transport)
 
+    def _execute_query(self, functions: list[int], limits: Any) -> Any:
+        authentication = self._authentication()
+        if authentication is None:
+            return self._client.query(functions, limits)
+        with authentication:
+            return self._client.query(functions, limits, authentication=authentication)
+
     def _authentication(self) -> Any | None:
         from kmipkit import credentials
         import os
@@ -290,7 +297,8 @@ class PythonKmipDriver:
         if api_level == "high-level" and case["operation"] == "Discover Versions":
             return case["case_id"] == "test-op-discover-versions"
         if api_level == "high-level" and case["operation"] == "Query":
-            return (case["case_id"] in {"test-op-query", "test-query-attestation-nonce"}
+            return (case["case_id"] in {"test-op-query", "test-query-attestation-nonce",
+                                        "test-query-username-password-credential"}
                     or "query_function" in case.get("requires", {}))
         return (
             api_level == "high-level"
@@ -2316,12 +2324,12 @@ class PythonKmipDriver:
             return self._execute_key_block(key_block_shape == "wrapped")
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
-        if (self._api_level == "high-level" and operation in {"Query", "Discover Versions"}
+        if (self._api_level == "high-level" and operation == "Discover Versions"
                 and self._connection.get("authentication", {}).get("username_password")):
             return {
                 "status": "not_run", "library_correctness": "not_checked",
                 "server_compatibility": "unknown", "parity": "not_compared",
-                "diagnostic": "The high-level method cannot set a KMIP batch credential",
+                "diagnostic": "The high-level Discover Versions method cannot set a KMIP batch credential",
             }
         if case_id == "test-op-discover-versions":
             offered = self._extensions.ProtocolVersion(*(int(v) for v in self._connection["protocol_version"].split(".")))
@@ -2353,7 +2361,7 @@ class PythonKmipDriver:
             if self._api_level == "high-level":
                 outcome = self._exchange(
                     None, verify_query=True, query_field=query_field, expect_nonce=expect_nonce,
-                    high_level_exchange=lambda limits: self._client.query(functions, limits),
+                    high_level_exchange=lambda limits: self._execute_query(functions, limits),
                 )
             elif self._api_level == "fluent":
                 with self._client.request().query() as builder, builder.functions(functions).build() as item:

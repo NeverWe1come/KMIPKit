@@ -506,7 +506,7 @@ class DirectTagValidatorTests(unittest.TestCase):
     def test_query_credential_is_sent_and_rejection_is_preserved(self):
         for language, available in installed_validators():
             for minor in (0, 1):
-                for route in ("generic-ttlv", "typed-protocol", "fluent"):
+                for route in ("generic-ttlv", "typed-protocol", "fluent", "high-level"):
                     for supported in (True, False):
                         with self.subTest(language=language, minor=minor, route=route, supported=supported):
                             if not available:
@@ -601,15 +601,18 @@ class DirectTagValidatorTests(unittest.TestCase):
                         if process.poll() is None:
                             process.terminate()
                             process.communicate(timeout=5)
-            observed, = json.loads(report.read_text())["cases"]
+            report_text = report.read_text()
+            observed, = json.loads(report_text)["cases"]
+            if credential:
+                self.assertNotIn("public-fixture-user", report_text)
+                self.assertNotIn("public-fixture-input", report_text)
             if credential == "unsupported":
                 self.assertEqual(observed["status"], "server_unsupported")
                 self.assertEqual((observed["result_status_code"], observed["result_reason_code"]), (1, 5))
-                self.assertNotIn("public-fixture-input", report.read_text())
+                if route == "high-level":
+                    self.assertEqual(observed["actual_api_level"], route)
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-credential-unsupported")
                 return
-            if credential:
-                self.assertNotIn("public-fixture-input", report.read_text())
             self.assertEqual(observed["status"], "passed" if valid else "failed")
             if valid or nonce == "absent":
                 self.assertEqual(observed["result_status_code"], 0)

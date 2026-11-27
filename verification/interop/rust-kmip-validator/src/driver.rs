@@ -118,7 +118,14 @@ pub(crate) fn authenticated_batch(
 ) -> Result<ClientBatch> {
     authenticate(connection, ClientBatch::new(ClientBatchItem::new(request)))
 }
-fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<ClientBatch> {
+fn authenticate(connection: &Connection, batch: ClientBatch) -> Result<ClientBatch> {
+    Ok(match request_authentication(connection)? {
+        Some(authentication) => batch.with_authentication(authentication),
+        None => batch,
+    })
+}
+
+fn request_authentication(connection: &Connection) -> Result<Option<Authentication>> {
     if let Some(credentials) = connection
         .authentication
         .as_ref()
@@ -149,11 +156,11 @@ fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<Clien
             ],
         )?)
         .map_err(|_| "invalid credential")?;
-        batch = batch.with_authentication(
-            Authentication::new(vec![credential]).map_err(|_| "invalid authentication")?,
-        );
+        return Authentication::new(vec![credential])
+            .map(Some)
+            .map_err(|_| "invalid authentication");
     }
-    Ok(batch)
+    Ok(None)
 }
 
 pub(crate) struct Observed {
@@ -320,9 +327,10 @@ pub(crate) fn execute(
         options = options.with_protocol_version(kmipkit::ProtocolVersion::V3_0);
     }
     let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
-    // Direct operation methods are used where the public high-level API admits
-    // the same immutable request. Authentication requires the explicit batch.
-    if connection.api_level == "high-level" && connection.authentication.is_none() {
+    // Query accepts per-request Authentication in the high-level API.
+    if connection.api_level == "high-level"
+        && (connection.authentication.is_none() || matches!(request, ClientRequest::Query(_)))
+    {
         match request {
             ClientRequest::DiscoverVersions(request) => {
                 return client
@@ -335,9 +343,15 @@ pub(crate) fn execute(
                     .map(|response| observed_high_level(&response));
             }
             ClientRequest::Query(request) => {
-                return client
-                    .query_with_options(request, &limits, &options)
-                    .map(|response| observed_high_level(&response));
+                let response = match request_authentication(connection)
+                    .map_err(|_| credential_error())?
+                {
+                    Some(authentication) => {
+                        client.query_with_authentication(request, authentication, &limits, &options)
+                    }
+                    None => client.query_with_options(request, &limits, &options),
+                };
+                return response.map(|response| observed_high_level(&response));
             }
             ClientRequest::DelegatedLogin(request) => {
                 return client
@@ -590,6 +604,14 @@ pub(crate) fn execute(
     execute_batch(client, connection, request, &options, &limits)
 }
 
+fn credential_error() -> kmipkit::ClientError {
+    kmipkit::ClientError::validation(
+        kmipkit::ClientCauseCategory::InvalidInput,
+        kmipkit::RequestDeliveryState::NotSent,
+        std::io::Error::other("credential unavailable"),
+    )
+}
+
 fn execute_batch(
     client: &mut Client,
     connection: &Connection,
@@ -597,13 +619,7 @@ fn execute_batch(
     options: &RequestOptions,
     limits: &kmipkit::ttlv::codec::CodecLimits,
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
-    let batch = authenticated_batch(connection, request).map_err(|_| {
-        kmipkit::ClientError::validation(
-            kmipkit::ClientCauseCategory::InvalidInput,
-            kmipkit::RequestDeliveryState::NotSent,
-            std::io::Error::other("credential unavailable"),
-        )
-    })?;
+    let batch = authenticated_batch(connection, request).map_err(|_| credential_error())?;
     let response = client.execute_with_options(batch, limits, options)?;
     response.get(0).map(observed).ok_or_else(|| {
         kmipkit::ClientError::validation(

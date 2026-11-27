@@ -9607,8 +9607,14 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         kmipkit_protocol_version_v1_t offered = {.major = client->protocol_major, .minor = client->protocol_minor};
         if (operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS)
             status = kmipkit_client_discover_versions_v1(client->client, &offered, 1, client->limits, &response);
-        else
+        else if (client->username_env[0] != 0) {
+            status = create_authentication(client, &authentication)
+                ? kmipkit_client_query_with_authentication_v1(
+                    client->client, &query_function, 1, &authentication, client->limits, &response)
+                : KMIPKIT_ERROR_INVALID_INPUT;
+        } else {
             status = kmipkit_client_query_v1(client->client, &query_function, 1, client->limits, &response);
+        }
         outcome.used_high_level = true;
         goto read_response;
     }
@@ -12070,8 +12076,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             (nonce_query || credential_query || test_case->query_function[0] || strcmp(test_case->case_id, "test-op-query") == 0);
         if (!discover && !query)
             return outcome_not_run("the C validator has no high-level recipe for this case");
-        if (credential_query || client->username_env[0] != 0)
-            return outcome_not_run("the high-level method cannot set a KMIP batch credential");
+        if (discover && client->username_env[0] != 0)
+            return outcome_not_run("the high-level Discover Versions method cannot set a KMIP batch credential");
         const uint32_t operation = discover ? KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS
             : KMIPKIT_ENUMERATION_OPERATION_QUERY;
         return execute_single_versioned_diagnostic(client, operation, false, NULL,
