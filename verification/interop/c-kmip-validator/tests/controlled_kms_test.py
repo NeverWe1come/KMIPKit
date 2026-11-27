@@ -1960,7 +1960,7 @@ def main() -> int:
                                     result_statuses=response_statuses,
                                     result_reasons=response_reasons,
                                     rng_length=32 if integer(0x4200C4, 32) in request or
-                                    tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
+                                    tlv(0x4200C2, 8, b"A" * 32) in request else 16,
                                     cancellation_result=cancellation_result,
                                     returned_unique_identifier=returned_uid,
                                     crypto_output=crypto_output_for_request(operations, request),

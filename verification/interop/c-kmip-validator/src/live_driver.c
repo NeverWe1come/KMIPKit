@@ -9793,6 +9793,30 @@ static bool typed_nonce_valid(kmipkit_client_batch_item_response_t *item, int32_
     return valid;
 }
 
+static const uint8_t rng_fixture_seed[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+enum { RNG_FIXTURE_LENGTH = sizeof(rng_fixture_seed) - 1 };
+
+static bool typed_rng_response_matches(kmipkit_client_batch_item_response_t *item,
+                                        bool retrieve, int32_t *status) {
+    uint8_t present = 0, data_present = 0;
+    kmipkit_ttlv_structure_t *raw = NULL;
+    bool valid;
+    if (retrieve) {
+        kmipkit_byte_span_v1_t data = {0};
+        *status = kmipkit_client_batch_item_response_rng_retrieve(item, &present, &data_present, &data);
+        valid = *status == 0 && present && data_present && data.data && data.length == RNG_FIXTURE_LENGTH;
+        if (valid) *status = kmipkit_client_batch_item_response_rng_retrieve_ttlv(item, &present, &raw);
+    } else {
+        int32_t used = 0;
+        *status = kmipkit_client_batch_item_response_rng_seed(item, &present, &data_present, &used);
+        valid = *status == 0 && present && data_present && used >= 0 && used <= RNG_FIXTURE_LENGTH;
+        if (valid) *status = kmipkit_client_batch_item_response_rng_seed_ttlv(item, &present, &raw);
+    }
+    valid = valid && *status == 0 && present && raw;
+    if (raw) kmipkit_ttlv_structure_release(raw);
+    return valid;
+}
+
 static kmip_execution_outcome_t execute_single_versioned_diagnostic(
     kmip_live_client_t *client, uint32_t operation, bool fluent, const char *rotate_attribute,
     const kmip_test_case_t *query_field) {
@@ -9806,6 +9830,7 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         .struct_size = (uint32_t)sizeof(metadata), .abi_version = 2
     };
     int32_t status;
+    uint64_t count = 0;
     const bool expect_nonce = query_field && strcmp(query_field->case_id, "test-query-attestation-nonce") == 0;
     uint32_t query_function = expect_nonce ? KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_ATTESTATION_TYPES
         : KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
@@ -9819,6 +9844,11 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         kmipkit_protocol_version_v1_t offered = {.major = client->protocol_major, .minor = client->protocol_minor};
         if (operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS)
             status = kmipkit_client_discover_versions_v1(client->client, &offered, 1, client->limits, &response);
+        else if (operation == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE)
+            status = kmipkit_client_rng_retrieve_v1(client->client, RNG_FIXTURE_LENGTH, client->limits, &response);
+        else if (operation == KMIPKIT_ENUMERATION_OPERATION_RNG_SEED)
+            status = kmipkit_client_rng_seed_v1(client->client, rng_fixture_seed, RNG_FIXTURE_LENGTH,
+                client->limits, &response);
         else if (client->username_env[0] != 0) {
             status = create_authentication(client, &authentication)
                 ? kmipkit_client_query_with_authentication_v1(
@@ -9878,6 +9908,8 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         }
     }
 read_response:
+    if (status == 0) status = kmipkit_client_batch_response_item_count(response, &count);
+    if (status == 0 && count != 1) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_response_item_at(response, 0, &item);
     if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(item, &metadata);
     if (status != 0 || metadata.operation != operation) {
@@ -9899,12 +9931,15 @@ read_response:
                 else
                     present = query_field ? query_response_has_structure(item, query_tag, &status)
                         : query_response_has_operations(item, &status);
+            } else if (operation == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE ||
+                       operation == KMIPKIT_ENUMERATION_OPERATION_RNG_SEED) {
+                present = typed_rng_response_matches(item, operation == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE, &status);
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS) {
                 kmipkit_protocol_version_v1_t returned = {0};
-                uint64_t count = 0;
+                uint64_t version_count = 0;
                 status = kmipkit_client_batch_item_response_discover_versions_supported_versions(
-                    item, &present, &returned, 1, &count);
-                present = present && count == 1 && returned.major == client->protocol_major &&
+                    item, &present, &returned, 1, &version_count);
+                present = present && version_count == 1 && returned.major == client->protocol_major &&
                     returned.minor == client->protocol_minor;
             } else {
                 uint32_t role = 0;
@@ -10070,12 +10105,10 @@ static bool add_generic_revoke_reason(kmip_live_client_t *client, kmipkit_ttlv_s
     return valid;
 }
 
-static const uint8_t generic_rng_seed_input[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-
 static bool add_generic_rng_seed(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload) {
     kmipkit_ttlv_value_t *data = NULL;
-    bool valid = kmipkit_ttlv_value_byte_string(client->limits, generic_rng_seed_input,
-        sizeof(generic_rng_seed_input) - 1, &data) == 0 &&
+    bool valid = kmipkit_ttlv_value_byte_string(client->limits, rng_fixture_seed,
+        sizeof(rng_fixture_seed) - 1, &data) == 0 &&
         append_ttlv_value(client, payload, 0x4200c2, &data);
     kmipkit_ttlv_value_release(data);
     return valid;
@@ -10589,7 +10622,7 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
         valid = fields == 1 &&
             structure_view_find_value(payload, 0x4200c4, KMIPKIT_TTLV_ITEM_TYPE_INTEGER, &length_field) &&
             kmipkit_ttlv_value_view_integer(length_field, &length) == 0 &&
-            length >= 0 && (size_t)length < sizeof(generic_rng_seed_input);
+            length >= 0 && (size_t)length < sizeof(rng_fixture_seed);
         kmipkit_ttlv_value_view_release(length_field);
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
         valid = generic_hash_matches(payload, fields, frame);
@@ -12332,6 +12365,16 @@ static kmip_execution_outcome_t execute_typed_async_fixture(
     return result;
 }
 
+static uint32_t rng_fixture_operation(const kmip_test_case_t *test_case) {
+    if (strcmp(test_case->case_id, "test-op-rng-retrieve") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0)
+        return KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE;
+    if (strcmp(test_case->case_id, "test-op-rng-seed") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-rng-seed-rng-32") == 0)
+        return KMIPKIT_ENUMERATION_OPERATION_RNG_SEED;
+    return 0;
+}
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -12358,7 +12401,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (credential_query && (!client->configuration ||
         !client->configuration->username_env[0] || !client->configuration->password_env[0]))
         return outcome_not_run("the Credential recipe requires configured Username/Password environment names");
+    const uint32_t rng = rng_fixture_operation(test_case);
     if (strcmp(client->api_level, "high-level") == 0) {
+        if (rng != 0 && client->protocol_major == 2) {
+            if (client->username_env[0] != 0)
+                return outcome_not_run("the high-level RNG method cannot set a KMIP batch credential");
+            return execute_single_versioned_diagnostic(client, rng, false, NULL, NULL);
+        }
         const bool discover = strcmp(test_case->case_id, "test-op-discover-versions") == 0;
         const bool query = strcmp(test_case->operation, "Query") == 0 &&
             (nonce_query || credential_query || test_case->query_function[0] || strcmp(test_case->case_id, "test-op-query") == 0);
@@ -12511,11 +12560,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         uint32_t owned = generic_owned_operation(test_case);
         uint32_t extended = gcm_operation ? gcm_operation : generic_extended_operation(test_case->case_id);
         const char *case_id = test_case->case_id;
-        uint32_t rng = 0;
-        if (strcmp(case_id, "test-crypto-rng-retrieve-rng-32") == 0 || strcmp(case_id, "test-op-rng-retrieve") == 0)
-            rng = KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE;
-        if (strcmp(case_id, "test-crypto-rng-seed-rng-32") == 0 || strcmp(case_id, "test-op-rng-seed") == 0)
-            rng = KMIPKIT_ENUMERATION_OPERATION_RNG_SEED;
         if (connection && client->protocol_major == 2 && client->wire_encoding == KMIPKIT_WIRE_ENCODING_TTLV &&
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
             (credential_query || (!connection->username_env[0] && !connection->password_env[0])) &&
@@ -12817,12 +12861,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool delegated_login_workflow =
         strcmp(test_case->case_id, "test-op-delegated-login") == 0;
-    bool rng_retrieve_workflow = strcmp(test_case->case_id, "test-op-rng-retrieve") == 0 ||
-        strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0;
-    bool rng_seed_workflow = strcmp(test_case->case_id, "test-op-rng-seed") == 0 ||
-        strcmp(test_case->case_id, "test-crypto-rng-seed-rng-32") == 0;
-    uint32_t rng_length = strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0 ||
-        strcmp(test_case->case_id, "test-crypto-rng-seed-rng-32") == 0 ? 32U : 16U;
+    bool rng_retrieve_workflow = rng == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE;
+    bool rng_seed_workflow = rng == KMIPKIT_ENUMERATION_OPERATION_RNG_SEED;
     uint32_t catalog_attribute_tag = strncmp(test_case->case_id, "test-attr-", 10) == 0
         ? c_catalog_attribute_tag(test_case->attribute)
         : 0U;
@@ -13099,14 +13139,22 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0) status = kmipkit_client_batch_item_delegated_login(
             request_attributes, 0, 0, 0, 0, NULL, &item);
     } else if (rng_retrieve_workflow) {
-        status = kmipkit_client_batch_item_rng_retrieve(rng_length, &item);
+        if (fluent_route) {
+            kmipkit_fluent_rng_retrieve_params_t params = KMIPKIT_FLUENT_RNG_RETRIEVE_PARAMS_INIT;
+            params.data_length = RNG_FIXTURE_LENGTH;
+            status = kmipkit_fluent_item_rng_retrieve(&params, &item);
+        } else {
+            status = kmipkit_client_batch_item_rng_retrieve(RNG_FIXTURE_LENGTH, &item);
+        }
     } else if (rng_seed_workflow) {
-        static const uint8_t seed[] = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
-        };
-        const kmipkit_byte_span_v1_t span = {.data = seed, .length = rng_length};
-        status = kmipkit_client_batch_item_rng_seed(&span, &item);
+        const kmipkit_byte_span_v1_t span = {.data = rng_fixture_seed, .length = RNG_FIXTURE_LENGTH};
+        if (fluent_route) {
+            kmipkit_fluent_rng_seed_params_t params = KMIPKIT_FLUENT_RNG_SEED_PARAMS_INIT;
+            params.data = span;
+            status = kmipkit_fluent_item_rng_seed(&params, &item);
+        } else {
+            status = kmipkit_client_batch_item_rng_seed(&span, &item);
+        }
     } else if (single_item_batch_options_workflow &&
                !placeholder_without_producer_workflow) {
         static const uint8_t fixture_identifier[] = "fixture-key-1";
@@ -14543,21 +14591,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit Query response omitted Operation enumeration fields");
         }
     } else if (rng_retrieve_workflow || rng_seed_workflow) {
-        uint8_t present = 0;
-        uint8_t data_present = 0;
-        kmipkit_byte_span_v1_t data = {0};
-        bool valid = false;
-        if (rng_retrieve_workflow) {
-            status = kmipkit_client_batch_item_response_rng_retrieve(response_item, &present, &data_present, &data);
-            valid = status == 0 && present && data_present && data.data && data.length == rng_length;
-            if (valid) status = kmipkit_client_batch_item_response_rng_retrieve_ttlv(response_item, &present, &response_attributes);
-        } else {
-            int32_t data_length = 0;
-            status = kmipkit_client_batch_item_response_rng_seed(response_item, &present, &data_present, &data_length);
-            valid = status == 0 && present && data_present && data_length == (int32_t)rng_length;
-            if (valid) status = kmipkit_client_batch_item_response_rng_seed_ttlv(response_item, &present, &response_attributes);
-        }
-        if (!valid || status != 0 || !present || !response_attributes) {
+        if (!typed_rng_response_matches(response_item, rng_retrieve_workflow, &status)) {
             outcome.success = false;
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),

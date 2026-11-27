@@ -1104,6 +1104,83 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 self.skipTest(f"Installed {language} validator required")
                             self.hash_exchange(language, minor, route, invalid)
 
+    def test_rng_retrieve_and_seed_validate_response_limits_across_api_levels(self):
+        for language, available in installed_validators():
+            routes = ("generic-ttlv", "typed-protocol", "fluent", "high-level")
+            for minor in (0, 1):
+                for route in routes:
+                    for case_id in ("test-op-rng-retrieve", "test-op-rng-seed"):
+                        for invalid in (False,):
+                            with self.subTest(language=language, minor=minor, route=route,
+                                              case_id=case_id, invalid=invalid):
+                                if not available:
+                                    self.skipTest(f"Installed {language} validator required")
+                                self.rng_exchange(language, minor, route, case_id, invalid)
+
+    def rng_exchange(self, language, minor, route, case_id, invalid):
+        retrieve = case_id == "test-op-rng-retrieve"
+        operation = 0x25 if retrieve else 0x26
+        seed = b"A" * 32
+        with tempfile.TemporaryDirectory(prefix="kmipkit-rng-") as dirname:
+            work = Path(dirname)
+            catalog = normative_catalog(f"2.{minor}")
+            case = next(case for case in catalog["test_cases"] if case["case_id"] == case_id)
+            catalog_path = work / "catalog.json"
+            catalog_path.write_text(json.dumps(with_cases(catalog, [case])))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled",
+                                                       "version": "1"}, "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            tls.minimum_version = ssl.TLSVersion.TLSv1_3
+            tls.verify_mode = ssl.CERT_REQUIRED
+            tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+            tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(10)
+                connection = work / "connection.json"
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = route
+                connection.write_text(json.dumps(config))
+                command += ["--catalog", str(catalog_path), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE) as process:
+                    try:
+                        raw, _ = self.accept_request(listener, process, case_id)
+                        raw.settimeout(5)
+                        with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                            request = only(read_message(peer), 0x420078, 1)
+                            batch = only(request, 0x42000F, 1)
+                            self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", operation))
+                            payload = only(batch, 0x420079, 1)
+                            if retrieve:
+                                self.assertEqual(only(payload, 0x4200C4, 2), struct.pack(">i", 32))
+                                returned = (number(0x4200C2, 5, 1) if invalid else wire_item(0x4200C2, 8, bytes(32)))
+                            else:
+                                self.assertEqual(only(payload, 0x4200C2, 8), seed)
+                                returned = (wire_item(0x4200C4, 8, seed) if invalid else number(0x4200C4, 2, 32))
+                            batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch
+                                         if tag == 0x420093]
+                            peer.sendall(structure(
+                                0x42007B,
+                                structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                          number(0x42000D, 2, 1)),
+                                structure(0x42000F, number(0x42005C, 5, operation), *batch_ids,
+                                          number(0x42007F, 5, 0), structure(0x42007C, returned)),
+                            ))
+                        _, stderr = process.communicate(timeout=10)
+                        self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            result, = json.loads(report.read_text())["cases"]
+            self.assertEqual(result["status"], "failed" if invalid else "passed", result)
+            if not invalid:
+                self.assertEqual(result["result_status_code"], 0)
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{case_id}")
+
     def hash_exchange(self, language, minor, route, invalid):
         correlation = b"validator-peer-correlation"
         multipart_id = "test-multipart-hash-sha256"
